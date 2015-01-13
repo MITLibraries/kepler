@@ -2,12 +2,15 @@
 from __future__ import absolute_import
 import unittest
 from mock import patch
-from cStringIO import StringIO
+try:
+    from io import StringIO
+except ImportError:
+    from cStringIO import StringIO
 from kepler.services.geoserver import GeoServerServiceManager
 
 class GeoServerTestCase(unittest.TestCase):
     def setUp(self):
-        self.file = StringIO('Test file')
+        self.file = StringIO(u'Test file')
 
     def tearDown(self):
         self.file.close()

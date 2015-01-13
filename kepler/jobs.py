@@ -5,7 +5,7 @@ from kepler.extensions import db
 from kepler.exceptions import UnsupportedFormat
 
 def create_job(data, metadata=None):
-    name = data.filename.decode('utf-8')
+    name = data.filename
     job = Job(name=name, status=u'PENDING')
     db.session.add(job)
     db.session.commit()

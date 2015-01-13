@@ -12,7 +12,7 @@ class JobTestCase(BaseTestCase):
     def setUp(self):
         super(JobTestCase, self).setUp()
         self.data = Mock()
-        self.data.filename = u'TestFile'.encode('utf-8')
+        self.data.filename = u'TestFile'
         self.data.mimetype = 'application/zip'
 
 
