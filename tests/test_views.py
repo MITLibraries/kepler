@@ -14,7 +14,8 @@ class IngestTestCase(BaseTestCase):
             ('metadata', "tests/data/shapefile/fgdc.xml")
         ]
 
-    def testIngestPostReturns202OnSuccess(self):
+    @patch('requests.put')
+    def testIngestPostReturns202OnSuccess(self, req):
         r = self.app.post('/ingest/', upload_files=self.upload_files)
         self.assertEqual(r.status_code, 202)
 
@@ -31,7 +32,8 @@ class IngestTestCase(BaseTestCase):
                               expect_errors=True)
             self.assertEqual(r.status_code, 415)
 
-    def testIngestCompletesJobOnSuccess(self):
+    @patch('requests.put')
+    def testIngestCompletesJobOnSuccess(self, req):
         with patch('kepler.jobs.UploadJob.complete') as mock:
             self.app.post('/ingest/', upload_files=self.upload_files)
             self.assertTrue(mock.called)

@@ -4,6 +4,10 @@ try:
     import unittest2 as unittest
 except ImportError:
     import unittest
+try:
+    from io import StringIO
+except ImportError:
+    from cStringIO import StringIO
 from webtest import TestApp
 from kepler.app import create_app
 from kepler.extensions import db
