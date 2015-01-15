@@ -7,4 +7,5 @@ class GeoServerServiceManager(object):
         self.url = url
 
     def upload(self, fstream):
-        requests.put(self.url, fstream)
+        r = requests.put(self.url, fstream)
+        r.raise_for_status()

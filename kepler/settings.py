@@ -15,3 +15,4 @@ class TestConfig(DefaultConfig):
     TESTING = True
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = 'sqlite://'
+    GEOSERVER_URL = 'http://example.com/'

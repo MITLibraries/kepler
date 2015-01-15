@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+from flask import current_app
 from kepler.models import Job
 from kepler.extensions import db
 from kepler.exceptions import UnsupportedFormat
+from kepler.services.geoserver import GeoServerServiceManager
 
 def create_job(data, metadata=None):
     name = data.filename
@@ -43,7 +45,9 @@ class UploadJob(object):
 
 class ShapefileUploadJob(UploadJob):
     def run(self):
-        pass
+        url = current_app.config['GEOSERVER_URL']
+        mgr = GeoServerServiceManager(url)
+        mgr.upload(self.data)
 
 
 class GeoTiffUploadJob(UploadJob):
