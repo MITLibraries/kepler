@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from mock import patch, Mock
+from io import BytesIO
 from flask import current_app
-from tests import BaseTestCase, StringIO
+from tests import BaseTestCase
 from kepler.jobs import (create_job, UploadJob, ShapefileUploadJob,
                          GeoTiffUploadJob,)
 from kepler.extensions import db
@@ -88,7 +89,7 @@ class ShapefileUploadJobTestCase(JobTestCase):
     @patch('requests.put')
     def testRunUploadsShapefileToGeoserver(self, mock):
         url = current_app.config['GEOSERVER_URL']
-        file = StringIO(u'Test file')
+        file = BytesIO(u'Test file'.encode('utf-8'))
         job = ShapefileUploadJob(job=Job(), data=file)
         job.run()
         mock.assert_called_with(url, file)
