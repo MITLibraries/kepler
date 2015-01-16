@@ -14,22 +14,21 @@ class ParserTestCase(unittest.TestCase):
 
 class XMLParserTestCase(unittest.TestCase):
     def testParserYieldsRecordWhenCalled(self):
-        parser = XMLParser()
+        parser = XMLParser(BytesIO(u'<record/>'.encode('utf-8')))
         parser.record_elem = 'record'
-        records = list(parser(BytesIO(u'<record/>'.encode('utf-8'))))
+        records = list(parser)
         self.assertEqual(len(records), 1)
 
     def testParserCallsHandleElemForElements(self):
-        parser = XMLParser()
+        parser = XMLParser(BytesIO(u'<record><title/></record>'.encode('utf-8')))
         parser.record_elem = 'record'
         parser.handle_elem = Mock()
-        list(parser(BytesIO(u'<record><title/></record>'.encode('utf-8'))))
+        list(parser)
         self.assertTrue(parser.handle_elem.called)
 
 
 class FgdcParserTestCase(unittest.TestCase):
     def testHandleElemAddsSelectedFieldsToRecord(self):
-        parser = FgdcParser()
-        records = list(parser('tests/data/shapefile/fgdc.xml'))
+        records = list(FgdcParser('tests/data/shapefile/fgdc.xml'))
         self.assertEqual(records[0].get('dc_subject'),
                          ['point', 'names', 'features'])

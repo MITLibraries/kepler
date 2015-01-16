@@ -10,10 +10,12 @@ def parse(fstream, parser):
 
 
 class XMLParser(object):
-    def __call__(self, fstream):
+    def __init__(self, fstream):
+        self.context = iterparse(fstream)
         self.record = {}
-        context = iterparse(fstream)
-        for event, elem in context:
+
+    def __iter__(self):
+        for event, elem in self.context:
             if elem.tag == self.record_elem:
                 record = self.record
                 self.record = {}
