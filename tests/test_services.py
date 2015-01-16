@@ -3,12 +3,12 @@ from __future__ import absolute_import
 from tests import unittest
 from mock import patch, Mock
 import requests
-from tests import StringIO
+from io import BytesIO
 from kepler.services.geoserver import GeoServerServiceManager
 
 class GeoServerTestCase(unittest.TestCase):
     def setUp(self):
-        self.file = StringIO(u'Test file')
+        self.file = BytesIO(u'Test file'.encode('utf-8'))
         self.mgr = GeoServerServiceManager('http://example.com/')
 
     def tearDown(self):
