@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from mock import patch, Mock
-from io import BytesIO
+import io
 from flask import current_app
 from tests import BaseTestCase
 from kepler.jobs import (create_job, UploadJob, ShapefileUploadJob,
@@ -89,7 +89,14 @@ class ShapefileUploadJobTestCase(JobTestCase):
     @patch('requests.put')
     def testRunUploadsShapefileToGeoserver(self, mock):
         url = current_app.config['GEOSERVER_URL']
-        file = BytesIO(u'Test file'.encode('utf-8'))
+        file = io.BytesIO(u'Test file'.encode('utf-8'))
         job = ShapefileUploadJob(job=Job(), data=file)
         job.run()
         mock.assert_called_with(url, file)
+
+    def testCreateRecordReturnsMetadataRecord(self):
+        data = io.open('tests/data/shapefile/shapefile.zip', 'rb')
+        metadata = io.open('tests/data/shapefile/fgdc.xml', encoding='utf-8')
+        job = ShapefileUploadJob(job=Job(), data=data)
+        self.assertEqual(job.create_record(metadata).get('dc_title'),
+                         'Bermuda (Geographic Feature Names, 2003)')
