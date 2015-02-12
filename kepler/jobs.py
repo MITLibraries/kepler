@@ -5,6 +5,7 @@ from kepler.models import Job
 from kepler.extensions import db
 from kepler.exceptions import UnsupportedFormat
 from kepler.services.geoserver import GeoServerServiceManager
+from kepler.parsers import FgdcParser
 
 def create_job(data, metadata=None):
     name = data.filename
@@ -48,6 +49,10 @@ class ShapefileUploadJob(UploadJob):
         url = current_app.config['GEOSERVER_URL']
         mgr = GeoServerServiceManager(url)
         mgr.upload(self.data)
+
+    def create_record(self, metadata):
+        records = FgdcParser(metadata)
+        return next(iter(records))
 
 
 class GeoTiffUploadJob(UploadJob):
