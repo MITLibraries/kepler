@@ -13,6 +13,7 @@ blessings==1.6
 colour-runner==0.0.4
 itsdangerous==0.24
 mock==1.0.1
+pymarc==3.0.3
 requests==2.5.1
 six==1.9.0
 waitress==0.8.9
