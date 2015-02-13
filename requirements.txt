@@ -17,3 +17,4 @@ pymarc==3.0.3
 requests==2.5.1
 six==1.9.0
 waitress==0.8.9
+pysolr==3.2.0
