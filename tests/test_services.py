@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-from tests import unittest
-from mock import patch, Mock
-import requests
-import pysolr
+from flask import current_app
 from io import BytesIO
 from kepler.services.geoserver import GeoServerServiceManager
 from kepler.services.solr import SolrServiceManager
+from mock import patch, Mock
+from tests import BaseTestCase
+from tests import unittest
+import pysolr
+import requests
 
 class GeoServerTestCase(unittest.TestCase):
     def setUp(self):
@@ -28,19 +30,18 @@ class GeoServerTestCase(unittest.TestCase):
         with self.assertRaises(requests.exceptions.HTTPError):
             self.mgr.upload(self.file)
 
-class SolrTestCase(unittest.TestCase):
+class SolrTestCase(BaseTestCase):
     def setUp(self):
+        super(SolrTestCase, self).setUp()
+        
         self.testRecord = {
             'uuid': 'test_uuid'
         }
         self.testBadRecord = {
             'uid': 'test_uuid' # key not 'uuid'
         }
-        self.testUrl = 'http://localhost:8983/solr/geoblacklight/'
+        self.testUrl = current_app.config['SOLR_URL']
         self.mgr = SolrServiceManager(self.testUrl)
-
-    def tearDown(self):
-        pass
 
     @patch('pysolr.Solr.add')
     def testSolrServiceManagerPost(self, mock):
