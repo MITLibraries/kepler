@@ -47,7 +47,6 @@ class SolrTestCase(BaseTestCase):
     def testSolrServiceManagerPost(self, mock):
         response = self.mgr.postMetaDataToServer([self.testRecord])
         mock.assert_called_once_with([self.testRecord])
-        print mock.return_value
 
     def testValidateRecord(self):
         self.mgr._validateRecord(self.testRecord)
