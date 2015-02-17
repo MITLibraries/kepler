@@ -8,12 +8,14 @@ SQLAlchemy==0.9.8
 WebOb==1.4
 WebTest==2.0.17
 Werkzeug==0.9.6
+arrow==0.5.0
 beautifulsoup4==4.3.2
 blessings==1.6
 colour-runner==0.0.4
 itsdangerous==0.24
 mock==1.0.1
 pymarc==3.0.3
+python-dateutil==2.4.0
 requests==2.5.1
 six==1.9.0
 waitress==0.8.9
