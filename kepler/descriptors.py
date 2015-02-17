@@ -32,11 +32,32 @@ class Default(Descriptor):
 
 
 class Enum(Default):
+    """
+    Enumerable descriptor for record.
+
+    This defines a field that accepts values from a predetermined list.
+    You can pass a mapper function that is called on the value being
+    set. For example::
+
+        things = Enum(enums=['foo', 'bar'], mapper=lambda x: x.lower())
+        record.things = 'FOO'
+        record.things # 'foo'
+
+    :param name: name of the field
+    :param mapper: mapper function
+    """
+
+    def __init__(self, name=None, **opts):
+        defaults = {'mapper': lambda x: x}
+        defaults.update(opts)
+        super(Enum, self).__init__(name, **defaults)
+
     def __set__(self, instance, value):
-        if value in self.enums:
-            super(Enum, self).__set__(instance, value)
+        mapped = self.mapper(value)
+        if mapped in self.enums:
+            super(Enum, self).__set__(instance, mapped)
         else:
-            raise InvalidDataError(self.name, value)
+            raise InvalidDataError(self.name, mapped)
 
 
 class String(Default):
