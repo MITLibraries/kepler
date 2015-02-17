@@ -5,6 +5,7 @@ from io import BytesIO
 from xml.etree.ElementTree import Element
 from mock import MagicMock, Mock
 import pymarc
+import io
 from kepler.parsers import parse, FgdcParser, XMLParser, MarcParser
 
 class ParserTestCase(unittest.TestCase):
@@ -47,18 +48,30 @@ class XMLParserTestCase(unittest.TestCase):
 
 
 class FgdcParserTestCase(unittest.TestCase):
+    def setUp(self):
+        metadata = io.open('tests/data/shapefile/fgdc.xml', encoding='utf-8')
+        parser = FgdcParser(metadata)
+        self.record = next(iter(parser))
+
     def testStartHandlerCreatesEmptyDictionary(self):
         parser = FgdcParser()
         parser.start_handler(Element(FgdcParser.record_elem))
         self.assertEqual(parser.record, {})
 
-    def testEndHandlerAddsSelectedFieldsToRecord(self):
-        el = Element('title')
-        el.text = 'The Locations of Frobbers in the Greater Boston Area'
-        parser = FgdcParser()
-        parser.record = {}
-        parser.end_handler(el)
-        self.assertEqual(parser.record, {'dc_title': el.text})
+    def testParserAddsSelectedFieldsToRecord(self):
+        self.assertEqual(self.record['dc_title_s'],
+                         'Bermuda (Geographic Feature Names, 2003)')
+
+    def testParserReturnsThemeKeywordsAsSet(self):
+        self.assertEqual(self.record['dc_subject_sm'],
+                         set(['point', 'names', 'features']))
+
+    def testParserReturnsSpatialKeywordsAsSet(self):
+        self.assertEqual(self.record['dct_spatial_sm'], set(['Bermuda']))
+
+    def testParserReturnsCreatorsAsSet(self):
+        self.assertEqual(self.record['dc_creator_sm'],
+                         set(['National Imagery and Mapping Agency']))
 
 
 class MarcParserTestCase(unittest.TestCase):

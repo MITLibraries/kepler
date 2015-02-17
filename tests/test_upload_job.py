@@ -98,5 +98,8 @@ class ShapefileUploadJobTestCase(JobTestCase):
         data = io.open('tests/data/shapefile/shapefile.zip', 'rb')
         metadata = io.open('tests/data/shapefile/fgdc.xml', encoding='utf-8')
         job = ShapefileUploadJob(job=Job(), data=data)
-        self.assertEqual(job.create_record(metadata).get('dc_title'),
+        record = job.create_record(metadata)
+        self.assertEqual(record.dc_title_s,
                          'Bermuda (Geographic Feature Names, 2003)')
+        self.assertEqual(record.dc_rights_s, 'Public')
+        self.assertEqual(record.dct_provenance_s, 'MIT')

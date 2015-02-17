@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from tests import unittest
 import arrow
 import json
-from kepler.records import GeoRecord
+from kepler.records import GeoRecord, MitRecord
 from kepler.exceptions import InvalidDataError
 
 
@@ -70,3 +70,13 @@ class GeoRecordTestCase(unittest.TestCase):
         self.assertEqual(dict((k, v) for k,v in r.as_dict().items() if v),
             {'uuid': '0-8-3', 'dc_title_s': 'Today, in the world of cats',
              'georss_point_s': '-23 97', 'layer_modified_dt': time})
+
+
+class MitRecordTestCase(unittest.TestCase):
+    def testAccessConstraintMapped(self):
+        r = MitRecord(dc_rights_s='Unrestricted Access Online')
+        self.assertEqual(r.dc_rights_s, 'Public')
+
+    def testGeometryTypeMapped(self):
+        r = MitRecord(layer_geom_type_s='Entity point')
+        self.assertEqual(r.layer_geom_type_s, 'Point')

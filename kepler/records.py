@@ -6,6 +6,26 @@ import json
 from kepler.descriptors import *
 
 
+def rights_mapper(term):
+    """Maps access rights from FGDC to canonical GeoBlacklight value."""
+    if term.lower().startswith('unrestricted'):
+        return 'Public'
+    elif term.lower().startswith('restricted'):
+        return 'Restricted'
+    return term
+
+
+def geometry_mapper(term):
+    """Maps layer geometry from FGDC to canonical GeoBlacklight value."""
+    if 'point' in term.lower():
+        return 'Point'
+    elif 'string' in term.lower():
+        return 'Line'
+    elif any(v_type in term.lower() for v_type in ['polygon', 'chain']):
+        return 'Polygon'
+    return term
+
+
 @add_metaclass(RecordMeta)
 class BaseRecord(object):
     pass
@@ -127,3 +147,10 @@ class GeoRecord(BaseRecord):
             'dct_isPartOf_sm': self.dct_isPartOf_sm,
             'georss_point_s': self.georss_point_s,
         }
+
+
+class MitRecord(GeoRecord):
+    dc_rights_s = Enum(enums=['Public', 'Restricted'], mapper=rights_mapper)
+    layer_geom_type_s = Enum(enums=['Point', 'Line', 'Polygon', 'Raster',
+                                'Scanned Map', 'Paper Map', 'Mixed'],
+                             mapper=geometry_mapper)
