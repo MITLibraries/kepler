@@ -3,6 +3,8 @@ from __future__ import absolute_import
 from six import add_metaclass
 import arrow
 import json
+import uuid
+from slugify import slugify
 from kepler.descriptors import *
 
 
@@ -154,3 +156,20 @@ class MitRecord(GeoRecord):
     layer_geom_type_s = Enum(enums=['Point', 'Line', 'Polygon', 'Raster',
                                 'Scanned Map', 'Paper Map', 'Mixed'],
                              mapper=geometry_mapper)
+    _namespace = String()
+    _filename = String()
+
+    @property
+    def uuid(self):
+        if None in (self._namespace, self._filename):
+            return None
+        uuid_ns = uuid.uuid5(uuid.NAMESPACE_DNS, self._namespace)
+        return uuid.uuid5(uuid_ns, self._filename)
+
+    @property
+    def dc_identifier_s(self):
+        return self.uuid
+
+    @property
+    def layer_slug_s(self):
+        return slugify(self._filename, to_lower=True)
