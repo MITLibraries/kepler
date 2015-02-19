@@ -54,7 +54,10 @@ class ShapefileUploadJob(UploadJob):
     def create_record(self, metadata):
         records = FgdcParser(metadata)
         record = next(iter(records))
-        return MitRecord(dct_provenance_s='MIT', dc_type_s='Dataset', **record)
+        layer_id = "%s:%s" % (current_app.config['GEOSERVER_WORKSPACE'],
+                              self.data.filename)
+        return MitRecord(dct_provenance_s='MIT', dc_type_s='Dataset',
+                         layer_id_s=layer_id, **record)
 
 
 class GeoTiffUploadJob(UploadJob):

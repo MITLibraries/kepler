@@ -95,11 +95,16 @@ class ShapefileUploadJobTestCase(JobTestCase):
         mock.assert_called_with(url, file)
 
     def testCreateRecordReturnsMetadataRecord(self):
-        data = io.open('tests/data/shapefile/shapefile.zip', 'rb')
         metadata = io.open('tests/data/shapefile/fgdc.xml', encoding='utf-8')
-        job = ShapefileUploadJob(job=Job(), data=data)
+        job = ShapefileUploadJob(job=Job(), data=self.data)
         record = job.create_record(metadata)
         self.assertEqual(record.dc_title_s,
                          'Bermuda (Geographic Feature Names, 2003)')
         self.assertEqual(record.dc_rights_s, 'Public')
         self.assertEqual(record.dct_provenance_s, 'MIT')
+
+    def testCreateRecordAddsLayerId(self):
+        metadata = io.open('tests/data/shapefile/fgdc.xml', encoding='utf-8')
+        job = ShapefileUploadJob(job=Job(), data=self.data)
+        record = job.create_record(metadata)
+        self.assertEqual(record.layer_id_s, 'mit:TestFile')
