@@ -88,11 +88,11 @@ class UploadJobTestCase(JobTestCase):
 class ShapefileUploadJobTestCase(JobTestCase):
     @patch('requests.put')
     def testRunUploadsShapefileToGeoserver(self, mock):
-        url = current_app.config['GEOSERVER_URL']
-        file = io.BytesIO(u'Test file'.encode('utf-8'))
-        job = ShapefileUploadJob(job=Job(), data=file)
+        job = ShapefileUploadJob(job=Job(), data=self.data)
         job.run()
-        mock.assert_called_with(url, file)
+        mock.assert_called_with(
+            'http://example.com/geoserver/rest/workspaces/mit/datastores/data/file.shp',
+            data=self.data, headers={'Content-type': 'application/zip'})
 
     def testCreateRecordReturnsMetadataRecord(self):
         metadata = io.open('tests/data/shapefile/fgdc.xml', encoding='utf-8')

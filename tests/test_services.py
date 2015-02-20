@@ -13,27 +13,35 @@ import requests
 class GeoServerTestCase(unittest.TestCase):
     def setUp(self):
         self.file = BytesIO(u'Test file'.encode('utf-8'))
-        self.mgr = GeoServerServiceManager('http://example.com/')
+        self.mgr = GeoServerServiceManager('http://example.com/', 'mit', 'data')
 
     def tearDown(self):
         self.file.close()
 
     @patch('requests.put')
     def testServiceManagerUploadsShapefile(self, mock):
-        self.mgr.upload(self.file)
-        self.assertTrue(mock.called)
+        self.mgr.upload(self.file, 'application/zip')
+        mock.assert_called_with(self.mgr.url, data=self.file,
+                                headers={'Content-type': 'application/zip'})
 
     @patch('requests.put')
     def testUploadRaisesErrorOnNon200Response(self, mock):
         attrs = {'raise_for_status.side_effect': requests.exceptions.HTTPError}
         mock.return_value = Mock(**attrs)
         with self.assertRaises(requests.exceptions.HTTPError):
-            self.mgr.upload(self.file)
+            self.mgr.upload(self.file, 'application/zip')
+
+    def testServiceManagerConstructsUrl(self):
+        mgr = GeoServerServiceManager('http://example.com/geoserver', 'mit',
+                                      'data')
+        self.assertEqual(mgr.url,
+            'http://example.com/geoserver/rest/workspaces/mit/datastores/data/file.shp')
+
 
 class SolrTestCase(BaseTestCase):
     def setUp(self):
         super(SolrTestCase, self).setUp()
-        
+
         self.testRecord = {
             'uuid': 'test_uuid'
         }

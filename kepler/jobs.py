@@ -48,8 +48,10 @@ class UploadJob(object):
 class ShapefileUploadJob(UploadJob):
     def run(self):
         url = current_app.config['GEOSERVER_URL']
-        mgr = GeoServerServiceManager(url)
-        mgr.upload(self.data)
+        workspace = current_app.config['GEOSERVER_WORKSPACE']
+        datastore = current_app.config['GEOSERVER_DATASTORE']
+        mgr = GeoServerServiceManager(url, workspace, datastore)
+        mgr.upload(self.data, self.data.mimetype)
 
     def create_record(self, metadata):
         records = FgdcParser(metadata)
