@@ -13,7 +13,8 @@ import requests
 class GeoServerTestCase(unittest.TestCase):
     def setUp(self):
         self.file = BytesIO(u'Test file'.encode('utf-8'))
-        self.mgr = GeoServerServiceManager('http://example.com/', 'mit', 'data')
+        self.mgr = GeoServerServiceManager('http://example.com/geoserver',
+                                           'mit', 'data')
 
     def tearDown(self):
         self.file.close()
@@ -21,7 +22,7 @@ class GeoServerTestCase(unittest.TestCase):
     @patch('requests.put')
     def testServiceManagerUploadsShapefile(self, mock):
         self.mgr.upload(self.file, 'application/zip')
-        mock.assert_called_with(self.mgr.url, data=self.file,
+        mock.assert_called_with(self.mgr.base_url + 'file.shp', data=self.file,
                                 headers={'Content-type': 'application/zip'})
 
     @patch('requests.put')
@@ -32,10 +33,21 @@ class GeoServerTestCase(unittest.TestCase):
             self.mgr.upload(self.file, 'application/zip')
 
     def testServiceManagerConstructsUrl(self):
-        mgr = GeoServerServiceManager('http://example.com/geoserver', 'mit',
-                                      'data')
-        self.assertEqual(mgr.url,
-            'http://example.com/geoserver/rest/workspaces/mit/datastores/data/file.shp')
+        self.assertEqual(self.mgr.base_url,
+            'http://example.com/geoserver/rest/workspaces/mit/datastores/data/')
+
+    @patch('requests.delete')
+    def testDeleteRemovesLayer(self, mock):
+        self.mgr.delete('GOODBYE_WORLD')
+        mock.assert_called_once_with(
+            'http://example.com/geoserver/rest/workspaces/mit/datastores/data/featuretypes/GOODBYE_WORLD?recurse=true')
+
+    @patch('requests.delete')
+    def testDeleteRaisesErrorOnNon200Response(self, mock):
+        attrs = {'raise_for_status.side_effect': requests.exceptions.HTTPError}
+        mock.return_value = Mock(**attrs)
+        with self.assertRaises(requests.exceptions.HTTPError):
+            self.mgr.delete('GOODBYE_WORLD')
 
 
 class SolrTestCase(BaseTestCase):
