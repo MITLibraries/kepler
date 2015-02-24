@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-from mock import patch, Mock
+from mock import patch, Mock, DEFAULT
 import io
-from flask import current_app
+from requests.exceptions import HTTPError
+from werkzeug.datastructures import FileStorage
 from tests import BaseTestCase
 from kepler.jobs import (create_job, UploadJob, ShapefileUploadJob,
                          GeoTiffUploadJob,)
@@ -85,26 +86,68 @@ class UploadJobTestCase(JobTestCase):
             job.run()
 
 
-class ShapefileUploadJobTestCase(JobTestCase):
+class ShapefileUploadJobTestCase(BaseTestCase):
+    def setUp(self):
+        super(ShapefileUploadJobTestCase, self).setUp()
+        self.data_stream = io.open('tests/data/shapefile/shapefile.zip', 'rb')
+        self.data = FileStorage(self.data_stream, 'test_shapefile',
+                                content_type='application/zip')
+        self.metadata = io.open('tests/data/shapefile/fgdc.xml',
+                                encoding='utf-8')
+
+    def tearDown(self):
+        super(ShapefileUploadJobTestCase, self).tearDown()
+        self.data_stream.close()
+        self.metadata.close()
+
     @patch('requests.put')
-    def testRunUploadsShapefileToGeoserver(self, mock):
-        job = ShapefileUploadJob(job=Job(), data=self.data)
+    @patch('pysolr.Solr.add')
+    def testRunUploadsShapefileToGeoserver(self, mock_solr, mock_geoserver):
+        job = ShapefileUploadJob(Job(), self.data, self.metadata)
         job.run()
-        mock.assert_called_with(
+        mock_geoserver.assert_called_with(
             'http://example.com/geoserver/rest/workspaces/mit/datastores/data/file.shp',
             data=self.data, headers={'Content-type': 'application/zip'})
 
+    @patch('requests.put')
+    @patch('pysolr.Solr.add')
+    def testRunUploadsMetadataToSolr(self, mock_solr, mock_geoserver):
+        job = ShapefileUploadJob(Job(), self.data, self.metadata)
+        job.run()
+        records = mock_solr.call_args[0]
+        self.assertEqual(records[0][0]['layer_id_s'], 'mit:test_shapefile')
+
     def testCreateRecordReturnsMetadataRecord(self):
-        metadata = io.open('tests/data/shapefile/fgdc.xml', encoding='utf-8')
-        job = ShapefileUploadJob(job=Job(), data=self.data)
-        record = job.create_record(metadata)
-        self.assertEqual(record.dc_title_s,
+        job = ShapefileUploadJob(Job(), self.data, self.metadata)
+        record = job.create_record(self.metadata)
+        self.assertEqual(record['dc_title_s'],
                          'Bermuda (Geographic Feature Names, 2003)')
-        self.assertEqual(record.dc_rights_s, 'Public')
-        self.assertEqual(record.dct_provenance_s, 'MIT')
+        self.assertEqual(record['dc_rights_s'], 'Public')
+        self.assertEqual(record['dct_provenance_s'], 'MIT')
 
     def testCreateRecordAddsLayerId(self):
-        metadata = io.open('tests/data/shapefile/fgdc.xml', encoding='utf-8')
-        job = ShapefileUploadJob(job=Job(), data=self.data)
-        record = job.create_record(metadata)
-        self.assertEqual(record.layer_id_s, 'mit:TestFile')
+        job = ShapefileUploadJob(Job(), self.data, self.metadata)
+        record = job.create_record(self.metadata)
+        self.assertEqual(record['layer_id_s'], 'mit:test_shapefile')
+
+    @patch('pysolr.Solr.add')
+    @patch.multiple('requests', put=DEFAULT, delete=DEFAULT)
+    def testDeletesFromGeoServerWhenSolrErrors(self, mock_solr, delete, put):
+        job = ShapefileUploadJob(Job(), self.data, self.metadata)
+        attrs = {'raise_for_status.side_effect': HTTPError}
+        mock_solr.return_value = Mock(**attrs)
+        try:
+            job.run()
+        except HTTPError:
+            pass
+        delete.assert_called_once_with(
+                'http://example.com/geoserver/rest/workspaces/mit/datastores/data/featuretypes/test_shapefile?recurse=true')
+
+    @patch('pysolr.Solr.add')
+    @patch.multiple('requests', put=DEFAULT, delete=DEFAULT)
+    def testReraisesErrorAfterCleaningUp(self, mock_solr, delete, put):
+        job = ShapefileUploadJob(Job(), self.data, self.metadata)
+        attrs = {'raise_for_status.side_effect': HTTPError}
+        mock_solr.return_value = Mock(**attrs)
+        with self.assertRaises(HTTPError):
+            job.run()
