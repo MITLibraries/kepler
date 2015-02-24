@@ -6,6 +6,7 @@ from kepler.extensions import db
 from kepler.exceptions import UnsupportedFormat
 from kepler.services.geoserver import GeoServerServiceManager
 from kepler.parsers import FgdcParser
+from kepler.records import MitRecord
 
 def create_job(data, metadata=None):
     name = data.filename
@@ -52,7 +53,11 @@ class ShapefileUploadJob(UploadJob):
 
     def create_record(self, metadata):
         records = FgdcParser(metadata)
-        return next(iter(records))
+        record = next(iter(records))
+        layer_id = "%s:%s" % (current_app.config['GEOSERVER_WORKSPACE'],
+                              self.data.filename)
+        return MitRecord(dct_provenance_s='MIT', dc_type_s='Dataset',
+                         layer_id_s=layer_id, **record)
 
 
 class GeoTiffUploadJob(UploadJob):
