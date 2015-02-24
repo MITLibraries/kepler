@@ -15,7 +15,8 @@ class IngestTestCase(BaseTestCase):
         ]
 
     @patch('requests.put')
-    def testIngestPostReturns202OnSuccess(self, req):
+    @patch('pysolr.Solr.add')
+    def testIngestPostReturns202OnSuccess(self, mock_solr, mock_geoserver):
         r = self.app.post('/ingest/', upload_files=self.upload_files)
         self.assertEqual(r.status_code, 202)
 
@@ -33,7 +34,8 @@ class IngestTestCase(BaseTestCase):
             self.assertEqual(r.status_code, 415)
 
     @patch('requests.put')
-    def testIngestCompletesJobOnSuccess(self, req):
+    @patch('pysolr.Solr.add')
+    def testIngestCompletesJobOnSuccess(self, mock_solr, mock_geoserver):
         with patch('kepler.jobs.UploadJob.complete') as mock:
             self.app.post('/ingest/', upload_files=self.upload_files)
             self.assertTrue(mock.called)

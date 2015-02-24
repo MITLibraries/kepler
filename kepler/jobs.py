@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from flask import current_app
+from requests.exceptions import HTTPError
 from kepler.models import Job
 from kepler.extensions import db
 from kepler.exceptions import UnsupportedFormat
 from kepler.services.geoserver import GeoServerServiceManager
+from kepler.services.solr import SolrServiceManager
 from kepler.parsers import FgdcParser
 from kepler.records import MitRecord
 
@@ -48,8 +50,17 @@ class UploadJob(object):
 class ShapefileUploadJob(UploadJob):
     def run(self):
         url = current_app.config['GEOSERVER_URL']
-        mgr = GeoServerServiceManager(url)
-        mgr.upload(self.data)
+        workspace = current_app.config['GEOSERVER_WORKSPACE']
+        datastore = current_app.config['GEOSERVER_DATASTORE']
+        mgr = GeoServerServiceManager(url, workspace, datastore)
+        mgr.upload(self.data, self.data.mimetype)
+        try:
+            solr = SolrServiceManager(current_app.config['SOLR_URL'])
+            solr.postMetaDataToServer([self.create_record(self.metadata)])
+        except (AttributeError, HTTPError):
+            mgr.delete(self.data.filename)
+            raise
+
 
     def create_record(self, metadata):
         records = FgdcParser(metadata)
@@ -57,7 +68,8 @@ class ShapefileUploadJob(UploadJob):
         layer_id = "%s:%s" % (current_app.config['GEOSERVER_WORKSPACE'],
                               self.data.filename)
         return MitRecord(dct_provenance_s='MIT', dc_type_s='Dataset',
-                         layer_id_s=layer_id, **record)
+                        layer_id_s=layer_id, _filename=self.data.filename,
+                        **record).as_dict()
 
 
 class GeoTiffUploadJob(UploadJob):
