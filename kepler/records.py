@@ -172,4 +172,6 @@ class MitRecord(GeoRecord):
 
     @property
     def layer_slug_s(self):
+        if not self._filename:
+            return None
         return slugify(self._filename, to_lower=True)
