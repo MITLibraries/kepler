@@ -5,7 +5,7 @@ from requests.exceptions import HTTPError
 from kepler.models import Job
 from kepler.extensions import db
 from kepler.exceptions import UnsupportedFormat
-from kepler.services.geoserver import GeoServerServiceManager
+from kepler.services.geoserver import ShapefileResource, GeoTiffResource
 from kepler.services.solr import SolrServiceManager
 from kepler.parsers import FgdcParser
 from kepler.records import create_record
@@ -49,9 +49,6 @@ class UploadJob(object):
 
 class ShapefileUploadJob(UploadJob):
     def run(self):
-        url = current_app.config['GEOSERVER_URL']
-        workspace = current_app.config['GEOSERVER_WORKSPACE']
-        datastore = current_app.config['GEOSERVER_DATASTORE']
         layer_id = "%s:%s" % (current_app.config['GEOSERVER_WORKSPACE'],
                               self.job.name)
         properties = {
@@ -61,15 +58,32 @@ class ShapefileUploadJob(UploadJob):
             '_filename': self.job.name,
         }
         record = create_record(self.metadata, FgdcParser, **properties)
-        mgr = GeoServerServiceManager(url, workspace, datastore)
-        mgr.upload(self.data, self.data.mimetype)
+        resource = ShapefileResource(self.job.name)
+        resource.put(self.data)
         try:
             solr = SolrServiceManager(current_app.config['SOLR_URL'])
             solr.postMetaDataToServer([record.as_dict()])
         except (AttributeError, HTTPError):
-            mgr.delete(self.data.filename)
+            resource.delete()
             raise
 
 
 class GeoTiffUploadJob(UploadJob):
-    pass
+    def run(self):
+        layer_id = "%s:%s" % (current_app.config['GEOSERVER_WORKSPACE'],
+                              self.job.name)
+        properties = {
+            'dct_provenance_s': 'MIT',
+            'dc_type_s': 'Image',
+            'layer_id_s': layer_id,
+            '_filename': self.job.name,
+        }
+        record = create_record(self.metadata, FgdcParser, **properties)
+        resource = GeoTiffResource(self.job.name)
+        resource.put(self.data)
+        try:
+            solr = SolrServiceManager(current_app.config['SOLR_URL'])
+            solr.postMetaDataToServer([record.as_dict()])
+        except (AttributeError, HTTPError):
+            resource.delete()
+            raise

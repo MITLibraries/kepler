@@ -136,3 +136,38 @@ class ShapefileUploadJobTestCase(BaseTestCase):
         mock_solr.return_value = Mock(**attrs)
         with self.assertRaises(HTTPError):
             self.job.run()
+
+
+class GeoTiffUploadJobTestCase(BaseTestCase):
+    def setUp(self):
+        super(GeoTiffUploadJobTestCase, self).setUp()
+        self.data_stream = io.open('tests/data/rgb.tif', 'rb')
+        self.data = FileStorage(self.data_stream, 'test_geotiff',
+                                content_type='image/tiff')
+        self.metadata = io.open('tests/data/shapefile/fgdc.xml',
+                                encoding='utf-8')
+        self.job = GeoTiffUploadJob(Job(name=u'test_geotiff'), self.data,
+                                      self.metadata)
+
+    def tearDown(self):
+        super(GeoTiffUploadJobTestCase, self).tearDown()
+        self.data_stream.close()
+        self.metadata.close()
+
+    @patch('requests.put')
+    @patch('kepler.jobs.SolrServiceManager')
+    def testUploadsRasterToGeoServer(self, mock_solr, mock_geoserver):
+        self.job.run()
+        mock_geoserver.assert_called_with(
+            'http://example.com/geoserver/rest/workspaces/mit/coveragestores/test_geotiff/file.geotiff',
+            data=self.data, headers={'Content-type': 'image/tiff'})
+
+    @patch('kepler.jobs.SolrServiceManager', side_effect=HTTPError)
+    @patch.multiple('requests', put=DEFAULT, delete=DEFAULT)
+    def testDeletesFromGeoServerWhenSolrErrors(self, mock_solr, delete, put):
+        try:
+            self.job.run()
+        except HTTPError:
+            pass
+        delete.assert_called_once_with(
+            'http://example.com/geoserver/rest/workspaces/mit/coveragestores/test_geotiff?recurse=true')
