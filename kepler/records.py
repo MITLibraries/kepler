@@ -8,6 +8,13 @@ from slugify import slugify
 from kepler.descriptors import *
 
 
+def create_record(metadata, parser, **kwargs):
+    records = parser(metadata)
+    record = next(iter(records))
+    record.update(kwargs)
+    return MitRecord(**record)
+
+
 def rights_mapper(term):
     """Maps access rights from FGDC to canonical GeoBlacklight value."""
     if term.lower().startswith('unrestricted'):
