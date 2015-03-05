@@ -22,5 +22,13 @@ class Raster(object):
         return (self.ds.RasterCount == 1 and
             self.ds.GetRasterBand(1).GetColorInterpretation() == GDAL_PALETTED)
 
+    @property
+    def width(self):
+        return self.ds.RasterXSize
+
+    @property
+    def height(self):
+        return self.ds.RasterYSize
+
     def close(self):
         self.ds = None

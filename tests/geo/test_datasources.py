@@ -13,3 +13,11 @@ class RasterTestCase(unittest.TestCase):
     def testPalettedReturnsTrueForPaletted(self):
         with closing(Raster('tests/data/paletted.tif')) as ds:
             self.assertTrue(ds.paletted)
+
+    def testWidthReturnsWidth(self):
+        with closing(Raster('tests/data/grayscale.tif')) as ds:
+            self.assertEqual(ds.width, 600)
+
+    def testHeightReturnsHeight(self):
+        with closing(Raster('tests/data/grayscale.tif')) as ds:
+            self.assertEqual(ds.height, 300)
