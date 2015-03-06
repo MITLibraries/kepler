@@ -1,12 +1,35 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from tests import unittest
+import io
 import arrow
 import json
 import uuid
 from slugify import slugify
-from kepler.records import GeoRecord, MitRecord
+from kepler.records import GeoRecord, MitRecord, create_record
 from kepler.exceptions import InvalidDataError
+from kepler.parsers import FgdcParser
+
+
+class RecordCreationTestCase(unittest.TestCase):
+    def setUp(self):
+        self.metadata = io.open('tests/data/shapefile/fgdc.xml',
+                                encoding='utf-8')
+
+    def tearDown(self):
+        self.metadata.close()
+
+    def testCreateRecordReturnsMetadataRecord(self):
+        record = create_record(self.metadata, FgdcParser)
+        self.assertEqual(record.dc_title_s,
+                         'Bermuda (Geographic Feature Names, 2003)')
+        self.assertEqual(record.dc_rights_s, 'Public')
+
+    def testCreateRecordUsesUserSuppliedValues(self):
+        record = create_record(self.metadata, FgdcParser,
+                               dc_rights_s='Restricted', dct_provenance_s='MIT')
+        self.assertEqual(record.dc_rights_s, 'Restricted')
+        self.assertEqual(record.dct_provenance_s, 'MIT')
 
 
 class GeoRecordTestCase(unittest.TestCase):
