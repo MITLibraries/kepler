@@ -10,8 +10,7 @@ from kepler.services.solr import SolrServiceManager
 from kepler.parsers import FgdcParser
 from kepler.records import create_record
 
-def create_job(data, metadata=None):
-    name = data.filename
+def create_job(name, data=None, metadata=None):
     job = Job(name=name, status=u'PENDING')
     db.session.add(job)
     db.session.commit()
