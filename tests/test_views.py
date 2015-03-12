@@ -16,20 +16,20 @@ class IngestTestCase(BaseTestCase):
 
     @patch('requests.put')
     @patch('pysolr.Solr.add')
-    def testIngestPostReturns202OnSuccess(self, mock_solr, mock_geoserver):
-        r = self.app.post('/ingest/', upload_files=self.upload_files)
+    def testIngestPutReturns202OnSuccess(self, mock_solr, mock_geoserver):
+        r = self.app.put('/ingest/FOO', upload_files=self.upload_files)
         self.assertEqual(r.status_code, 202)
 
     def testIngestCreatesJob(self):
         with patch('kepler.ingest.views.create_job') as mock:
             instance = mock.return_value
-            self.app.post('/ingest/', upload_files=self.upload_files)
+            self.app.put('/ingest/FOO', upload_files=self.upload_files)
             self.assertTrue(instance.run.called)
 
     def testIngestReturns415OnUnsupportedFormatError(self):
         with patch('kepler.ingest.views.create_job') as mock:
             mock.side_effect = UnsupportedFormat('application/example')
-            r = self.app.post('/ingest/', upload_files=self.upload_files,
+            r = self.app.put('/ingest/FOO', upload_files=self.upload_files,
                               expect_errors=True)
             self.assertEqual(r.status_code, 415)
 
@@ -37,7 +37,7 @@ class IngestTestCase(BaseTestCase):
     @patch('pysolr.Solr.add')
     def testIngestCompletesJobOnSuccess(self, mock_solr, mock_geoserver):
         with patch('kepler.jobs.UploadJob.complete') as mock:
-            self.app.post('/ingest/', upload_files=self.upload_files)
+            self.app.put('/ingest/FOO', upload_files=self.upload_files)
             self.assertTrue(mock.called)
 
     def testIngestFailsJobOnError(self):
@@ -46,7 +46,7 @@ class IngestTestCase(BaseTestCase):
             instance = mock.return_value
             instance.run.side_effect = AttributeError()
             try:
-                self.app.post('/ingest/', upload_files=self.upload_files,
+                self.app.put('/ingest/FOO', upload_files=self.upload_files,
                               expect_errors=True)
             except AttributeError:
                 pass
@@ -58,7 +58,7 @@ class IngestTestCase(BaseTestCase):
         with patch('kepler.ingest.views.create_job') as mock:
             instance = mock.return_value
             instance.run.side_effect = AttributeError()
-            r = self.app.post('/ingest/', upload_files=self.upload_files,
+            r = self.app.put('/ingest/FOO', upload_files=self.upload_files,
                               expect_errors=True)
             self.assertEqual(r.status_code, 500)
 

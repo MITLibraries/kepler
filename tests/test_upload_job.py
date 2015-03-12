@@ -21,32 +21,32 @@ class JobTestCase(BaseTestCase):
 
 class JobFactoryTestCase(JobTestCase):
     def testCreateJobCreatesJob(self):
-        create_job(self.data)
+        create_job(u'LEURENT', self.data)
         self.assertEqual(Job.query.count(), 1)
 
     def testJobIsCreatedWithPendingStatus(self):
-        create_job(self.data)
+        create_job(u'RUMBLUS', self.data)
         job = Job.query.first()
         self.assertEqual(job.status, 'PENDING')
 
     def testCreateJobReturnsJob(self):
-        job = create_job(self.data)
+        job = create_job(u'KHOLER', self.data)
         self.assertIsInstance(job, UploadJob)
 
     def testCreateJobCreatesShapefileJobFromMimetype(self):
-        job = create_job(self.data)
+        job = create_job(u'ALPHARD', self.data)
         self.assertIsInstance(job, ShapefileUploadJob)
 
     def testCreateJobCreatesGeoTiffJobFromMimetype(self):
         self.data.mimetype = 'image/tiff'
-        job = create_job(self.data)
+        job = create_job(u'LUPI', self.data)
         self.assertIsInstance(job, GeoTiffUploadJob)
 
     def testCreateJobSetsFailedStatusOnError(self):
         with patch('kepler.jobs.ShapefileUploadJob') as mock:
             mock.side_effect = Exception
             try:
-                create_job(self.data)
+                create_job(u'FROST', self.data)
             except:
                 pass
             self.assertEqual(Job.query.first().status, 'FAILED')
@@ -55,12 +55,12 @@ class JobFactoryTestCase(JobTestCase):
         with patch('kepler.jobs.ShapefileUploadJob') as mock:
             mock.side_effect = AttributeError()
             with self.assertRaises(AttributeError):
-                create_job(self.data)
+                create_job(u'MALRONA', self.data)
 
     def testCreateJobRaisesUnsupportedFormat(self):
         self.data.mimetype = 'application/example'
         with self.assertRaises(UnsupportedFormat):
-            create_job(self.data)
+            create_job(u'BLOODY_VICTORIA', self.data)
 
 
 class UploadJobTestCase(JobTestCase):
