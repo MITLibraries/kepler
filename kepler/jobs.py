@@ -7,7 +7,7 @@ from kepler.extensions import db
 from kepler.exceptions import UnsupportedFormat
 from kepler.services.geoserver import ShapefileResource, GeoTiffResource
 from kepler.services.solr import SolrServiceManager
-from kepler.parsers import FgdcParser
+from ogre.xml import FGDCParser
 from kepler.records import create_record
 
 def create_job(name, data=None, metadata=None):
@@ -55,8 +55,9 @@ class ShapefileUploadJob(UploadJob):
             'dc_type_s': 'Dataset',
             'layer_id_s': layer_id,
             '_filename': self.job.name,
+            '_namespace': u'SDE'
         }
-        record = create_record(self.metadata, FgdcParser, **properties)
+        record = create_record(self.metadata, FGDCParser, **properties)
         resource = ShapefileResource(self.job.name)
         resource.put(self.data)
         try:
@@ -76,8 +77,9 @@ class GeoTiffUploadJob(UploadJob):
             'dc_type_s': 'Image',
             'layer_id_s': layer_id,
             '_filename': self.job.name,
+            '_namespace': u'SDE'
         }
-        record = create_record(self.metadata, FgdcParser, **properties)
+        record = create_record(self.metadata, FGDCParser, **properties)
         resource = GeoTiffResource(self.job.name)
         resource.put(self.data)
         try:
