@@ -17,7 +17,6 @@ blessings==1.6
 colour-runner==0.0.4
 future==0.14.3
 itsdangerous==0.24
-mock==1.0.1
 pymarc==3.0.3
 pysolr==3.2.0
 python-dateutil==2.4.0

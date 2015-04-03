@@ -17,5 +17,6 @@ $ pip install -r requirements.txt
 Run tests
 
 ```
-$ ./manage.py test
+$ pip install tox
+$ tox
 ```
