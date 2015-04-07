@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+from datetime import datetime
+
 from mock import patch
+
 from tests import BaseTestCase
 from kepler.extensions import db
 from kepler.exceptions import UnsupportedFormat
 from kepler.models import Job
+
 
 class IngestTestCase(BaseTestCase):
     def setUp(self):
@@ -69,9 +73,27 @@ class IngestTestCase(BaseTestCase):
         r = self.app.get('/ingest/%s' % job.name)
         self.assertEqual(r.status_code, 200)
 
-    def testGetIngestReturnsJob(self):
-        job = Job(name=u'TestJob')
-        db.session.add(job)
+    def testGetIngestReturnsMostRecentJob(self):
+        db.session.add(Job(name=u'TestJob', time=datetime(2001, 1, 1)))
+        db.session.add(Job(name=u'TestJob', status="COMPLETED",
+                           time=datetime(2002, 1, 1)))
         db.session.commit()
-        r = self.app.get('/ingest/%s' % job.name)
-        self.assertEqual(r.json['id'], job.id)
+        r = self.app.get('/ingest/TestJob')
+        self.assertEqual(r.json['status'], 'COMPLETED')
+
+    def testGetIngestIndexReturnsJobs(self):
+        db.session.add(Job(name=u'FOO'))
+        db.session.add(Job(name=u'BAR'))
+        db.session.commit()
+        r = self.app.get('/ingest/')
+        self.assertIn('FOO', r.text)
+        self.assertIn('BAR', r.text)
+
+    def testGetIngestIndexReturnsOnlyMostRecentJobs(self):
+        db.session.add(Job(name=u'Frob', time=datetime(2001, 1, 1)))
+        db.session.add(Job(name=u'Frob', time=datetime(2002, 1, 1),
+                           status="COMPLETED"))
+        db.session.commit()
+        r = self.app.get('/ingest/')
+        self.assertIn('COMPLETED', r.text)
+        self.assertNotIn('PENDING', r.text)
