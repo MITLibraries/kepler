@@ -7,9 +7,6 @@ except ImportError:
 import pymarc
 import re
 
-def parse(fstream, parser):
-    return parser(fstream)
-
 
 class XMLParser(object):
     """Base streaming XML parser for iterating over records.
@@ -40,43 +37,6 @@ class XMLParser(object):
 
     def _context(self, fstream):
         return iterparse(fstream, events=('start', 'end'))
-
-
-class FgdcParser(XMLParser):
-    record_elem = 'metadata'
-
-    def start_handler(self, elem):
-        if elem.tag == self.record_elem:
-            self.record = {}
-
-    def end_handler(self, elem):
-        if elem.tag == 'title':
-            self.record['dc_title_s'] = elem.text
-        elif elem.tag == 'origin':
-            self.record.setdefault('dc_creator_sm', set()).add(elem.text)
-        elif elem.tag == 'abstract':
-            self.record['dc_description_s'] = elem.text
-        elif elem.tag == 'publish':
-            self.record['dc_publisher_s'] = elem.text
-        elif elem.tag == 'westbc':
-            self.record['_bbox_w'] = elem.text
-        elif elem.tag == 'eastbc':
-            self.record['_bbox_e'] = elem.text
-        elif elem.tag == 'northbc':
-            self.record['_bbox_n'] = elem.text
-        elif elem.tag == 'southbc':
-            self.record['_bbox_s'] = elem.text
-        elif elem.tag == 'accconst':
-            self.record['dc_rights_s'] = elem.text
-        elif elem.tag == 'themekey':
-            self.record.setdefault('dc_subject_sm', set()).add(elem.text)
-        elif elem.tag == 'placekey':
-            self.record.setdefault('dct_spatial_sm', set()).add(elem.text)
-        elif elem.tag == 'direct':
-            if elem.text.lower() == 'raster':
-                self.record['layer_geom_type_s'] = elem.text
-        elif elem.tag == 'sdtstype':
-            self.record['layer_geom_type_s'] = elem.text
 
 
 class MarcParser(XMLParser):

@@ -3,16 +3,9 @@ from __future__ import absolute_import, division
 from tests import unittest
 from io import BytesIO
 from xml.etree.ElementTree import Element
-from mock import MagicMock, Mock
+from mock import Mock
 import pymarc
-import io
-from kepler.parsers import parse, FgdcParser, XMLParser, MarcParser
-
-class ParserTestCase(unittest.TestCase):
-    def testParseReturnsRecordGenerator(self):
-        mock_parser = MagicMock(return_value=range(3))
-        records = list(parse(BytesIO(u'foobaz'.encode('utf-8')), mock_parser))
-        self.assertEqual(records, [0, 1, 2])
+from kepler.parsers import XMLParser, MarcParser
 
 
 class XMLParserTestCase(unittest.TestCase):
@@ -45,33 +38,6 @@ class XMLParserTestCase(unittest.TestCase):
         self.parser.fstream = BytesIO(u'<record><title/></record>'.encode('utf-8'))
         list(self.parser)
         self.assertEqual(self.parser.end_handler.call_count, 2)
-
-
-class FgdcParserTestCase(unittest.TestCase):
-    def setUp(self):
-        metadata = io.open('tests/data/shapefile/fgdc.xml', encoding='utf-8')
-        parser = FgdcParser(metadata)
-        self.record = next(iter(parser))
-
-    def testStartHandlerCreatesEmptyDictionary(self):
-        parser = FgdcParser()
-        parser.start_handler(Element(FgdcParser.record_elem))
-        self.assertEqual(parser.record, {})
-
-    def testParserAddsSelectedFieldsToRecord(self):
-        self.assertEqual(self.record['dc_title_s'],
-                         'Bermuda (Geographic Feature Names, 2003)')
-
-    def testParserReturnsThemeKeywordsAsSet(self):
-        self.assertEqual(self.record['dc_subject_sm'],
-                         set(['point', 'names', 'features']))
-
-    def testParserReturnsSpatialKeywordsAsSet(self):
-        self.assertEqual(self.record['dct_spatial_sm'], set(['Bermuda']))
-
-    def testParserReturnsCreatorsAsSet(self):
-        self.assertEqual(self.record['dc_creator_sm'],
-                         set(['National Imagery and Mapping Agency']))
 
 
 class MarcParserTestCase(unittest.TestCase):
