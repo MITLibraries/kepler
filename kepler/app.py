@@ -2,9 +2,10 @@
 from __future__ import absolute_import
 from flask import Flask
 from .extensions import db
-from .ingest import ingest_blueprint
+from kepler.job import job_blueprint
 from .settings import DefaultConfig
 from .exceptions import UnsupportedFormat
+
 
 def create_app(cfg_obj=None):
     app = Flask(__name__)
@@ -24,7 +25,7 @@ def register_extensions(app):
 
 
 def register_blueprints(app):
-    app.register_blueprint(ingest_blueprint)
+    app.register_blueprint(job_blueprint)
 
 
 def register_errorhandlers(app):
