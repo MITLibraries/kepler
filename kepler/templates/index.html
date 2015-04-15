@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-md-6">
+      <div class="panel panel-default">
+        <div class="panel-heading">Failed Jobs</div>
+        <ul class="list-group">
+          {% for job in failed %}
+            <li class="list-group-item">
+              <a href="{{ job.name }}">{{ job.name }}</a>
+              <span class="label label-danger">{{ job.status }}</span>
+              ({{ job.time.strftime('%Y-%m-%dT%H:%M:%S%z') }})
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="panel panel-default">
+        <div class="panel-heading">Pending Jobs</div>
+        <ul class="list-group">
+          {% for job in pending %}
+            <li class="list-group-item">
+              <a href="{{ job.name }}">{{ job.name }}</a>
+              <span class="label label-warning">{{ job.status }}</span>
+              ({{ job.time.strftime('%Y-%m-%dT%H:%M:%S%z') }})
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <div class="panel panel-default">
+        <div class="panel-heading">Completed Jobs</div>
+        <ul class="list-group">
+          {% for job in completed %}
+            <li class="list-group-item">
+              <a href="{{ job.name }}">{{ job.name }}</a>
+              <span class="label label-success">{{ job.status }}</span>
+              ({{ job.time.strftime('%Y-%m-%dT%H:%M:%S%z') }})
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+{% endblock %}
