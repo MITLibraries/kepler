@@ -11,29 +11,30 @@ from kepler.models import Job
 from kepler.extensions import db
 
 
-class IngestView(View):
+class JobView(View):
     def dispatch_request(self, *args, **kwargs):
         if request.method == 'GET':
             if request.endpoint.endswith('.index'):
-                return self.index()
+                return self.list()
             return self.show(*args, **kwargs)
-        elif request.method == 'PUT':
+        if request.method == 'POST':
             return self.create(*args, **kwargs)
 
-    def index(self):
+    def list(self):
         pending = []
         completed = []
         failed = []
         sub_q = db.session.query(Job.name, func.max(Job.time).label('time')).\
             group_by(Job.name).subquery()
-        q = db.session.query(Job).join(sub_q,
-            and_(Job.name==sub_q.c.name, Job.time==sub_q.c.time)).\
+        q = db.session.query(Job).\
+            join(sub_q, and_(Job.name == sub_q.c.name,
+                             Job.time == sub_q.c.time)).\
             order_by(Job.time.desc())
-        for job in q.filter(Job.status=='PENDING'):
+        for job in q.filter(Job.status == 'PENDING'):
             pending.append(job)
-        for job in q.filter(Job.status=='COMPLETED'):
+        for job in q.filter(Job.status == 'COMPLETED'):
             completed.append(job)
-        for job in q.filter(Job.status=='FAILED'):
+        for job in q.filter(Job.status == 'FAILED'):
             failed.append(job)
         return render_template('index.html', pending=pending,
                                completed=completed, failed=failed)
@@ -43,22 +44,16 @@ class IngestView(View):
             first_or_404()
         return jsonify(job.as_dict)
 
-    def create(self, job_name):
-        shapefile = request.files['shapefile']
-        metadata = request.files['metadata']
-        job = create_job(name=job_name, data=shapefile, metadata=metadata)
-        try:
-            job.run()
-        except Exception:
-            job.fail()
-            raise
-        else:
-            job.complete()
-            return '', 202
+    def create(self):
+        job = create_job(request.form['type'], request.form['uuid'],
+                         request.files.get('file'))
+        job()
+        return '', 201
 
     @classmethod
     def register(cls, app, endpoint, url):
         view_func = cls.as_view(endpoint)
         app.add_url_rule(url, 'index', methods=['GET'], view_func=view_func)
+        app.add_url_rule(url, 'resource', methods=['POST'], view_func=view_func)
         app.add_url_rule('%s<path:job_name>' % url, 'resource',
-                         methods=['GET', 'PUT'], view_func=view_func)
+                         methods=['GET'], view_func=view_func)

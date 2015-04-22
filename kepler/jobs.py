@@ -1,90 +1,60 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-from flask import current_app
-from requests.exceptions import HTTPError
+from functools import partial
+
+from blinker import signal
+
 from kepler.models import Job
 from kepler.extensions import db
 from kepler.exceptions import UnsupportedFormat
-from kepler.services.geoserver import ShapefileResource, GeoTiffResource
-from kepler.services.solr import SolrServiceManager
-from ogre.xml import FGDCParser
-from kepler.records import create_record
+from kepler.tasks import *
 
-def create_job(name, data=None, metadata=None):
-    job = Job(name=name, status=u'PENDING')
+
+job_failed = signal('job-failed')
+job_completed = signal('job-completed')
+
+shapefile_task_list = [make_record, shapefile_upload_task, index_record]
+geotiff_task_list = [make_record, tiff_upload_task, index_record]
+
+
+@job_failed.connect
+def failure(sender, **kwargs):
+    sender.job.status = u'FAILED'
+    db.session.commit()
+
+
+@job_completed.connect
+def completed(sender, **kwargs):
+    sender.job.status = u'COMPLETED'
+    db.session.commit()
+
+
+def create_job(job_type, uuid, data=None):
+    job = Job(name=uuid, status=u'PENDING')
     db.session.add(job)
     db.session.commit()
     try:
-        if data.mimetype == 'application/zip':
-            instance = ShapefileUploadJob(job, data=data, metadata=metadata)
-        elif data.mimetype == 'image/tiff':
-            instance = GeoTiffUploadJob(job, data=data, metadata=metadata)
+        if job_type == 'shapefile':
+            return JobRunner(tasks(shapefile_task_list), job, data=data)
+        elif job_type == 'geotiff':
+            return JobRunner(tasks(geotiff_task_list), job, data=data)
         else:
-            raise UnsupportedFormat(data.mimetype)
+            raise UnsupportedFormat(job_type)
     except Exception:
         job.status = u'FAILED'
         db.session.commit()
         raise
-    return instance
 
 
-class UploadJob(object):
-    def __init__(self, job, data, metadata=None):
+class JobRunner(object):
+    def __init__(self, task_func, job, *args, **kwargs):
+        self.tasks = partial(task_func, *args, **kwargs)
         self.job = job
-        self.data = data
-        self.metadata = metadata
 
-    def fail(self):
-        self.job.status = u'FAILED'
-        db.session.commit()
-
-    def complete(self):
-        self.job.status = u'COMPLETED'
-        db.session.commit()
-
-    def run(self):
-        raise NotImplementedError
-
-
-class ShapefileUploadJob(UploadJob):
-    def run(self):
-        layer_id = "%s:%s" % (current_app.config['GEOSERVER_WORKSPACE'],
-                              self.job.name)
-        properties = {
-            'dct_provenance_s': 'MIT',
-            'dc_type_s': 'Dataset',
-            'layer_id_s': layer_id,
-            '_filename': self.job.name,
-            '_namespace': u'SDE'
-        }
-        record = create_record(self.metadata, FGDCParser, **properties)
-        resource = ShapefileResource(self.job.name)
-        resource.put(self.data)
+    def __call__(self):
         try:
-            solr = SolrServiceManager(current_app.config['SOLR_URL'])
-            solr.postMetaDataToServer([record.as_dict()])
-        except (AttributeError, HTTPError):
-            resource.delete()
-            raise
-
-
-class GeoTiffUploadJob(UploadJob):
-    def run(self):
-        layer_id = "%s:%s" % (current_app.config['GEOSERVER_WORKSPACE'],
-                              self.job.name)
-        properties = {
-            'dct_provenance_s': 'MIT',
-            'dc_type_s': 'Image',
-            'layer_id_s': layer_id,
-            '_filename': self.job.name,
-            '_namespace': u'SDE'
-        }
-        record = create_record(self.metadata, FGDCParser, **properties)
-        resource = GeoTiffResource(self.job.name)
-        resource.put(self.data)
-        try:
-            solr = SolrServiceManager(current_app.config['SOLR_URL'])
-            solr.postMetaDataToServer([record.as_dict()])
-        except (AttributeError, HTTPError):
-            resource.delete()
+            self.tasks(self.job)
+            job_completed.send(self)
+        except Exception:
+            job_failed.send(self)
             raise
