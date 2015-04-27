@@ -29,10 +29,10 @@ def index_record(record, data=None):
 
 def make_record(job, data, **kwargs):
     layer_id = "%s:%s" % (current_app.config['GEOSERVER_WORKSPACE'],
-                          job.name)
+                          job.item.uri)
     properties = {
         'layer_id_s': layer_id,
-        '_filename': job.name,
+        '_filename': job.item.uri,
     }
     properties.update(kwargs)
     fgdc = read_fgdc(data)

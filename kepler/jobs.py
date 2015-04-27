@@ -4,7 +4,7 @@ from functools import partial
 
 from blinker import signal
 
-from kepler.models import Job
+from kepler.models import Job, Item, get_or_create
 from kepler.extensions import db
 from kepler.exceptions import UnsupportedFormat
 from kepler.tasks import *
@@ -30,7 +30,8 @@ def completed(sender, **kwargs):
 
 
 def create_job(job_type, uuid, data=None):
-    job = Job(name=uuid, status=u'PENDING')
+    item = get_or_create(Item, uri=uuid)
+    job = Job(item=item, status=u'PENDING')
     db.session.add(job)
     db.session.commit()
     try:
