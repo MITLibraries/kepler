@@ -6,7 +6,7 @@ from mock import patch
 
 from tests import BaseTestCase
 from kepler.extensions import db
-from kepler.models import Job
+from kepler.models import Job, Item
 
 
 class JobTestCase(BaseTestCase):
@@ -37,28 +37,30 @@ class JobTestCase(BaseTestCase):
         self.assertEqual(r.status_code, 415)
 
     def testJobRetrievalReturns200OnSuccess(self):
-        job = Job(name=u'TestJob')
+        job = Job(item=Item(uri=u'TestJob'))
         db.session.add(job)
-        r = self.app.get('/job/%s' % job.name)
+        r = self.app.get('/job/%s' % job.item.uri)
         self.assertEqual(r.status_code, 200)
 
     def testJobRetrievalReturnsMostRecentJob(self):
-        db.session.add(Job(name=u'TestJob', time=datetime(2001, 1, 1)))
-        db.session.add(Job(name=u'TestJob', status="COMPLETED",
+        item = Item(uri=u'TestJob')
+        db.session.add(Job(item=item, time=datetime(2001, 1, 1)))
+        db.session.add(Job(item=item, status="COMPLETED",
                            time=datetime(2002, 1, 1)))
         r = self.app.get('/job/TestJob')
         self.assertEqual(r.json['status'], 'COMPLETED')
 
     def testJobListReturnsJobs(self):
-        db.session.add(Job(name=u'FOO'))
-        db.session.add(Job(name=u'BAR'))
+        db.session.add(Job(item=Item(uri=u'FOO')))
+        db.session.add(Job(item=Item(uri=u'BAR')))
         r = self.app.get('/job/')
         self.assertIn('FOO', r.text)
         self.assertIn('BAR', r.text)
 
     def testJobListReturnsOnlyMostRecentJobs(self):
-        db.session.add(Job(name=u'Frob', time=datetime(2001, 1, 1)))
-        db.session.add(Job(name=u'Frob', time=datetime(2002, 1, 1),
+        item = Item(uri=u'Frob')
+        db.session.add(Job(item=item, time=datetime(2001, 1, 1)))
+        db.session.add(Job(item=item, time=datetime(2002, 1, 1),
                            status="COMPLETED"))
         r = self.app.get('/job/')
         self.assertIn('COMPLETED', r.text)

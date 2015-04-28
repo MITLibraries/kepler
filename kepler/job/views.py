@@ -7,7 +7,7 @@ from sqlalchemy.sql import func
 from sqlalchemy import and_
 
 from kepler.jobs import create_job
-from kepler.models import Job
+from kepler.models import Job, Item
 from kepler.extensions import db
 
 
@@ -24,10 +24,10 @@ class JobView(View):
         pending = []
         completed = []
         failed = []
-        sub_q = db.session.query(Job.name, func.max(Job.time).label('time')).\
-            group_by(Job.name).subquery()
+        sub_q = db.session.query(Job.item_id, func.max(Job.time).label('time')).\
+            group_by(Job.item_id).subquery()
         q = db.session.query(Job).\
-            join(sub_q, and_(Job.name == sub_q.c.name,
+            join(sub_q, and_(Job.item_id == sub_q.c.item_id,
                              Job.time == sub_q.c.time)).\
             order_by(Job.time.desc())
         for job in q.filter(Job.status == 'PENDING'):
@@ -40,8 +40,8 @@ class JobView(View):
                                completed=completed, failed=failed)
 
     def show(self, job_name):
-        job = Job.query.filter_by(name=job_name).order_by(Job.time.desc()).\
-            first_or_404()
+        job = Job.query.join(Item).filter(Item.uri == job_name).\
+            order_by(Job.time.desc()).first_or_404()
         return jsonify(job.as_dict)
 
     def create(self):

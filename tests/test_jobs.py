@@ -5,7 +5,7 @@ import io
 from mock import patch, Mock
 
 from tests import BaseTestCase
-from kepler.models import Job
+from kepler.models import Job, Item
 from kepler.jobs import create_job, JobRunner, job_completed, job_failed
 from kepler.exceptions import UnsupportedFormat
 
@@ -18,6 +18,10 @@ class JobFactoryTestCase(BaseTestCase):
     def tearDown(self):
         super(JobFactoryTestCase, self).tearDown()
         self.data.close()
+
+    def testCreatesItem(self):
+        create_job(u'shapefile', u'SEAMUS', self.data)
+        self.assertEqual(Item.query.count(), 1)
 
     def testCreatesJob(self):
         create_job(u'shapefile', u'LEURENT', self.data)
@@ -57,7 +61,7 @@ class JobFactoryTestCase(BaseTestCase):
 class JobRunnerTestCase(BaseTestCase):
     def setUp(self):
         super(JobRunnerTestCase, self).setUp()
-        self.job = Job(name=u'FOO', status=u'PENDING')
+        self.job = Job(item=Item(uri=u'FOO'), status=u'PENDING')
 
     def testCompletedSignalSentOnSuccess(self):
         run = JobRunner(Mock(), self.job)
@@ -83,7 +87,7 @@ class JobRunnerTestCase(BaseTestCase):
 class JobSignalsTestCase(BaseTestCase):
     def setUp(self):
         super(JobSignalsTestCase, self).setUp()
-        self.job = Job(name=u'FOO', status=u'PENDING')
+        self.job = Job(item=Item(uri=u'FOO'), status=u'PENDING')
 
     def testCompletedSetsCompletedStatus(self):
         job_completed.send(Mock(job=self.job))
