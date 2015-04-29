@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mets
+  xmlns="http://www.loc.gov/METS/"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.loc.ogv/METS/ http://www.loc.gov/standards/mets/mets.xsd"
+  ID="sort-mets_mets"
+  OBJID="sword-mets"
+  LABEL="DSpace SWORD Item"
+  PROFILE="DSpace METS SIP Profile 1.0">
+  <metsHdr CREATEDATE="{{ create_date }}">
+    <agent ROLE="CUSTODIAN" TYPE="ORGANIZATION">
+      <name>GIS Services</name>
+    </agent>
+  </metsHdr>
+  <dmdSec ID="dmdSec_1">
+    <mdWrap MIMETYPE="text/xml" MDTYPE="MODS">
+      <xmlData>
+        {{ metadata }}
+      </xmlData>
+    </mdWrap>
+  </dmdSec>
+  <fileSec>
+    <fileGrp USE="ORIGINAL">
+      <file ID="{{ uuid }}">
+        <FLocat LOCTYPE="URL" xlink:href="{{ file_path }}" />
+      </file>
+    </fileGrp>
+  </fileSec>
+  <structMap TYPE="LOGICAL" LABEL="DSpace">
+    <div DMDID="dmdSec_1">
+      <div TYPE="File">
+        <fptr FILEID="{{ uuid }}" />
+      </div>
+    </div>
+  </structMap>
+</mets>

@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from functools import partial
 import io
 import json
+import tempfile
 
 from flask import current_app
 from ogre.xml import FGDCParser
@@ -13,6 +14,7 @@ from kepler.bag import read_fgdc
 from kepler.records import create_record
 from kepler.services.solr import SolrServiceManager
 from kepler.git import repository
+from kepler import sword
 
 
 def tasks(task_list):
@@ -51,6 +53,14 @@ def load_repo_records(repo):
     for item in repository(repo):
         with io.open(item.solr_json, encoding='utf-8') as fp:
             yield json.load(fp)
+
+
+def submit_to_dspace(record, filename):
+    pkg = sword.SWORDPackage(uuid=record.uuid)
+    pkg.datafiles.append(filename)
+    with tempfile.NamedTemporaryFile(suffix='.zip') as fp:
+        pkg.write(fp)
+        handle = sword.submit(current_app.config['SWORD_SERVICE_URL'], fp.name)
 
 
 shapefile_upload_task = partial(upload_to_geoserver, mimetype='application/zip')
