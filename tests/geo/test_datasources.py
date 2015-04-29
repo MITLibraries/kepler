@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-from tests import unittest
 from contextlib import closing
+
 from kepler.geo.datasources import Raster
 
 
-class RasterTestCase(unittest.TestCase):
+class TestRaster(object):
     def testRgbReturnsTrueForRgb(self):
         with closing(Raster('tests/data/rgb.tif')) as ds:
-            self.assertTrue(ds.rgb)
+            assert ds.rgb
 
     def testPalettedReturnsTrueForPaletted(self):
         with closing(Raster('tests/data/paletted.tif')) as ds:
-            self.assertTrue(ds.paletted)
+            assert ds.paletted
 
     def testWidthReturnsWidth(self):
         with closing(Raster('tests/data/grayscale.tif')) as ds:
-            self.assertEqual(ds.width, 600)
+            assert ds.width == 600
 
     def testHeightReturnsHeight(self):
         with closing(Raster('tests/data/grayscale.tif')) as ds:
-            self.assertEqual(ds.height, 300)
+            assert ds.height == 300

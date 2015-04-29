@@ -1,98 +1,89 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-import io
 
 from mock import patch, Mock
+import pytest
 
-from tests import BaseTestCase
 from kepler.models import Job, Item
 from kepler.jobs import create_job, JobRunner, job_completed, job_failed
 from kepler.exceptions import UnsupportedFormat
 
 
-class JobFactoryTestCase(BaseTestCase):
-    def setUp(self):
-        super(JobFactoryTestCase, self).setUp()
-        self.data = io.open('tests/data/bermuda.zip', 'rb')
+pytestmark = pytest.mark.usefixtures('db')
 
-    def tearDown(self):
-        super(JobFactoryTestCase, self).tearDown()
-        self.data.close()
 
-    def testCreatesItem(self):
-        create_job(u'shapefile', u'SEAMUS', self.data)
-        self.assertEqual(Item.query.count(), 1)
+@pytest.fixture
+def job():
+    return Job(item=Item(uri=u'FOO'), status=u'PENDING')
 
-    def testCreatesJob(self):
-        create_job(u'shapefile', u'LEURENT', self.data)
-        self.assertEqual(Job.query.count(), 1)
 
-    def testJobIsCreatedWithPendingStatus(self):
-        create_job(u'shapefile', u'RUMBLUS', self.data)
+class TestJobFactory(object):
+    def testCreatesItem(self, bag):
+        create_job(u'shapefile', u'SEAMUS', bag)
+        assert Item.query.count() == 1
+
+    def testCreatesJob(self, bag):
+        create_job(u'shapefile', u'LEURENT', bag)
+        assert Job.query.count() == 1
+
+    def testJobIsCreatedWithPendingStatus(self, bag):
+        create_job(u'shapefile', u'RUMBLUS', bag)
         job = Job.query.first()
-        self.assertEqual(job.status, 'PENDING')
+        assert job.status == u'PENDING'
 
-    def testReturnsShapefileJobRunner(self):
-        job = create_job(u'shapefile', u'KHOLER', self.data)
-        self.assertIsInstance(job, JobRunner)
+    def testReturnsShapefileJobRunner(self, bag):
+        job = create_job(u'shapefile', u'KHOLER', bag)
+        assert isinstance(job, JobRunner)
 
-    def testReturnsGeotiffJobRunner(self):
-        job = create_job(u'geotiff', u'ALPHARD', self.data)
-        self.assertIsInstance(job, JobRunner)
+    def testReturnsGeotiffJobRunner(self, bag):
+        job = create_job(u'geotiff', u'ALPHARD', bag)
+        assert isinstance(job, JobRunner)
 
-    def testSetsFailedStatusOnError(self):
+    def testSetsFailedStatusOnError(self, bag):
         with patch('kepler.jobs.JobRunner', side_effect=Exception):
             try:
-                create_job(u'shapefile', u'FROST', self.data)
+                create_job(u'shapefile', u'FROST', bag)
             except Exception:
                 pass
-            self.assertEqual(Job.query.first().status, u'FAILED')
+            assert Job.query.first().status == u'FAILED'
 
-    def testReRaisesExceptions(self):
+    def testReRaisesExceptions(self, bag):
         with patch('kepler.jobs.JobRunner', side_effect=KeyError):
-            with self.assertRaises(KeyError):
-                create_job(u'shapefile', u'MALRONA', self.data)
+            with pytest.raises(KeyError):
+                create_job(u'shapefile', u'MALRONA', bag)
 
-    def testRaisesUnsupportedFormatError(self):
-        with self.assertRaises(UnsupportedFormat):
-            create_job(u'warez', u'BLOODY_VICTORIA', self.data)
+    def testRaisesUnsupportedFormatError(self, bag):
+        with pytest.raises(UnsupportedFormat):
+            create_job(u'warez', u'BLOODY_VICTORIA', bag)
 
 
-class JobRunnerTestCase(BaseTestCase):
-    def setUp(self):
-        super(JobRunnerTestCase, self).setUp()
-        self.job = Job(item=Item(uri=u'FOO'), status=u'PENDING')
-
-    def testCompletedSignalSentOnSuccess(self):
-        run = JobRunner(Mock(), self.job)
+class TestJobRunner(object):
+    def testCompletedSignalSentOnSuccess(self, job):
+        run = JobRunner(Mock(), job)
         with patch('kepler.jobs.job_completed.send') as mock:
             run()
-        self.assertEqual(mock.call_count, 1)
+        assert mock.call_count == 1
 
-    def testFailedSignalSentOnError(self):
-        run = JobRunner(Mock(side_effect=Exception), self.job)
+    def testFailedSignalSentOnError(self, job):
+        run = JobRunner(Mock(side_effect=Exception), job)
         with patch('kepler.jobs.job_failed.send') as mock:
             try:
                 run()
             except Exception:
                 pass
-        self.assertEqual(mock.call_count, 1)
+        assert mock.call_count == 1
 
-    def testExceptionReRaisedOnFailure(self):
-        run = JobRunner(Mock(side_effect=KeyError), self.job)
-        with self.assertRaises(KeyError):
+    def testExceptionReRaisedOnFailure(self, job):
+        run = JobRunner(Mock(side_effect=KeyError), job)
+        with pytest.raises(KeyError):
             run()
 
 
-class JobSignalsTestCase(BaseTestCase):
-    def setUp(self):
-        super(JobSignalsTestCase, self).setUp()
-        self.job = Job(item=Item(uri=u'FOO'), status=u'PENDING')
+class TestJobSignals(object):
+    def testCompletedSetsCompletedStatus(self, job):
+        job_completed.send(Mock(job=job))
+        assert job.status == u'COMPLETED'
 
-    def testCompletedSetsCompletedStatus(self):
-        job_completed.send(Mock(job=self.job))
-        self.assertEqual(self.job.status, u'COMPLETED')
-
-    def testFailedSetsFailedStatus(self):
-        job_failed.send(Mock(job=self.job))
-        self.assertEqual(self.job.status, u'FAILED')
+    def testFailedSetsFailedStatus(self, job):
+        job_failed.send(Mock(job=job))
+        assert job.status == u'FAILED'

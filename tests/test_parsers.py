@@ -1,65 +1,72 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division
-from tests import unittest
 from io import BytesIO
 from xml.etree.ElementTree import Element
+
+import pytest
 from mock import Mock
 import pymarc
+
 from kepler.parsers import XMLParser, MarcParser
 
 
-class XMLParserTestCase(unittest.TestCase):
-    def setUp(self):
-        self.parser = XMLParser()
-        def start_handler(elem):
-            if elem.tag == 'record':
-                self.parser.record = {}
-        self.parser.record_elem = 'record'
-        self.parser.start_handler = Mock(side_effect=start_handler)
-        self.parser.end_handler = Mock()
+@pytest.fixture
+def parser():
+    fp = BytesIO(u'<record><title/></record>'.encode('utf-8'))
+    parser = XMLParser(fp)
 
-    def testContextReturnsEventElementIterator(self):
-        ctx = self.parser._context(BytesIO(u'<record/>'.encode('utf-8')))
-        event, elem = next(ctx)
-        self.assertEqual(event, 'start')
-        self.assertEqual(elem.tag, 'record')
-
-    def testParserYieldsRecordWhenCalled(self):
-        self.parser.fstream = BytesIO(u'<record/>'.encode('utf-8'))
-        records = list(self.parser)
-        self.assertEqual(len(records), 1)
-
-    def testParserCallsStartHandlerForElements(self):
-        self.parser.fstream = BytesIO(u'<record><title/></record>'.encode('utf-8'))
-        list(self.parser)
-        self.assertEqual(self.parser.start_handler.call_count, 2)
-
-    def testParserCallsEndHandlerForElements(self):
-        self.parser.fstream = BytesIO(u'<record><title/></record>'.encode('utf-8'))
-        list(self.parser)
-        self.assertEqual(self.parser.end_handler.call_count, 2)
+    def start_handler(elem):
+        if elem.tag == 'record':
+            parser.record = {}
+    parser.record_elem = 'record'
+    parser.start_handler = Mock(side_effect=start_handler)
+    parser.end_handler = Mock()
+    return parser
 
 
-class MarcParserTestCase(unittest.TestCase):
+def almost_equal(x, y):
+    return abs(x - y) <= 0.0000001
+
+
+class TestXMLParser(object):
+    def testContextReturnsEventElementIterator(self, parser):
+        event, elem = next(parser._context(parser.fstream))
+        assert event == 'start'
+        assert elem.tag == 'record'
+
+    def testParserYieldsRecordWhenCalled(self, parser):
+        records = list(parser)
+        assert len(records) == 1
+
+    def testParserCallsStartHandlerForElements(self, parser):
+        list(parser)
+        assert parser.start_handler.call_count == 2
+
+    def testParserCallsEndHandlerForElements(self, parser):
+        list(parser)
+        assert parser.end_handler.call_count == 2
+
+
+class TestMarcParser(object):
     MARC_NS = 'http://www.loc.gov/MARC21/slim'
 
     def testStartHandlerCreatesMarcRecord(self):
         parser = MarcParser()
         parser.start_handler(Element(MarcParser.record_elem))
-        self.assertIsInstance(parser._record, pymarc.Record)
+        assert isinstance(parser._record, pymarc.Record)
 
     def testStartHandlerSetsCurrentDataField(self):
         parser = MarcParser()
         parser.start_handler(Element('{%s}datafield' % self.MARC_NS,
                                      attrib={'tag': '245'}))
-        self.assertEqual(parser._field.tag, '245')
+        assert parser._field.tag == '245'
 
     def testStartHandlerSetsCurrentControlField(self):
         parser = MarcParser()
         el = Element('{%s}controlfield' % self.MARC_NS, attrib={'tag': '001'})
         el.text = '000002579'
         parser.start_handler(el)
-        self.assertEqual(parser._field.tag, '001')
+        assert parser._field.tag == '001'
 
     def testEndHandlerAddsCurrentDataFieldToRecord(self):
         parser = MarcParser()
@@ -67,7 +74,7 @@ class MarcParserTestCase(unittest.TestCase):
         el = Element('{%s}datafield' % self.MARC_NS, attrib={'tag': '245'})
         parser.start_handler(el)
         parser.end_handler(el)
-        self.assertEqual(len(parser._record.get_fields('245')), 1)
+        assert len(parser._record.get_fields('245')) == 1
 
     def testEndHandlerAddsCurrentControlFieldToRecord(self):
         parser = MarcParser()
@@ -76,15 +83,15 @@ class MarcParserTestCase(unittest.TestCase):
         el.text = '000002579'
         parser.start_handler(el)
         parser.end_handler(el)
-        self.assertEqual(parser._record['001'].value(), el.text)
+        assert parser._record['001'].value() == el.text
 
     def testEndHandlerAddsSubFieldToCurrentDataField(self):
         parser = MarcParser()
-        parser._field = pymarc.Field('245', indicators=[1,0])
+        parser._field = pymarc.Field('245', indicators=[1, 0])
         el = Element('{%s}subfield' % self.MARC_NS, attrib={'code': 'a'})
         el.text = 'The Locations of Frobbers in the Greater Boston Area'
         parser.end_handler(el)
-        self.assertEqual(parser._field.get_subfields('a'), [el.text])
+        assert parser._field.get_subfields('a') == [el.text]
 
     def testRecordReturnsRecordAsProcessedDictionary(self):
         parser = MarcParser()
@@ -94,8 +101,8 @@ class MarcParserTestCase(unittest.TestCase):
         field.add_subfield('b', 'Greater Boston Area')
         record.add_field(field)
         parser._record = record
-        self.assertEqual(parser.record.get('dc_title'),
-                         'The Locations of Frobbers: Greater Boston Area')
+        assert parser.record.get('dc_title') == \
+            'The Locations of Frobbers: Greater Boston Area'
 
     def testRecordReturnsSubjectsAsList(self):
         parser = MarcParser()
@@ -106,45 +113,43 @@ class MarcParserTestCase(unittest.TestCase):
         field.add_subfield('z', 'kittentown')
         record.add_field(field)
         parser._record = record
-        self.assertEqual(parser.record.get('dct_spatial'),
-                         ['This', 'is', 'kittentown'])
+        assert parser.record.get('dct_spatial') == ['This', 'is', 'kittentown']
 
     def testCoordRegexExtractsPartsOfCoordinate(self):
         parts = MarcParser.COORD_REGEX.search("N0123456")
-        self.assertEqual(parts.groupdict().get('hemisphere'), 'N')
-        self.assertEqual(parts.groupdict().get('degrees'), '012')
-        self.assertEqual(parts.groupdict().get('minutes'), '34')
-        self.assertEqual(parts.groupdict().get('seconds'), '56')
+        assert parts.groupdict().get('hemisphere') == 'N'
+        assert parts.groupdict().get('degrees') == '012'
+        assert parts.groupdict().get('minutes') == '34'
+        assert parts.groupdict().get('seconds') == '56'
 
         parts = MarcParser.COORD_REGEX.search("e123.456789")
-        self.assertEqual(parts.groupdict().get('hemisphere'), 'e')
-        self.assertEqual(parts.groupdict().get('degrees'), '123.456789')
+        assert parts.groupdict().get('hemisphere') == 'e'
+        assert parts.groupdict().get('degrees') == '123.456789'
 
         parts = MarcParser.COORD_REGEX.search("-123.456789")
-        self.assertEqual(parts.groupdict().get('hemisphere'), '-')
-        self.assertEqual(parts.groupdict().get('degrees'), '123.456789')
+        assert parts.groupdict().get('hemisphere') == '-'
+        assert parts.groupdict().get('degrees') == '123.456789'
 
         parts = MarcParser.COORD_REGEX.search("S12345.6789")
-        self.assertEqual(parts.groupdict().get('hemisphere'), 'S')
-        self.assertEqual(parts.groupdict().get('degrees'), '123')
-        self.assertEqual(parts.groupdict().get('minutes'), '45.6789')
+        assert parts.groupdict().get('hemisphere') == 'S'
+        assert parts.groupdict().get('degrees') == '123'
+        assert parts.groupdict().get('minutes') == '45.6789'
 
         parts = MarcParser.COORD_REGEX.search("W1234567.89")
-        self.assertEqual(parts.groupdict().get('hemisphere'), 'W')
-        self.assertEqual(parts.groupdict().get('degrees'), '123')
-        self.assertEqual(parts.groupdict().get('minutes'), '45')
-        self.assertEqual(parts.groupdict().get('seconds'), '67.89')
+        assert parts.groupdict().get('hemisphere') == 'W'
+        assert parts.groupdict().get('degrees') == '123'
+        assert parts.groupdict().get('minutes') == '45'
+        assert parts.groupdict().get('seconds') == '67.89'
 
     def testConvertCoordConvertsStringToDecimal(self):
         degrees = 12 + 34/60 + 56/3600
-        self.assertAlmostEqual(MarcParser.convert_coord("S0123456"), -degrees)
+        assert almost_equal(MarcParser.convert_coord("S0123456"), -degrees)
 
         degrees = 123 + 45.6789/60
-        self.assertAlmostEqual(MarcParser.convert_coord("12345.6789"), degrees)
+        assert almost_equal(MarcParser.convert_coord("12345.6789"), degrees)
 
     def testParsesMarcXml(self):
         parser = MarcParser('tests/data/marc.xml')
         iparser = iter(parser)
         record = next(iparser)
-        self.assertEqual(record['dc_title'],
-                         'Geothermal resources of New Mexico')
+        assert record['dc_title'] == 'Geothermal resources of New Mexico'

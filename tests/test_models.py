@@ -2,68 +2,67 @@
 from __future__ import absolute_import
 from datetime import datetime
 
+import pytest
 from sqlalchemy.exc import SQLAlchemyError
 
-from kepler.extensions import db
 from kepler.models import Job, Item, get_or_create
-from tests import BaseTestCase
 
 
-class GetOrCreateTestCase(BaseTestCase):
-    def testReturnsExistingItem(self):
+class TestGetOrCreate(object):
+    def testReturnsExistingItem(self, db):
         item = Item(uri=u'foobar')
         db.session.add(item)
         db.session.commit()
-        self.assertEqual(get_or_create(Item, uri=u'foobar'), item)
+        assert get_or_create(Item, uri=u'foobar') == item
 
-    def testCreatesItemIfNotExists(self):
+    def testCreatesItemIfNotExists(self, db):
         item = get_or_create(Item, uri=u'foobaz')
-        self.assertEqual(item.uri, u'foobaz')
+        assert item.uri == u'foobaz'
 
 
-class JobTestCase(BaseTestCase):
-    def testJobHasRepresentation(self):
+class TestJob(object):
+    def testJobHasRepresentation(self, db):
         job = Job()
         db.session.add(job)
         db.session.commit()
-        self.assertEqual(repr(job), '<Job #%d>' % (job.id,))
+        assert repr(job) == '<Job #%d>' % (job.id,)
 
-    def testJobHasStatus(self):
+    def testJobHasStatus(self, db):
         job = Job(status=u'PENDING')
         db.session.add(job)
         db.session.commit()
-        self.assertEqual(job.status, 'PENDING')
+        assert job.status == u'PENDING'
 
-    def testJobHasDefaultStatusPending(self):
+    def testJobHasDefaultStatusPending(self, db):
         job = Job()
         db.session.add(job)
         db.session.commit()
-        self.assertEqual(job.status, 'PENDING')
+        assert job.status == u'PENDING'
 
-    def testJobCanBeSerializedAsDictionary(self):
+    def testJobCanBeSerializedAsDictionary(self, db):
         job = Job(item=Item(uri=u'♄'))
         db.session.add(job)
         db.session.commit()
-        self.assertEqual(job.as_dict['id'], job.id)
+        assert job.as_dict['id'] == job.id
 
-    def testJobHasTime(self):
+    def testJobHasTime(self, db):
         time = datetime.now()
         job = Job(time=time)
         db.session.add(job)
         db.session.commit()
-        self.assertEqual(job.time, time)
+        assert job.time == time
 
 
-class ItemTestCase(BaseTestCase):
-    def testItemHasRepresentation(self):
+class TestItem(object):
+    def testItemHasRepresentation(self, db):
         item = Item(uri=u'fleventy-five')
         db.session.add(item)
         db.session.commit()
-        self.assertEqual(repr(item), '<Item #%d: %r>' % (item.id, item.uri))
+        assert repr(item) == '<Item #%d: %r>' % (item.id, item.uri)
 
-    def testUriIsUnique(self):
+    def testUriIsUnique(self, db):
         item_one = Item(uri=u'fleventy-five')
         item_two = Item(uri=u'fleventy-five')
         db.session.add_all([item_one, item_two])
-        with self.assertRaises(SQLAlchemyError):
+        with pytest.raises(SQLAlchemyError):
             db.session.commit()

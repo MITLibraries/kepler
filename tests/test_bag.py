@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
-import unittest
-import io
+from __future__ import absolute_import
 
 from kepler.bag import *
 
 
-class FgdcReaderTestCase(unittest.TestCase):
-    def testReturnsFgdcByteStream(self):
-        with io.open('tests/data/bermuda.zip', 'rb') as fp:
-            fgdc = read_fgdc(fp)
-        self.assertEqual(fgdc.readlines()[1], b'<metadata xml:lang="en">\n')
+class TestFgdcReader(object):
+    def testReturnsFgdcByteStream(self, bag):
+        fgdc = read_fgdc(bag)
+        assert fgdc.readlines()[1] == b'<metadata xml:lang="en">\n'

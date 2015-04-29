@@ -1,31 +1,33 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-from flask import current_app
-from kepler.services.solr import SolrServiceManager
+
+import pytest
 from mock import patch
-from tests import BaseTestCase
+from flask import current_app
+
+from kepler.services.solr import SolrServiceManager
 
 
-class SolrTestCase(BaseTestCase):
-    def setUp(self):
-        super(SolrTestCase, self).setUp()
+pytestmark = pytest.mark.usefixtures('app')
 
-        self.testRecord = {
-            'uuid': 'test_uuid'
-        }
-        self.testBadRecord = {
-            'uid': 'test_uuid' # key not 'uuid'
-        }
-        self.testUrl = current_app.config['SOLR_URL']
-        self.mgr = SolrServiceManager(self.testUrl)
 
-    @patch('pysolr.Solr.add')
-    def testSolrServiceManagerPost(self, mock):
-        response = self.mgr.postMetaDataToServer([self.testRecord])
-        mock.assert_called_once_with([self.testRecord])
+@pytest.fixture
+def solr():
+    return SolrServiceManager(current_app.config['SOLR_URL'])
 
-    def testValidateRecord(self):
-        self.mgr._validateRecord(self.testRecord)
 
-        with self.assertRaises(AttributeError) as attributeError:
-            self.mgr._validateRecord(self.testBadRecord)
+@pytest.yield_fixture
+def pysolr():
+    patcher = patch('pysolr.Solr.add')
+    yield patcher.start()
+    patcher.stop()
+
+
+class TestSolr(object):
+    def testSolrServiceManagerPost(self, pysolr, solr):
+        solr.postMetaDataToServer([{'uuid': 'test_uuid'}])
+        pysolr.assert_called_once_with([{'uuid': 'test_uuid'}])
+
+    def testValidateRecord(self, solr):
+        with pytest.raises(AttributeError):
+            self.mgr._validateRecord({'uid': 'test_uuid'})
