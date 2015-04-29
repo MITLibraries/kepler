@@ -15,6 +15,7 @@ job_completed = signal('job-completed')
 
 shapefile_task_list = [make_record, shapefile_upload_task, index_record]
 geotiff_task_list = [make_record, tiff_upload_task, index_record]
+repo_task_list = [load_repo_records, index_records, ]
 
 
 @job_failed.connect
