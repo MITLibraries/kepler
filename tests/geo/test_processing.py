@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-from tests import unittest
+
 from mock import patch
 from kepler.geo.processing import (compress, compute_levels, pyramid)
 
 
-class ProcessingTestCase(unittest.TestCase):
+class TestProcessing(object):
     @patch('kepler.geo.processing.check_output')
     def testCompressRunsCommandWithArgs(self, sub_mock):
         compress('tests/data/paletted.tif', 'out.tif')
@@ -30,11 +30,11 @@ class ProcessingTestCase(unittest.TestCase):
     @patch('kepler.geo.processing.check_output')
     def testPyramidSkipsOverviewsWhenNotNeeded(self, sub_mock, comp_mock):
         pyramid('tests/data/rgb.tif')
-        self.assertEqual(sub_mock.call_count, 0)
+        assert sub_mock.call_count == 0
 
     def testComputeLevelsReturnsListOfOverviewLevels(self):
-        self.assertEqual(compute_levels(2049, 2048), [2])
-        self.assertEqual(compute_levels(16000, 20000), [2, 4, 8, 16])
+        assert compute_levels(2049, 2048) == [2]
+        assert compute_levels(16000, 20000) == [2, 4, 8, 16]
 
     def testComputeLevelsReturnsEmptyListForNoLevels(self):
-        self.assertEqual(compute_levels(2048, 2048), [])
+        assert compute_levels(2048, 2048) == []

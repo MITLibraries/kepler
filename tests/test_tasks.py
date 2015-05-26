@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-import io
 
+import pytest
 from mock import Mock, patch
-from tests import BaseTestCase
 
 from kepler.tasks import *
 
 
-class TasksTestCase(BaseTestCase):
+pytestmark = pytest.mark.usefixtures('app')
+
+
+class TestTasks(object):
     @patch('kepler.tasks.put')
     def testUploadToGeoserverUploadsData(self, mock):
         record, data = Mock(_filename='foo'), Mock()
@@ -22,8 +24,6 @@ class TasksTestCase(BaseTestCase):
         index_record(record)
         mock.assert_called_once_with([{'uuid': 'foobar'}])
 
-    def testMakeRecordCreatesNewRecord(self):
-        bag = io.open('tests/data/bermuda.zip', 'rb')
+    def testMakeRecordCreatesNewRecord(self, bag):
         record, data = make_record(Mock(), bag)
-        self.assertEqual(record.dc_title_s,
-                         u'Bermuda (Geographic Feature Names, 2003)')
+        assert record.dc_title_s == u'Bermuda (Geographic Feature Names, 2003)'
