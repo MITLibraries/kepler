@@ -4,7 +4,7 @@ import io
 
 import pytest
 from webtest import TestApp
-from mock import patch
+from mock import patch, Mock
 
 from kepler.app import create_app
 from kepler.extensions import db as _db
@@ -53,3 +53,19 @@ def pysolr_add():
     patcher = patch('pysolr.Solr.add')
     yield patcher.start()
     patcher.stop()
+
+
+@pytest.yield_fixture
+def sword_service(sword):
+    patcher = patch('kepler.sword.requests')
+    req = patcher.start()
+    req.post.return_value = Mock(text=sword)
+    yield req
+    patcher.stop()
+
+
+@pytest.fixture
+def sword():
+    with io.open('tests/data/sword.xml', 'r') as fp:
+        resp = fp.read()
+    return resp

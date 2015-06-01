@@ -19,3 +19,4 @@ class TestConfig(DefaultConfig):
     GEOSERVER_WORKSPACE = 'mit'
     GEOSERVER_DATASTORE = 'data'
     SOLR_URL = 'http://localhost:8983/solr/geoblacklight/'
+    SWORD_SERVICE_URL = 'http://example.com/sword'

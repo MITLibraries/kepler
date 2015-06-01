@@ -54,3 +54,7 @@ class TestTasks(object):
         records = [{'uuid': 'foobar'}, {'uuid': 'foobaz'}]
         index_records(records)
         pysolr_add.assert_called_once_with(records)
+
+    def testSubmitToDspaceUploadsSwordPackage(self, sword_service):
+        submit_to_dspace(Mock(uuid='abcd123'), 'tests/data/grayscale.tif')
+        assert sword_service.post.called

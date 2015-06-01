@@ -48,3 +48,4 @@ Contents:
    :maxdepth: 2
 
    metadata
+   application
