@@ -32,9 +32,10 @@ def repo(testapp):
 class TestTasks(object):
     @patch('kepler.tasks.put')
     def testUploadToGeoserverUploadsData(self, mock):
-        record, data = Mock(_filename='foo'), Mock()
-        upload_to_geoserver(record, data, 'application/shp')
-        mock.assert_called_once_with('foo', data, 'application/shp')
+        upload_to_geoserver(Mock(_filename='foo'), 'tests/data/bermuda.zip',
+                            'application/shp')
+        mock.assert_called_once_with('foo', 'tests/data/bermuda.zip',
+                                     'application/shp')
 
     def testIndexRecordAddsRecordToSolr(self, pysolr_add):
         record = Mock()

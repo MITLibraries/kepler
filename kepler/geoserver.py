@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+import io
 
 import requests
 from flask import current_app
@@ -34,7 +35,8 @@ def delete_url(id, mimetype):
 def put(id, data, mimetype):
     url = put_url(id, mimetype)
     headers = {'Content-type': mimetype}
-    r = requests.put(url, data=data, headers=headers)
+    with io.open(data, 'rb') as fp:
+        r = requests.put(url, data=fp, headers=headers)
     r.raise_for_status()
 
 
