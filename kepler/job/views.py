@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+import os
 
 from flask.views import View
 from flask import request, jsonify, render_template
 from sqlalchemy.sql import func
 from sqlalchemy import and_
 
+from kepler import make_tempfile
 from kepler.jobs import create_job
 from kepler.models import Job, Item
 from kepler.extensions import db
@@ -45,9 +47,13 @@ class JobView(View):
         return jsonify(job.as_dict)
 
     def create(self):
-        job = create_job(request.form['type'], request.form['uuid'],
-                         request.files.get('file'))
-        job()
+        fpath = make_tempfile(request.files.get('file'))
+        try:
+            job = create_job(request.form['type'], request.form['uuid'], fpath)
+            job()
+        finally:
+            if fpath is not None:
+                os.remove(fpath)
         return '', 201
 
     @classmethod

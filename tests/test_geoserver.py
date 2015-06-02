@@ -40,15 +40,14 @@ class TestGeoServer(object):
             'http://example.com/geoserver/rest/workspaces/mit/coveragestores/foo?recurse=true'
 
     def testPutUploadsData(self, requests):
-        put('foo', 'bar', 'application/zip')
-        url = put_url('foo', 'application/zip')
-        requests.put.assert_called_once_with(url, data='bar',
-            headers={'Content-type': 'application/zip'})
+        put('foo', 'tests/data/bermuda.zip', 'application/zip')
+        call = requests.put.call_args
+        assert call[1].get('data').name == 'tests/data/bermuda.zip'
 
     def testPutRaisesHttpErrorWhenUnsuccessful(self, requests):
         requests.put.return_value = Mock(**{'raise_for_status.side_effect': HTTPError})
         with pytest.raises(HTTPError):
-            put('foo', 'bar', 'image/tiff')
+            put('foo', 'tests/data/grayscale.tif', 'image/tiff')
 
     def testDeleteDeletesResource(self, requests):
         delete('foo', 'image/tiff')
