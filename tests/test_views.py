@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from datetime import datetime
-import tempfile
-import os
 
 import pytest
 from mock import patch
@@ -17,18 +15,6 @@ def create_job():
     patcher.stop()
 
 
-@pytest.yield_fixture
-def tmpfile():
-    patcher = patch('kepler.job.views.make_tempfile')
-    patched = patcher.start()
-    fd, fname = tempfile.mkstemp(suffix='.zip')
-    patched.return_value = fname
-    yield fname
-    patcher.stop()
-    if os.path.exists(fname):
-        os.remove(fname)
-
-
 class TestJob(object):
     def testJobCreationReturns201OnSuccess(self, testapp, create_job):
         r = testapp.post('/job/', {'uuid': 'foobar', 'type': 'shapefile'},
@@ -39,11 +25,6 @@ class TestJob(object):
         testapp.post('/job/', {'uuid': 'foobar', 'type': 'shapefile'},
                      upload_files=[('file', 'tests/data/bermuda.zip')])
         assert create_job.call_count == 1
-
-    def testCreateRemovesTempFile(self, testapp, create_job, tmpfile):
-        testapp.post('/job/', {'uuid': 'foobar', 'type': 'shapefile'},
-                     upload_files=[('file', 'tests/data/bermuda.zip')])
-        assert os.path.exists(tmpfile) is False
 
     def testJobCreationReturns500OnJobRunError(self, testapp, create_job):
         create_job.side_effect = Exception

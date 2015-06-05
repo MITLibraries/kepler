@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 import io
+import tempfile
+import os
+import shutil
 
 import pytest
 from webtest import TestApp
@@ -9,6 +12,16 @@ from mock import patch, Mock
 from kepler.app import create_app
 from kepler.extensions import db as _db
 from kepler.settings import TestConfig
+
+
+@pytest.yield_fixture(scope="session", autouse=True)
+def temp_dir():
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    tmp_dir = tempfile.mkdtemp(dir=current_dir)
+    tempfile.tempdir = tmp_dir
+    yield
+    if os.path.isdir(tmp_dir):
+        shutil.rmtree(tmp_dir)
 
 
 @pytest.yield_fixture
@@ -34,11 +47,22 @@ def db(app):
     _db.drop_all()
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def bag():
-    fp = io.open('tests/data/bermuda.zip', 'rb')
-    yield fp
-    fp.close()
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    return os.path.join(current_dir, 'data/bermuda/')
+
+
+@pytest.fixture
+def shapefile():
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    return os.path.join(current_dir, 'data/bermuda/data/shapefile.zip')
+
+
+@pytest.fixture
+def bag_upload():
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    return os.path.join(current_dir, 'data/bermuda.zip')
 
 
 @pytest.yield_fixture

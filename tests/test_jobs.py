@@ -58,14 +58,14 @@ class TestJobFactory(object):
 
 
 class TestJobRunner(object):
-    def testCompletedSignalSentOnSuccess(self, job):
-        run = JobRunner(Mock(), job)
+    def testCompletedSignalSentOnSuccess(self, job, bag):
+        run = JobRunner(job, bag, [Mock()])
         with patch('kepler.jobs.job_completed.send') as mock:
             run()
         assert mock.call_count == 1
 
-    def testFailedSignalSentOnError(self, job):
-        run = JobRunner(Mock(side_effect=Exception), job)
+    def testFailedSignalSentOnError(self, job, bag):
+        run = JobRunner(job, bag, [Mock(side_effect=Exception)])
         with patch('kepler.jobs.job_failed.send') as mock:
             try:
                 run()
@@ -73,8 +73,8 @@ class TestJobRunner(object):
                 pass
         assert mock.call_count == 1
 
-    def testExceptionReRaisedOnFailure(self, job):
-        run = JobRunner(Mock(side_effect=KeyError), job)
+    def testExceptionReRaisedOnFailure(self, job, bag):
+        run = JobRunner(job, bag, [Mock(side_effect=KeyError)])
         with pytest.raises(KeyError):
             run()
 

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-from functools import partial
 
 from blinker import signal
 
@@ -13,9 +12,9 @@ from kepler.tasks import *
 job_failed = signal('job-failed')
 job_completed = signal('job-completed')
 
-shapefile_task_list = [make_record, shapefile_upload_task, index_record]
-geotiff_task_list = [make_record, tiff_upload_task, index_record]
-repo_task_list = [load_repo_records, index_records, ]
+shapefile_task_list = [upload_shapefile, index_shapefile, ]
+geotiff_task_list = [upload_geotiff, index_geotiff, ]
+repo_task_list = [index_repo_records, ]
 
 
 @job_failed.connect
@@ -37,9 +36,11 @@ def create_job(job_type, uuid, data=None):
     db.session.commit()
     try:
         if job_type == 'shapefile':
-            return JobRunner(tasks(shapefile_task_list), job, data=data)
+            return JobRunner(job, data, shapefile_task_list)
         elif job_type == 'geotiff':
-            return JobRunner(tasks(geotiff_task_list), job, data=data)
+            return JobRunner(job, data, geotiff_task_list)
+        elif job_type == 'repo':
+            return JobRunner(job, data, repo_task_list)
         else:
             raise UnsupportedFormat(job_type)
     except Exception:
@@ -49,13 +50,15 @@ def create_job(job_type, uuid, data=None):
 
 
 class JobRunner(object):
-    def __init__(self, task_func, job, *args, **kwargs):
-        self.tasks = partial(task_func, *args, **kwargs)
+    def __init__(self, job, data, task_list):
+        self.tasks = task_list
         self.job = job
+        self.data = data
 
     def __call__(self):
         try:
-            self.tasks(self.job)
+            for task in self.tasks:
+                task(self.job, self.data)
             job_completed.send(self)
         except Exception:
             job_failed.send(self)

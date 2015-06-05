@@ -9,6 +9,8 @@ import pytest
 from mock import Mock, patch
 
 from kepler.tasks import *
+from kepler.tasks import (_index_records, _index_from_fgdc,
+                          _upload_to_geoserver, _load_repo_records)
 
 
 pytestmark = pytest.mark.usefixtures('app')
@@ -29,33 +31,76 @@ def repo(testapp):
     shutil.rmtree(local)
 
 
-class TestTasks(object):
-    @patch('kepler.tasks.put')
-    def testUploadToGeoserverUploadsData(self, mock):
-        upload_to_geoserver(Mock(_filename='foo'), 'tests/data/bermuda.zip',
-                            'application/shp')
-        mock.assert_called_once_with('foo', 'tests/data/bermuda.zip',
-                                     'application/shp')
+@pytest.fixture
+def job():
+    return Mock()
 
-    def testIndexRecordAddsRecordToSolr(self, pysolr_add):
-        record = Mock()
-        record.as_dict = Mock(return_value={'uuid': 'foobar'})
-        index_record(record)
-        pysolr_add.assert_called_once_with([{'uuid': 'foobar'}])
 
-    def testMakeRecordCreatesNewRecord(self, bag):
-        record, data = make_record(Mock(), bag)
-        assert record.dc_title_s == u'Bermuda (Geographic Feature Names, 2003)'
+def testIndexShapefileIndexesFromFGDC(job, bag):
+    with patch('kepler.tasks._index_from_fgdc') as mock:
+        index_shapefile(job, bag)
+        mock.assert_called_with(job, bag=bag)
 
-    def testLoadRepoRecordsReturnsRecordsIterator(self, repo):
-        records = load_repo_records(repo)
-        assert next(records) == {"layer_id_s": "FOOBAR"}
 
-    def testIndexRecordsAddsRecordsToSolr(self, pysolr_add):
-        records = [{'uuid': 'foobar'}, {'uuid': 'foobaz'}]
-        index_records(records)
-        pysolr_add.assert_called_once_with(records)
+def testIndexGeotiffIndexesFromFGDC(job, bag):
+    job.item.handle = 'foobar'
+    with patch('kepler.tasks._index_from_fgdc') as mock:
+        index_geotiff(job, bag)
+        mock.assert_called_with(job, bag=bag, _url=job.item.handle)
 
-    def testSubmitToDspaceUploadsSwordPackage(self, sword_service):
-        submit_to_dspace(Mock(uuid='abcd123'), 'tests/data/grayscale.tif')
-        assert sword_service.post.called
+
+def testIndexRepoRecordsIndexesRecords(job):
+    with patch('kepler.tasks._index_records') as mock:
+        with patch('kepler.tasks._load_repo_records') as repo:
+            repo.return_value = 'foobar'
+            index_repo_records(job, {'repository': 'foo'})
+            mock.assert_called_with('foobar')
+
+
+def testSubmitToDspaceUploadsSwordPackage(job, bag):
+    with patch('kepler.tasks.sword.submit') as mock:
+        submit_to_dspace(job, bag)
+        mock.assert_called
+
+
+def testSubmitToDspaceAddsHandleToItem(job, bag):
+    with patch('kepler.tasks.sword.submit') as mock:
+        mock.return_value = 'foobar'
+        submit_to_dspace(job, bag)
+        assert job.item.handle == 'foobar'
+
+
+def testUploadShapefileCallsUploadWithMimetype(job, bag):
+    with patch('kepler.tasks._upload_to_geoserver') as mock:
+        upload_shapefile(job, bag)
+        mock.assert_called_with(job, bag=bag, mimetype='application/zip')
+
+
+def testUploadGeotiffCallsUploadWithMimetype(job, bag):
+    with patch('kepler.tasks._upload_to_geoserver') as mock:
+        upload_geotiff(job, bag)
+        mock.assert_called_with(job, bag=bag, mimetype='image/tiff')
+
+
+def testIndexFromFgdcCreatesRecord(job, bag):
+    job.item.uri = 'foobar'
+    with patch('kepler.tasks._index_records') as mock:
+        _index_from_fgdc(job, bag)
+        args = mock.call_args[0]
+    assert args[0][0].get('dc_title_s') == 'Bermuda (Geographic Feature Names, 2003)'
+
+
+def testUploadToGeoserverUploadsData(job, bag, shapefile):
+    with patch('kepler.tasks.put') as mock:
+        _upload_to_geoserver(job, bag, 'application/zip')
+    mock.assert_called_once_with(job.item.uri, shapefile, 'application/zip')
+
+
+def testIndexRecordsAddsRecordsToSolr(pysolr_add):
+    _index_records([{'uuid': 'foobar'}])
+    pysolr_add.assert_called_once_with([{'uuid': 'foobar'}])
+
+
+def testLoadRepoRecordsReturnsRecordsIterator(repo):
+    records = _load_repo_records(repo)
+    assert next(records) == {"layer_id_s": "FOOBAR"}
