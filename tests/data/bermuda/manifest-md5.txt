@@ -1,0 +1,2 @@
+38d38fb5cdec69be8f8fb062bd86dd97  data/fgdc.xml
+836893d412dc8ebc8358dad0ff654a2e  data/shapefile.zip

@@ -1,13 +1,15 @@
 Module Documentation
 =========================
 
-kepler
-------
-
-.. autofunction:: kepler.make_tempfile
-
 kepler.sword
------
+------------
 
 .. automodule:: kepler.sword
     :members:
+
+kepler.tasks
+------------
+
+.. automodule:: kepler.tasks
+    :members:
+    :private-members:
