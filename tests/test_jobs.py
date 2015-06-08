@@ -19,30 +19,30 @@ def job():
 
 class TestJobFactory(object):
     def testCreatesItem(self, bag):
-        create_job(u'shapefile', u'SEAMUS', bag)
+        create_job({'type': u'shapefile', 'uri': u'SEAMUS'}, bag)
         assert Item.query.count() == 1
 
     def testCreatesJob(self, bag):
-        create_job(u'shapefile', u'LEURENT', bag)
+        create_job({'type': u'shapefile', 'uri': u'LEURENT'}, bag)
         assert Job.query.count() == 1
 
     def testJobIsCreatedWithPendingStatus(self, bag):
-        create_job(u'shapefile', u'RUMBLUS', bag)
+        create_job({'type': u'shapefile', 'uri': u'RUMBLUS'}, bag)
         job = Job.query.first()
         assert job.status == u'PENDING'
 
     def testReturnsShapefileJobRunner(self, bag):
-        job = create_job(u'shapefile', u'KHOLER', bag)
+        job = create_job({'type': u'shapefile', 'uri': u'KHOLER'}, bag)
         assert isinstance(job, JobRunner)
 
     def testReturnsGeotiffJobRunner(self, bag):
-        job = create_job(u'geotiff', u'ALPHARD', bag)
+        job = create_job({'type': u'geotiff', 'uri': u'ALPHARD'}, bag)
         assert isinstance(job, JobRunner)
 
     def testSetsFailedStatusOnError(self, bag):
         with patch('kepler.jobs.JobRunner', side_effect=Exception):
             try:
-                create_job(u'shapefile', u'FROST', bag)
+                create_job({'type': u'shapefile', 'uri': u'FROST'}, bag)
             except Exception:
                 pass
             assert Job.query.first().status == u'FAILED'
@@ -50,11 +50,11 @@ class TestJobFactory(object):
     def testReRaisesExceptions(self, bag):
         with patch('kepler.jobs.JobRunner', side_effect=KeyError):
             with pytest.raises(KeyError):
-                create_job(u'shapefile', u'MALRONA', bag)
+                create_job({'type': u'shapefile', 'uri': u'MALRONA'}, bag)
 
     def testRaisesUnsupportedFormatError(self, bag):
         with pytest.raises(UnsupportedFormat):
-            create_job(u'warez', u'BLOODY_VICTORIA', bag)
+            create_job({'type': u'warez', 'uri': u'BLOODY_VICTORIA'}, bag)
 
 
 class TestJobRunner(object):

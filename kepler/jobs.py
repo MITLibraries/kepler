@@ -15,6 +15,7 @@ job_completed = signal('job-completed')
 shapefile_task_list = [upload_shapefile, index_shapefile, ]
 geotiff_task_list = [upload_geotiff, index_geotiff, ]
 repo_task_list = [index_repo_records, ]
+marc_task_list = [index_marc_records, ]
 
 
 @job_failed.connect
@@ -29,8 +30,10 @@ def completed(sender, **kwargs):
     db.session.commit()
 
 
-def create_job(job_type, uuid, data=None):
-    item = get_or_create(Item, uri=uuid)
+def create_job(form, data=None):
+    uri = form['uri']
+    job_type = form['type']
+    item = get_or_create(Item, uri=uri)
     job = Job(item=item, status=u'PENDING')
     db.session.add(job)
     db.session.commit()
@@ -40,7 +43,9 @@ def create_job(job_type, uuid, data=None):
         elif job_type == 'geotiff':
             return JobRunner(job, data, geotiff_task_list)
         elif job_type == 'repo':
-            return JobRunner(job, data, repo_task_list)
+            return JobRunner(job, uri, repo_task_list)
+        elif job_type == 'marc':
+            return JobRunner(job, data, marc_task_list)
         else:
             raise UnsupportedFormat(job_type)
     except Exception:
