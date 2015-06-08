@@ -60,7 +60,7 @@ class JobView(View):
         else:
             bag = None
         try:
-            job = create_job(request.form['type'], request.form['uuid'], bag)
+            job = create_job(request.form, bag)
             job()
         finally:
             if os.path.isdir(tempdir):

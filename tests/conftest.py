@@ -65,6 +65,12 @@ def bag_upload():
     return os.path.join(current_dir, 'data/bermuda.zip')
 
 
+@pytest.fixture
+def marc():
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    return os.path.join(current_dir, 'data/marc.xml')
+
+
 @pytest.yield_fixture
 def fgdc():
     fp = io.open('tests/data/shapefile/fgdc.xml', encoding='utf-8')

@@ -9,7 +9,7 @@ import pytest
 from mock import Mock, patch
 
 from kepler.tasks import *
-from kepler.tasks import (_index_records, _index_from_fgdc,
+from kepler.tasks import (_index_records, _index_from_fgdc, _load_marc_records,
                           _upload_to_geoserver, _load_repo_records)
 
 
@@ -53,7 +53,7 @@ def testIndexRepoRecordsIndexesRecords(job):
     with patch('kepler.tasks._index_records') as mock:
         with patch('kepler.tasks._load_repo_records') as repo:
             repo.return_value = 'foobar'
-            index_repo_records(job, {'repository': 'foo'})
+            index_repo_records(job, 'foo/bar')
             mock.assert_called_with('foobar')
 
 
@@ -104,3 +104,15 @@ def testIndexRecordsAddsRecordsToSolr(pysolr_add):
 def testLoadRepoRecordsReturnsRecordsIterator(repo):
     records = _load_repo_records(repo)
     assert next(records) == {"layer_id_s": "FOOBAR"}
+
+
+def testLoadMarcRecordsReturnsRecordIterator(marc):
+    records = _load_marc_records(marc)
+    assert next(records).get('dc_title_s') == 'Geothermal resources of New Mexico'
+
+
+def testIndexMarcRecordsIndexesRecords(job, marc):
+    with patch('kepler.tasks._index_records') as mock:
+        index_marc_records(job, marc)
+        args = mock.call_args[0]
+    assert next(args[0]).get('dc_title_s') == 'Geothermal resources of New Mexico'

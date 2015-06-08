@@ -2,6 +2,7 @@
 from __future__ import absolute_import, division
 from io import BytesIO
 from xml.etree.ElementTree import Element
+import decimal
 
 import pytest
 from mock import Mock
@@ -25,7 +26,11 @@ def parser():
 
 
 def almost_equal(x, y):
-    return abs(x - y) <= 0.0000001
+    try:
+        y = decimal.Decimal(y)
+    except TypeError:
+        y = decimal.Decimal("%.7f" % y)
+    return abs(x - y) <= decimal.Decimal("0.0000001")
 
 
 class TestXMLParser(object):
@@ -101,7 +106,7 @@ class TestMarcParser(object):
         field.add_subfield('b', 'Greater Boston Area')
         record.add_field(field)
         parser._record = record
-        assert parser.record.get('dc_title') == \
+        assert parser.record.get('dc_title_s') == \
             'The Locations of Frobbers: Greater Boston Area'
 
     def testRecordReturnsSubjectsAsList(self):
@@ -113,7 +118,7 @@ class TestMarcParser(object):
         field.add_subfield('z', 'kittentown')
         record.add_field(field)
         parser._record = record
-        assert parser.record.get('dct_spatial') == ['This', 'is', 'kittentown']
+        assert parser.record.get('dct_spatial_sm') == ['This', 'is', 'kittentown']
 
     def testCoordRegexExtractsPartsOfCoordinate(self):
         parts = MarcParser.COORD_REGEX.search("N0123456")
@@ -152,4 +157,4 @@ class TestMarcParser(object):
         parser = MarcParser('tests/data/marc.xml')
         iparser = iter(parser)
         record = next(iparser)
-        assert record['dc_title'] == 'Geothermal resources of New Mexico'
+        assert record['dc_title_s'] == 'Geothermal resources of New Mexico'

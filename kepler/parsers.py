@@ -6,6 +6,7 @@ except ImportError:
     from xml.etree.ElementTree import iterparse
 import pymarc
 import re
+import decimal
 
 
 class XMLParser(object):
@@ -85,26 +86,26 @@ class MarcParser(XMLParser):
     @property
     def record(self):
         record = {}
-        record['dc_title'] = self._record.title()
-        record['dc_publisher'] = self._record.publisher()
-        record['dc_creator'] = self._record.author()
+        record['dc_title_s'] = self._record.title()
+        record['dc_publisher_s'] = self._record.publisher()
+        record['dc_creator_sm'] = [self._record.author()]
         if '520' in self._record:
-            record['dc_description'] = self._record['520'].format_field()
+            record['dc_description_s'] = self._record['520'].format_field()
         for field in self._record.get_fields('650'):
             for subfield in field.get_subfields('a'):
-                record.setdefault('dc_subject', []).append(subfield)
+                record.setdefault('dc_subject_sm', []).append(subfield)
             for subfield in field.get_subfields('z'):
-                record.setdefault('dct_spatial', []).append(subfield)
-        record['dct_temporal'] = self._record.pubyear()
+                record.setdefault('dct_spatial_sm', []).append(subfield)
+        record['dct_temporal_sm'] = [self._record.pubyear()]
         if '876' in self._record:
             record['_datatype'] = self._record['876']['k']
             record['_location'] = self._record['876']['B']
         record['_marc_id'] = self._record['001']
         if '034' in self._record:
-            record['_bbox_w'] = self._record['034']['d']
-            record['_bbox_e'] = self._record['034']['e']
-            record['_bbox_n'] = self._record['034']['f']
-            record['_bbox_s'] = self._record['034']['g']
+            record['_bbox_w'] = self.convert_coord(self._record['034']['d'])
+            record['_bbox_e'] = self.convert_coord(self._record['034']['e'])
+            record['_bbox_n'] = self.convert_coord(self._record['034']['f'])
+            record['_bbox_s'] = self.convert_coord(self._record['034']['g'])
         return record
 
     @classmethod
@@ -113,9 +114,12 @@ class MarcParser(XMLParser):
         if not matches:
             return None
         parts = matches.groupdict()
-        decimal = float(parts.get('degrees')) + \
-                  float(parts.get('minutes') or 0) / 60 + \
-                  float(parts.get('seconds') or 0) / 3600
+        dec = float(parts.get('degrees')) + \
+            float(parts.get('minutes') or 0) / 60 + \
+            float(parts.get('seconds') or 0) / 3600
         if parts.get('hemisphere') and parts.get('hemisphere').lower() in 'ws-':
-            decimal = -decimal
-        return decimal
+            dec = -dec
+        try:
+            return decimal.Decimal(dec)
+        except TypeError:
+            return decimal.Decimal("%.7f" % dec)

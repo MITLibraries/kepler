@@ -17,12 +17,12 @@ def create_job():
 
 class TestJob(object):
     def testJobCreationReturns201OnSuccess(self, testapp, create_job):
-        r = testapp.post('/job/', {'uuid': 'foobar', 'type': 'shapefile'},
+        r = testapp.post('/job/', {'uri': 'foobar', 'type': 'shapefile'},
                          upload_files=[('file', 'tests/data/bermuda.zip')])
         assert r.status_code == 201
 
     def testJobCreationRunsJob(self, testapp, create_job):
-        testapp.post('/job/', {'uuid': 'foobar', 'type': 'shapefile'},
+        testapp.post('/job/', {'uri': 'foobar', 'type': 'shapefile'},
                      upload_files=[('file', 'tests/data/bermuda.zip')])
         assert create_job.call_count == 1
 
@@ -30,13 +30,13 @@ class TestJob(object):
         create_job.side_effect = Exception
         testapp.app.debug = False
         testapp.app.config['PROPAGATE_EXCEPTIONS'] = False
-        r = testapp.post('/job/', {'uuid': 'foobar', 'type': 'shapefile'},
+        r = testapp.post('/job/', {'uri': 'foobar', 'type': 'shapefile'},
                          upload_files=[('file', 'tests/data/bermuda.zip')],
                          expect_errors=True)
         assert r.status_code == 500
 
     def testJobCreationReturns415OnUnsupportedFormat(self, testapp, db):
-        r = testapp.post('/job/', {'uuid': 'foobar', 'type': 'warez'},
+        r = testapp.post('/job/', {'uri': 'foobar', 'type': 'warez'},
                          expect_errors=True)
         assert r.status_code == 415
 
