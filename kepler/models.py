@@ -18,7 +18,7 @@ class Job(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     status = db.Column(db.Enum(u'PENDING', u'COMPLETED', u'FAILED'),
                        default=u'PENDING')
-    time = db.Column(db.DateTime(timezone=True), default=datetime.now())
+    time = db.Column(db.DateTime(timezone=True), default=datetime.now)
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'))
 
     def __repr__(self):
