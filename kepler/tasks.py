@@ -16,6 +16,7 @@ from __future__ import absolute_import
 import io
 import json
 import tempfile
+import uuid
 
 from flask import current_app
 from ogre.xml import FGDCParser
@@ -100,10 +101,11 @@ def _index_from_fgdc(job, bag, **kwargs):
     :param \**kwargs: additional fields to add to the record
     """
 
-    layer_id = "%s:%s" % (current_app.config['GEOSERVER_WORKSPACE'],
-                          job.item.uri)
+    uid = uuid.UUID(job.item.uri)
+    layer_id = "%s:%s" % (current_app.config['GEOSERVER_WORKSPACE'], uid)
     kwargs.update({
-        "layer_id": layer_id,
+        "layer_id_s": layer_id,
+        "uuid": str(uid),
     })
     fgdc = get_fgdc(bag)
     record = create_record(fgdc, FGDCParser, **kwargs)
