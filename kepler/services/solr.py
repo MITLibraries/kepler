@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-import json
 import pysolr
-import requests
+
 
 class SolrServiceManager(object):
     """Service to a GeoBlacklight (Solr) instance
@@ -24,8 +23,7 @@ class SolrServiceManager(object):
         """
         for record in records:
             self._validateRecord(record)
-        response = self.connection.add(records)
-        response.raise_for_status()
+        self.connection.add(records)
 
     def _validateRecord(self, record):
         """Validate metadata record to match solr config
