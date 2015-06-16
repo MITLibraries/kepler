@@ -33,7 +33,9 @@ def repo(testapp):
 
 @pytest.fixture
 def job():
-    return Mock()
+    j = Mock()
+    j.item.uri = 'urn:uuid:c8921f5a-eac7-509b-bac5-bd1b2cb202dc'
+    return j
 
 
 def testIndexShapefileIndexesFromFGDC(job, bag):
@@ -83,11 +85,24 @@ def testUploadGeotiffCallsUploadWithMimetype(job, bag):
 
 
 def testIndexFromFgdcCreatesRecord(job, bag):
-    job.item.uri = 'foobar'
     with patch('kepler.tasks._index_records') as mock:
         _index_from_fgdc(job, bag)
         args = mock.call_args[0]
     assert args[0][0].get('dc_title_s') == 'Bermuda (Geographic Feature Names, 2003)'
+
+
+def testIndexFromFgdcAddsLayerId(job, bag):
+    with patch('kepler.tasks._index_records') as mock:
+        _index_from_fgdc(job, bag)
+        args = mock.call_args[0]
+    assert args[0][0].get('layer_id_s') == 'mit:c8921f5a-eac7-509b-bac5-bd1b2cb202dc'
+
+
+def testIndexFromFgdcAddsUuid(job, bag):
+    with patch('kepler.tasks._index_records') as mock:
+        _index_from_fgdc(job, bag)
+        args = mock.call_args[0]
+    assert args[0][0].get('uuid') == 'c8921f5a-eac7-509b-bac5-bd1b2cb202dc'
 
 
 def testUploadToGeoserverUploadsData(job, bag, shapefile):

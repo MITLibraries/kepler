@@ -56,23 +56,9 @@ def make_uuid_value(value):
 class MitRecord(Record):
     dc_rights_s = Enum(enums=['Public', 'Restricted'], mapper=rights_mapper)
     layer_geom_type_s = Enum(enums=['Point', 'Line', 'Polygon', 'Raster',
-                                'Scanned Map', 'Paper Map', 'Mixed'],
+                             'Scanned Map', 'Paper Map', 'Mixed'],
                              mapper=geometry_mapper)
-    _namespace = String()
     _filename = String()
-
-    @property
-    def uuid(self):
-        if None in (self._namespace, self._filename):
-            return None
-        namespace = make_uuid_value(self._namespace)
-        filename = make_uuid_value(self._filename)
-        uuid_ns = uuid.uuid5(uuid.NAMESPACE_DNS, namespace)
-        return str(uuid.uuid5(uuid_ns, filename))
-
-    @property
-    def dc_identifier_s(self):
-        return self.uuid
 
     @property
     def layer_slug_s(self):

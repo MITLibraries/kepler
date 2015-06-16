@@ -30,20 +30,6 @@ class TestMitRecord(object):
         r = MitRecord(layer_geom_type_s='Entity point')
         assert r.layer_geom_type_s == 'Point'
 
-    def testUuidGeneratedFromByteString(self):
-        uuid_ns = uuid.uuid5(uuid.NAMESPACE_DNS, 'arrowsmith.mit.edu')
-        r = MitRecord(_filename=b'BD_A8GNS_2003', _namespace=b'arrowsmith.mit.edu')
-        assert r.uuid == str(uuid.uuid5(uuid_ns, 'BD_A8GNS_2003'))
-
-    def testUuidGeneratedFromUnicodeString(self):
-        uuid_ns = uuid.uuid5(uuid.NAMESPACE_DNS, 'arrowsmith.mit.edu')
-        r = MitRecord(_filename=u'BD_A8GNS_2003', _namespace=u'arrowsmith.mit.edu')
-        assert r.uuid == str(uuid.uuid5(uuid_ns, 'BD_A8GNS_2003'))
-
-    def testIdentifierEqualsUuid(self):
-        r = MitRecord(_filename='BD_A8GNS_2003', _namespace='arrowsmith.mit.edu')
-        assert r.uuid == r.dc_identifier_s
-
     def testSlugGenerated(self):
         r = MitRecord(_filename='BD_A8GNS_2003')
         assert r.layer_slug_s == slugify('BD_A8GNS_2003', to_lower=True)
