@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-import uuid
 
-from slugify import slugify
 from ogre.xml import FGDCParser
 
-from kepler.records import MitRecord, create_record
+from kepler.records import *
 
 
 class TestRecordCreation(object):
@@ -31,5 +29,18 @@ class TestMitRecord(object):
         assert r.layer_geom_type_s == 'Point'
 
     def testSlugGenerated(self):
-        r = MitRecord(_filename='BD_A8GNS_2003')
-        assert r.layer_slug_s == slugify('BD_A8GNS_2003', to_lower=True)
+        r = MitRecord(uuid='c8921f5a-eac7-509b-bac5-bd1b2cb202dc')
+        assert r.layer_slug_s == 'mit-yJIfWurHUJs'
+
+
+def testRightsMapperNormalizesTerm():
+    assert rights_mapper('Unrestricted layer') == 'Public'
+    assert rights_mapper('rEsTrIcted layer') == 'Restricted'
+    assert rights_mapper('Public') == 'Public'
+
+
+def testGeometryMapperNormalizesTerm():
+    assert geometry_mapper('a point or two') == 'Point'
+    assert geometry_mapper('here is a string, yo') == 'Line'
+    assert geometry_mapper('however, this is a polygon') == 'Polygon'
+    assert geometry_mapper('Line') == 'Line'

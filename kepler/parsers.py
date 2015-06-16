@@ -57,7 +57,7 @@ class MarcParser(XMLParser):
         r"""^(?P<hemisphere>[NSEW+-])?
              (?P<degrees>\d{3}(\.\d*)?)
              (?P<minutes>\d{2}(\.\d*)?)?
-             (?P<seconds>\d{2}(\.\d*)?)?""", re.IGNORECASE|re.VERBOSE)
+             (?P<seconds>\d{2}(\.\d*)?)?""", re.IGNORECASE | re.VERBOSE)
 
     def start_handler(self, elem):
         if elem.tag == self.record_elem:
@@ -68,7 +68,7 @@ class MarcParser(XMLParser):
             ind2 = elem.get('ind2')
             self._field = pymarc.Field(tag, indicators=[ind1, ind2])
         elif elem.tag == '{%s}controlfield' % self.MARC_NS:
-            if elem.get('tag').isdigit(): # skip controlfields that are letters
+            if elem.get('tag').isdigit():  # skip controlfields that are letters
                 self._field = pymarc.Field(elem.get('tag'))
 
     def end_handler(self, elem):
@@ -93,14 +93,14 @@ class MarcParser(XMLParser):
             record['dc_description_s'] = self._record['520'].format_field()
         for field in self._record.get_fields('650'):
             for subfield in field.get_subfields('a'):
-                record.setdefault('dc_subject_sm', []).append(subfield)
+                record.setdefault('dc_subject_sm', set()).add(subfield)
             for subfield in field.get_subfields('z'):
-                record.setdefault('dct_spatial_sm', []).append(subfield)
+                record.setdefault('dct_spatial_sm', set()).add(subfield)
         record['dct_temporal_sm'] = [self._record.pubyear()]
         if '876' in self._record:
             record['_datatype'] = self._record['876']['k']
             record['_location'] = self._record['876']['B']
-        record['_marc_id'] = self._record['001']
+        record['_marc_id'] = self._record['001'].value()
         if '034' in self._record:
             record['_bbox_w'] = self.convert_coord(self._record['034']['d'])
             record['_bbox_e'] = self.convert_coord(self._record['034']['e'])

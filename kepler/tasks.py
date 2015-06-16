@@ -27,6 +27,7 @@ from kepler.records import create_record, MitRecord
 from kepler.services.solr import SolrServiceManager
 from kepler.git import repository
 from kepler import sword
+from kepler.utils import make_uuid
 from kepler.extensions import db
 from kepler.parsers import MarcParser
 
@@ -149,4 +150,7 @@ def _load_repo_records(repo):
 
 def _load_marc_records(data):
     for record in MarcParser(data):
+        uid = make_uuid(record['_marc_id'],
+                        current_app.config['UUID_NAMESPACE'])
+        record.update(uuid=uid)
         yield MitRecord(**record).as_dict()
