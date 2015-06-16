@@ -98,27 +98,15 @@ class TestMarcParser(object):
         parser.end_handler(el)
         assert parser._field.get_subfields('a') == [el.text]
 
-    def testRecordReturnsRecordAsProcessedDictionary(self):
-        parser = MarcParser()
-        record = pymarc.Record()
-        field = pymarc.Field('245', indicators=[1, 0])
-        field.add_subfield('a', 'The Locations of Frobbers:')
-        field.add_subfield('b', 'Greater Boston Area')
-        record.add_field(field)
-        parser._record = record
-        assert parser.record.get('dc_title_s') == \
-            'The Locations of Frobbers: Greater Boston Area'
+    def testRecordReturnsRecordAsProcessedDictionary(self, marc):
+        parser = MarcParser(marc)
+        record = next(iter(parser))
+        assert record.get('dc_title_s') == 'Geothermal resources of New Mexico'
 
-    def testRecordReturnsSubjectsAsList(self):
-        parser = MarcParser()
-        record = pymarc.Record()
-        field = pymarc.Field('650', indicators=[0, 0])
-        field.add_subfield('z', 'This')
-        field.add_subfield('z', 'is')
-        field.add_subfield('z', 'kittentown')
-        record.add_field(field)
-        parser._record = record
-        assert parser.record.get('dct_spatial_sm') == ['This', 'is', 'kittentown']
+    def testRecordReturnsSubjectsAsSet(self, marc):
+        parser = MarcParser(marc)
+        record = next(iter(parser))
+        assert record.get('dct_spatial_sm') == set(['New Mexico', ])
 
     def testCoordRegexExtractsPartsOfCoordinate(self):
         parts = MarcParser.COORD_REGEX.search("N0123456")

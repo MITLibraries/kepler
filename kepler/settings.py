@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 class DefaultConfig(object):
     TESTING = False
     DEBUG = False
@@ -20,3 +21,4 @@ class TestConfig(DefaultConfig):
     GEOSERVER_DATASTORE = 'data'
     SOLR_URL = 'http://localhost:8983/solr/geoblacklight/'
     SWORD_SERVICE_URL = 'http://example.com/sword'
+    UUID_NAMESPACE = 'arrowsmith.mit.edu'

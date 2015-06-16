@@ -131,3 +131,8 @@ def testIndexMarcRecordsIndexesRecords(job, marc):
         index_marc_records(job, marc)
         args = mock.call_args[0]
     assert next(args[0]).get('dc_title_s') == 'Geothermal resources of New Mexico'
+
+
+def testLoadMarcRecordsCreatesUuid(marc):
+    records = _load_marc_records(marc)
+    assert next(records).get('uuid') == 'cb41c773-9570-5feb-8bac-ea6203d1541e'
