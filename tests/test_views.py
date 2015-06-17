@@ -62,3 +62,19 @@ class TestJob(object):
         r = testapp.get('/jobs/')
         assert 'COMPLETED' in r.text
         assert 'PENDING' not in r.text
+
+
+class TestItem(object):
+    def testItemListReturnsItems(self, testapp, db):
+        db.session.add_all([Item(uri=u'Foo'), Item(uri=u'Bar')])
+        db.session.commit()
+        r = testapp.get('/items/')
+        assert 'Foo' in r.text
+        assert 'Bar' in r.text
+
+    def testItemRetrievalShowsItem(self, testapp, db):
+        item = Item(uri=u'Foobar')
+        db.session.add(item)
+        db.session.commit()
+        r = testapp.get('/items/%s' % item.id)
+        assert 'Foobar' in r.text

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>{{ item.uri }}</h1>
+  <ol>
+    {% for job in jobs %}
+      <li>
+        <a href="{{ url_for('job.resource', id=job.id) }}">
+          {{ job.time.strftime('%Y-%m-%dT%H:%M:%S%z') }}
+        </a>
+        {{ job.status }}
+      </li>
+    {% endfor %}
+  </ol>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <ol>
+    {% for item in items %}
+      <li><a href="{{ url_for('.resource', id=item.id) }}">{{ item.uri }}</a></li>
+    {% endfor %}
+  </ol>
+{% endblock %}
