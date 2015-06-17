@@ -5,12 +5,12 @@ import shutil
 import tempfile
 
 from flask.views import View
-from flask import request, jsonify, render_template
+from flask import request, render_template
 from sqlalchemy.sql import func
 from sqlalchemy import and_
 
 from kepler.jobs import create_job
-from kepler.models import Job, Item
+from kepler.models import Job
 from kepler.extensions import db
 from kepler.bag import unpack
 
@@ -40,13 +40,12 @@ class JobView(View):
             completed.append(job)
         for job in q.filter(Job.status == 'FAILED'):
             failed.append(job)
-        return render_template('index.html', pending=pending,
+        return render_template('job/index.html', pending=pending,
                                completed=completed, failed=failed)
 
-    def show(self, job_name):
-        job = Job.query.join(Item).filter(Item.uri == job_name).\
-            order_by(Job.time.desc()).first_or_404()
-        return jsonify(job.as_dict)
+    def show(self, id):
+        job = Job.query.get_or_404(id)
+        return render_template('job/show.html', job=job)
 
     def create(self):
         data = request.files.get('file')
@@ -72,5 +71,5 @@ class JobView(View):
         view_func = cls.as_view(endpoint)
         app.add_url_rule(url, 'index', methods=['GET'], view_func=view_func)
         app.add_url_rule(url, 'resource', methods=['POST'], view_func=view_func)
-        app.add_url_rule('%s<path:job_name>' % url, 'resource',
-                         methods=['GET'], view_func=view_func)
+        app.add_url_rule('%s<path:id>' % url, 'resource', methods=['GET'],
+                         view_func=view_func)

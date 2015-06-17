@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>{{ job.item.uri }}</h2>
+  {{ job.time.strftime('%Y-%m-%dT%H:%M:%S%z') }} {{ job.status }}
+{% endblock %}

@@ -7,4 +7,4 @@ from kepler.job.views import JobView
 
 
 job_blueprint = Blueprint('job', __name__)
-JobView.register(job_blueprint, 'job', '/job/')
+JobView.register(job_blueprint, 'job', '/jobs/')
