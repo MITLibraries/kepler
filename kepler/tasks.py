@@ -129,7 +129,11 @@ def _upload_to_geoserver(job, bag, mimetype):
         data = get_shapefile(bag)
     elif mimetype == 'image/tiff':
         data = get_geotiff(bag)
-    put(job.item.uri, data, mimetype)
+    if job.access == 'Restricted':
+        url = current_app.config['GEOSERVER_RESTRICTED_URL']
+    else:
+        url = current_app.config['GEOSERVER_PUBLIC_URL']
+    put(url, job.item.uri, data, mimetype)
 
 
 def _index_records(records):

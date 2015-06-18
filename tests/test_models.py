@@ -66,3 +66,13 @@ class TestItem(object):
         db.session.add_all([item_one, item_two])
         with pytest.raises(SQLAlchemyError):
             db.session.commit()
+
+    def testItemHasAccessLevel(self, db):
+        item = Item(access=u'Public')
+        assert item.access == u'Public'
+
+    def testItemAccessDefaultsToPublic(self, db):
+        item = Item()
+        db.session.add(item)
+        db.session.commit()
+        assert item.access == u'Public'

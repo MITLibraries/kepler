@@ -108,7 +108,15 @@ def testIndexFromFgdcAddsUuid(job, bag):
 def testUploadToGeoserverUploadsData(job, bag, shapefile):
     with patch('kepler.tasks.put') as mock:
         _upload_to_geoserver(job, bag, 'application/zip')
-    mock.assert_called_once_with(job.item.uri, shapefile, 'application/zip')
+    mock.assert_called_once_with('http://example.com/geoserver/', job.item.uri,
+                                 shapefile, 'application/zip')
+
+
+def testUploadToGeoServerUsesCorrectUrl(job, bag, shapefile):
+    with patch('kepler.tasks.put') as mock:
+        job.access = 'Restricted'
+        _upload_to_geoserver(job, bag, 'application/zip')
+    assert mock.call_args[0][0] == 'http://example.com/secure-geoserver/'
 
 
 def testIndexRecordsAddsRecordsToSolr(pysolr_add):
