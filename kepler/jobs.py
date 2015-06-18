@@ -33,7 +33,8 @@ def completed(sender, **kwargs):
 def create_job(form, data=None):
     uri = form['uri']
     job_type = form['type']
-    item = get_or_create(Item, uri=uri)
+    access = form.get('access', u'Public')
+    item = get_or_create(Item, uri=uri, access=access)
     job = Job(item=item, status=u'PENDING')
     db.session.add(job)
     db.session.commit()

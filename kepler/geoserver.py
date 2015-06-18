@@ -11,9 +11,8 @@ def service_url(root_url, workspace):
     return '%srest/workspaces/%s/' % (base, workspace)
 
 
-def put_url(id, mimetype):
-    svc_url = service_url(current_app.config['GEOSERVER_URL'],
-                          current_app.config['GEOSERVER_WORKSPACE'])
+def put_url(root, id, mimetype):
+    svc_url = service_url(root, current_app.config['GEOSERVER_WORKSPACE'])
     if mimetype == 'application/zip':
         datastore = current_app.config['GEOSERVER_DATASTORE']
         return '%sdatastores/%s/file.shp' % (svc_url, datastore)
@@ -21,9 +20,8 @@ def put_url(id, mimetype):
         return '%scoveragestores/%s/file.geotiff' % (svc_url, id)
 
 
-def delete_url(id, mimetype):
-    svc_url = service_url(current_app.config['GEOSERVER_URL'],
-                          current_app.config['GEOSERVER_WORKSPACE'])
+def delete_url(root, id, mimetype):
+    svc_url = service_url(root, current_app.config['GEOSERVER_WORKSPACE'])
     if mimetype == 'application/zip':
         datastore = current_app.config['GEOSERVER_DATASTORE']
         return '%sdatastores/%s/featuretypes/%s?recurse=true' % (svc_url,
@@ -32,15 +30,15 @@ def delete_url(id, mimetype):
         return '%scoveragestores/%s?recurse=true' % (svc_url, id)
 
 
-def put(id, data, mimetype):
-    url = put_url(id, mimetype)
+def put(root, id, data, mimetype):
+    url = put_url(root, id, mimetype)
     headers = {'Content-type': mimetype}
     with io.open(data, 'rb') as fp:
         r = requests.put(url, data=fp, headers=headers)
     r.raise_for_status()
 
 
-def delete(id, mimetype):
-    url = delete_url(id, mimetype)
+def delete(root, id, mimetype):
+    url = delete_url(root, id, mimetype)
     r = requests.delete(url)
     r.raise_for_status()

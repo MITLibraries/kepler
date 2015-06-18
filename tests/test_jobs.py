@@ -22,6 +22,11 @@ class TestJobFactory(object):
         create_job({'type': u'shapefile', 'uri': u'SEAMUS'}, bag)
         assert Item.query.count() == 1
 
+    def testSetsAccessLevel(self, bag):
+        form = {'type': u'shapefile', 'uri': u'FOO', 'access': u'Restricted'}
+        create_job(form, bag)
+        assert Item.query.first().access == u'Restricted'
+
     def testCreatesJob(self, bag):
         create_job({'type': u'shapefile', 'uri': u'LEURENT'}, bag)
         assert Job.query.count() == 1
