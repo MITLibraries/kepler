@@ -10,7 +10,12 @@ from ogre.fields import Enum
 
 def create_record(metadata, parser, **kwargs):
     record = parse(metadata, parser)
-    record.update(kwargs)
+    for k, v in kwargs.items():
+        if k == 'dct_references_s':
+            refs = record.setdefault('dct_references_s', {})
+            refs.update(v)
+        else:
+            record[k] = v
     return MitRecord(**record)
 
 

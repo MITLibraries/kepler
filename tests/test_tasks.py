@@ -35,20 +35,29 @@ def repo(testapp):
 def job():
     j = Mock()
     j.item.uri = 'urn:uuid:c8921f5a-eac7-509b-bac5-bd1b2cb202dc'
+    j.item.access = 'public'
     return j
 
 
 def testIndexShapefileIndexesFromFGDC(job, bag):
+    refs = {
+        'http://www.opengis.net/def/serviceType/ogc/wms': 'http://example.com/geoserver/wms',
+        'http://www.opengis.net/def/serviceType/ogc/wfs': 'http://example.com/geoserver/wfs',
+    }
     with patch('kepler.tasks._index_from_fgdc') as mock:
         index_shapefile(job, bag)
-        mock.assert_called_with(job, bag=bag)
+        mock.assert_called_with(job, bag=bag, dct_references_s=refs)
 
 
 def testIndexGeotiffIndexesFromFGDC(job, bag):
-    job.item.handle = 'foobar'
+    refs = {
+        'http://www.opengis.net/def/serviceType/ogc/wms': 'http://example.com/geoserver/wms',
+        'http://schema.org/downloadUrl': 'http://example.com/foobar',
+    }
+    job.item.handle = 'http://example.com/foobar'
     with patch('kepler.tasks._index_from_fgdc') as mock:
         index_geotiff(job, bag)
-        mock.assert_called_with(job, bag=bag, _url=job.item.handle)
+        mock.assert_called_with(job, bag=bag, dct_references_s=refs)
 
 
 def testIndexRepoRecordsIndexesRecords(job):
