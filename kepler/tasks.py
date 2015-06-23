@@ -21,7 +21,7 @@ import uuid
 from flask import current_app
 from ogre.xml import FGDCParser
 
-from kepler.geoserver import put
+from kepler.geoserver import put, wfs_url, wms_url
 from kepler.bag import get_fgdc, get_shapefile, get_geotiff
 from kepler.records import create_record, MitRecord
 from kepler.services.solr import SolrServiceManager
@@ -39,7 +39,11 @@ def index_shapefile(job, data):
         :param bag: absolute path to bag containing Shapefile
     """
 
-    _index_from_fgdc(job, bag=data)
+    refs = {
+        'http://www.opengis.net/def/serviceType/ogc/wms': wms_url(job.item.access),
+        'http://www.opengis.net/def/serviceType/ogc/wfs': wfs_url(job.item.access),
+    }
+    _index_from_fgdc(job, bag=data, dct_references_s=refs)
 
 
 def index_geotiff(job, data):
@@ -49,7 +53,11 @@ def index_geotiff(job, data):
     :param bag: absolute path to bag containing GeoTIFF
     """
 
-    _index_from_fgdc(job, bag=data, _url=job.item.handle)
+    refs = {
+        'http://www.opengis.net/def/serviceType/ogc/wms': wms_url(job.item.access),
+        'http://schema.org/downloadUrl': job.item.handle
+    }
+    _index_from_fgdc(job, bag=data, dct_references_s=refs)
 
 
 def index_repo_records(job, repo):

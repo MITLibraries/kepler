@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
+from mock import patch
 from ogre.xml import FGDCParser
 
 from kepler.records import *
@@ -17,6 +18,17 @@ class TestRecordCreation(object):
                                dct_provenance_s='MIT')
         assert record.dc_rights_s == 'Restricted'
         assert record.dct_provenance_s == 'MIT'
+
+    def testReferencesDictIsMergedWithSupplied(self, fgdc):
+        refs = {'dct_references_s': {'http://www.w3.org/1999/xhtml': 'foobaz'}}
+        with patch('kepler.records.parse') as mock:
+            mock.return_value = refs
+            record = create_record(fgdc, FGDCParser, uuid='uuid-1',
+                                   dct_references_s={'http://schema.org/url': 'foobar'})
+        assert record.dct_references_s == {
+            'http://www.w3.org/1999/xhtml': 'foobaz',
+            'http://schema.org/url': 'foobar',
+        }
 
 
 class TestMitRecord(object):

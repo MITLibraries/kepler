@@ -5,7 +5,7 @@ import pytest
 from mock import patch, Mock
 from requests import HTTPError
 
-from kepler.geoserver import (service_url, put_url, delete_url, put, delete)
+from kepler.geoserver import *
 
 
 pytestmark = pytest.mark.usefixtures('app')
@@ -20,6 +20,14 @@ def requests():
 
 
 class TestGeoServer(object):
+    def testWmsUrlReturnsUrlForAccessLevel(self):
+        assert wms_url('Public') == 'http://example.com/geoserver/wms'
+        assert wms_url('Restricted') == 'http://example.com/secure-geoserver/wms'
+
+    def testWfsUrlReturnsUrlForAccessLevel(self):
+        assert wfs_url('Public') == 'http://example.com/geoserver/wfs'
+        assert wfs_url('Restricted') == 'http://example.com/secure-geoserver/wfs'
+
     def testServiceUrlGeneratesUrl(self):
         assert service_url(root, 'foo') == '%srest/workspaces/foo/' % root
 
