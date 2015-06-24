@@ -6,12 +6,6 @@ class DefaultConfig(object):
     DEBUG = False
 
 
-class DevelopmentConfig(DefaultConfig):
-    TESTING = False
-    DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite://'
-
-
 class TestConfig(DefaultConfig):
     TESTING = True
     DEBUG = True
