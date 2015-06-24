@@ -33,6 +33,31 @@ You should have python binaries for 2.6, 2.7, 3.3 and 3.4 available on your syst
     $ tox
 
 
+Configuration
+-------------
+
+Kepler uses `Flask's instance folders <http://flask.pocoo.org/docs/config/#instance-folders>`_ to manage application configuration. Any settings should be placed in ``/path/to/kepler/instance/app.cfg``. Any of the builtin configuration variables provided by Flask can be set here. In addition, the following variables should be set:
+
++------------------------------+---------------------------------------+
+| ``SQLALCHEMY_DATABASE_URL``  | Location of sqlite database           |
++------------------------------+---------------------------------------+
+| ``GEOSERVER_PUBLIC_URL``     | URL for public GeoServer instance     |
++------------------------------+---------------------------------------+
+| ``GEOSERVER_RESTRICTED_URL`` | URL for secure GeoServer instance     |
++------------------------------+---------------------------------------+
+| ``GEOSERVER_WORKSPACE``      | Name of workspace for data            |
++------------------------------+---------------------------------------+
+| ``GEOSERVER_DATASTORE``      | Name of datastore for shapefiles      |
++------------------------------+---------------------------------------+
+| ``SOLR_URL``                 | URL for GeoBlacklight Solr instance   |
++------------------------------+---------------------------------------+
+| ``SWORD_SERVICE_URL``        | URL for DSpace SWORD service          |
++------------------------------+---------------------------------------+
+| ``UUID_NAMESPACE``           | The namespace used in generating the  |
+|                              | version 5 UUID                        |
++------------------------------+---------------------------------------+
+
+
 Building the Documentation
 --------------------------
 
