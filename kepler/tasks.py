@@ -65,12 +65,15 @@ def index_repo_records(job, repo):
 
 
 def submit_to_dspace(job, data):
+    username = current_app.config['SWORD_SERVICE_USERNAME']
+    password = current_app.config['SWORD_SERVICE_PASSWORD']
     pkg = sword.SWORDPackage(uuid=job.item.uri)
     tiff = get_geotiff(data)
     pkg.datafiles.append(tiff)
     with tempfile.NamedTemporaryFile(suffix='.zip') as fp:
         pkg.write(fp)
-        handle = sword.submit(current_app.config['SWORD_SERVICE_URL'], fp.name)
+        handle = sword.submit(current_app.config['SWORD_SERVICE_URL'], fp.name,
+                              auth=(username, password))
     job.item.handle = handle
     db.session.commit()
 

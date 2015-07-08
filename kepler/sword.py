@@ -52,7 +52,7 @@ class SWORDPackage(object):
             pkg.close()
 
 
-def submit(service, package):
+def submit(service, package, auth=None):
     """Submit a SWORD package.
 
     Submits the given package to the specified SWORD service. If the submission
@@ -60,11 +60,13 @@ def submit(service, package):
 
     :param service: URL for SWORD service
     :param package: path to SWORD package on file system
+    :param auth: tuple containing username and password for authenticating to
+                 SWORD service if required
     """
 
     headers = sword_headers(os.path.basename(package))
     with io.open(package, 'rb') as fp:
-        r = requests.post(service, data=fp, headers=headers)
+        r = requests.post(service, data=fp, headers=headers, auth=auth)
     r.raise_for_status()
     doc = ET.fromstring(r.text)
     handle = doc.find('.//{http://www.w3.org/2005/Atom}id').text
