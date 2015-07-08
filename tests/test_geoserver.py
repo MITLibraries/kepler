@@ -47,15 +47,15 @@ class TestGeoServer(object):
         assert delete_url(root, 'foo', 'image/tiff') == \
             '%srest/workspaces/mit/coveragestores/foo?recurse=true' % root
 
-    def testPutUploadsData(self, requests):
-        put(root, 'foo', 'tests/data/bermuda.zip', 'application/zip')
+    def testPutUploadsData(self, requests, bag_upload):
+        put(root, 'foo', bag_upload, 'application/zip')
         call = requests.put.call_args
-        assert call[1].get('data').name == 'tests/data/bermuda.zip'
+        assert call[1].get('data').name == bag_upload
 
-    def testPutRaisesHttpErrorWhenUnsuccessful(self, requests):
+    def testPutRaisesHttpErrorWhenUnsuccessful(self, requests, grayscale_tif):
         requests.put.return_value = Mock(**{'raise_for_status.side_effect': HTTPError})
         with pytest.raises(HTTPError):
-            put(root, 'foo', 'tests/data/grayscale.tif', 'image/tiff')
+            put(root, 'foo', grayscale_tif, 'image/tiff')
 
     def testDeleteDeletesResource(self, requests):
         delete(root, 'foo', 'image/tiff')

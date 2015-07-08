@@ -16,22 +16,24 @@ def create_job():
 
 
 class TestJob(object):
-    def testJobCreationReturns201OnSuccess(self, testapp, create_job):
+    def testJobCreationReturns201OnSuccess(self, testapp, create_job,
+                                           bag_upload):
         r = testapp.post('/jobs/', {'uri': 'foobar', 'type': 'shapefile'},
-                         upload_files=[('file', 'tests/data/bermuda.zip')])
+                         upload_files=[('file', bag_upload)])
         assert r.status_code == 201
 
-    def testJobCreationRunsJob(self, testapp, create_job):
+    def testJobCreationRunsJob(self, testapp, create_job, bag_upload):
         testapp.post('/jobs/', {'uri': 'foobar', 'type': 'shapefile'},
-                     upload_files=[('file', 'tests/data/bermuda.zip')])
+                     upload_files=[('file', bag_upload)])
         assert create_job.call_count == 1
 
-    def testJobCreationReturns500OnJobRunError(self, testapp, create_job):
+    def testJobCreationReturns500OnJobRunError(self, testapp, create_job,
+                                               bag_upload):
         create_job.side_effect = Exception
         testapp.app.debug = False
         testapp.app.config['PROPAGATE_EXCEPTIONS'] = False
         r = testapp.post('/jobs/', {'uri': 'foobar', 'type': 'shapefile'},
-                         upload_files=[('file', 'tests/data/bermuda.zip')],
+                         upload_files=[('file', bag_upload)],
                          expect_errors=True)
         assert r.status_code == 500
 

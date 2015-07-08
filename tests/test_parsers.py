@@ -141,8 +141,8 @@ class TestMarcParser(object):
         degrees = 123 + 45.6789/60
         assert almost_equal(MarcParser.convert_coord("12345.6789"), degrees)
 
-    def testParsesMarcXml(self):
-        parser = MarcParser('tests/data/marc.xml')
+    def testParsesMarcXml(self, marc):
+        parser = MarcParser(marc)
         iparser = iter(parser)
         record = next(iparser)
         assert record['dc_title_s'] == 'Geothermal resources of New Mexico'

@@ -49,31 +49,43 @@ def db(app):
 
 @pytest.fixture
 def bag():
-    current_dir = os.path.dirname(os.path.realpath(__file__))
-    return os.path.join(current_dir, 'data/bermuda/')
+    return _fixture_path('bags/d2fe4762-96ec-57cd-89c9-312ec097284b/')
 
 
 @pytest.fixture
 def shapefile():
-    current_dir = os.path.dirname(os.path.realpath(__file__))
-    return os.path.join(current_dir, 'data/bermuda/data/shapefile.zip')
+    return _fixture_path('bags/d2fe4762-96ec-57cd-89c9-312ec097284b/data/shapefile.zip')
 
 
 @pytest.fixture
 def bag_upload():
-    current_dir = os.path.dirname(os.path.realpath(__file__))
-    return os.path.join(current_dir, 'data/bermuda.zip')
+    return _fixture_path('bags/d2fe4762-96ec-57cd-89c9-312ec097284b.zip')
+
+
+@pytest.fixture
+def grayscale_tif():
+    return _fixture_path('grayscale.tif')
+
+
+@pytest.fixture
+def rgb_tif():
+    return _fixture_path('rgb.tif')
+
+
+@pytest.fixture
+def paletted_tif():
+    return _fixture_path('paletted.tif')
 
 
 @pytest.fixture
 def marc():
-    current_dir = os.path.dirname(os.path.realpath(__file__))
-    return os.path.join(current_dir, 'data/marc.xml')
+    return _fixture_path('marc.xml')
 
 
 @pytest.yield_fixture
-def fgdc():
-    fp = io.open('tests/data/shapefile/fgdc.xml', encoding='utf-8')
+def fgdc(bag):
+    xml = os.path.join(bag, 'data/fgdc.xml')
+    fp = io.open(xml, encoding='utf-8')
     yield fp
     fp.close()
 
@@ -96,6 +108,11 @@ def sword_service(sword):
 
 @pytest.fixture
 def sword():
-    with io.open('tests/data/sword.xml', 'r') as fp:
+    with io.open(_fixture_path('sword.xml'), 'r') as fp:
         resp = fp.read()
     return resp
+
+
+def _fixture_path(path):
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    return os.path.join(current_dir, 'fixtures', path)
