@@ -16,4 +16,6 @@ class TestConfig(DefaultConfig):
     GEOSERVER_DATASTORE = 'data'
     SOLR_URL = 'http://localhost:8983/solr/geoblacklight/'
     SWORD_SERVICE_URL = 'http://example.com/sword'
+    SWORD_SERVICE_USERNAME = 'swordymcswordmuffin'
+    SWORD_SERVICE_PASSWORD = 'vorpalblade'
     UUID_NAMESPACE = 'arrowsmith.mit.edu'

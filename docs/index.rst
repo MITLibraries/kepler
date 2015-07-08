@@ -53,6 +53,10 @@ Kepler uses `Flask's instance folders <http://flask.pocoo.org/docs/config/#insta
 +------------------------------+---------------------------------------+
 | ``SWORD_SERVICE_URL``        | URL for DSpace SWORD service          |
 +------------------------------+---------------------------------------+
+| ``SWORD_SERVICE_USERNAME``   | Username for SWORD service            |
++------------------------------+---------------------------------------+
+| ``SWORD_SERVICE_PASSWORD``   | Password for SWORD service            |
++------------------------------+---------------------------------------+
 | ``UUID_NAMESPACE``           | The namespace used in generating the  |
 |                              | version 5 UUID                        |
 +------------------------------+---------------------------------------+
