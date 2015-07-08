@@ -7,8 +7,8 @@ from kepler.geo.processing import (compress, compute_levels, pyramid)
 
 class TestProcessing(object):
     @patch('kepler.geo.processing.check_output')
-    def testCompressRunsCommandWithArgs(self, sub_mock):
-        compress('tests/data/paletted.tif', 'out.tif')
+    def testCompressRunsCommandWithArgs(self, sub_mock, paletted_tif):
+        compress(paletted_tif, 'out.tif')
         sub_mock.assert_called_once_with(
             ['gdal_translate',
                 '-co', 'TILED=YES',
@@ -17,19 +17,19 @@ class TestProcessing(object):
                 '-co', 'BLOCKYSIZE=2048',
                 '-expand', 'rgb',
                 '-co', 'PHOTOMETRIC=YCBCR',
-                'tests/data/paletted.tif', 'out.tif'])
+                paletted_tif, 'out.tif'])
 
     @patch('kepler.geo.processing.compute_levels', return_value=[2, 4, 8])
     @patch('kepler.geo.processing.check_output')
-    def testPyramidRunsCommandWithArgs(self, sub_mock, comp_mock):
-        pyramid('tests/data/rgb.tif')
+    def testPyramidRunsCommandWithArgs(self, sub_mock, comp_mock, rgb_tif):
+        pyramid(rgb_tif)
         sub_mock.assert_called_once_with(
-            ['gdaladdo', '-r', 'average', 'tests/data/rgb.tif', 2, 4, 8])
+            ['gdaladdo', '-r', 'average', rgb_tif, 2, 4, 8])
 
     @patch('kepler.geo.processing.compute_levels', return_value=[])
     @patch('kepler.geo.processing.check_output')
-    def testPyramidSkipsOverviewsWhenNotNeeded(self, sub_mock, comp_mock):
-        pyramid('tests/data/rgb.tif')
+    def testPyramidSkipsOverviewsWhenNotNeeded(self, sub_mock, comp_mock, rgb_tif):
+        pyramid(rgb_tif)
         assert sub_mock.call_count == 0
 
     def testComputeLevelsReturnsListOfOverviewLevels(self):

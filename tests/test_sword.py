@@ -15,9 +15,9 @@ pytestmark = pytest.mark.usefixtures('app')
 
 
 class TestSWORDPackage(object):
-    def testWriteCreatesZipfile(self):
+    def testWriteCreatesZipfile(self, grayscale_tif):
         pkg = SWORDPackage(uuid='foobar', metadata='foobaz')
-        pkg.datafiles.append('tests/data/grayscale.tif')
+        pkg.datafiles.append(grayscale_tif)
         with tempfile.TemporaryFile() as fp:
             pkg.write(fp)
             zp = zipfile.ZipFile(fp)

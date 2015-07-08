@@ -6,18 +6,18 @@ from kepler.geo.datasources import Raster
 
 
 class TestRaster(object):
-    def testRgbReturnsTrueForRgb(self):
-        with closing(Raster('tests/data/rgb.tif')) as ds:
+    def testRgbReturnsTrueForRgb(self, rgb_tif):
+        with closing(Raster(rgb_tif)) as ds:
             assert ds.rgb
 
-    def testPalettedReturnsTrueForPaletted(self):
-        with closing(Raster('tests/data/paletted.tif')) as ds:
+    def testPalettedReturnsTrueForPaletted(self, paletted_tif):
+        with closing(Raster(paletted_tif)) as ds:
             assert ds.paletted
 
-    def testWidthReturnsWidth(self):
-        with closing(Raster('tests/data/grayscale.tif')) as ds:
+    def testWidthReturnsWidth(self, grayscale_tif):
+        with closing(Raster(grayscale_tif)) as ds:
             assert ds.width == 600
 
-    def testHeightReturnsHeight(self):
-        with closing(Raster('tests/data/grayscale.tif')) as ds:
+    def testHeightReturnsHeight(self, grayscale_tif):
+        with closing(Raster(grayscale_tif)) as ds:
             assert ds.height == 300
