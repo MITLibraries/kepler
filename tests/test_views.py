@@ -3,45 +3,66 @@ from __future__ import absolute_import
 from datetime import datetime
 
 import pytest
-from mock import patch
+from mock import patch, DEFAULT
 
 from kepler.models import Job, Item
 
 
+pytestmark = pytest.mark.usefixtures('db')
+
+
 @pytest.yield_fixture
-def create_job():
-    patcher = patch('kepler.job.views.create_job')
+def geo_tasks():
+    patcher = patch.multiple('kepler.layer.views', upload_shapefile=DEFAULT,
+                             index_shapefile=DEFAULT, upload_geotiff=DEFAULT,
+                             submit_to_dspace=DEFAULT, index_geotiff=DEFAULT)
     yield patcher.start()
     patcher.stop()
 
 
-class TestJob(object):
-    def testJobCreationReturns201OnSuccess(self, testapp, create_job,
-                                           bag_upload):
-        r = testapp.post('/jobs/', {'uri': 'foobar', 'type': 'shapefile'},
-                         upload_files=[('file', bag_upload)])
+@pytest.yield_fixture
+def marc_tasks():
+    patcher = patch('kepler.marc.views.index_marc_records')
+    yield patcher.start()
+    patcher.stop()
+
+
+class TestLayer(object):
+    def testReturns201OnSuccess(self, testapp, geo_tasks, bag_upload):
+        r = testapp.post('/layers/', upload_files=[('file', bag_upload)])
         assert r.status_code == 201
 
-    def testJobCreationRunsJob(self, testapp, create_job, bag_upload):
-        testapp.post('/jobs/', {'uri': 'foobar', 'type': 'shapefile'},
-                     upload_files=[('file', bag_upload)])
-        assert create_job.call_count == 1
+    def testJobCreated(self, testapp, geo_tasks, bag_upload):
+        r = testapp.post('/layers/', upload_files=[('file', bag_upload)])
+        assert Job.query.count() == 1
 
-    def testJobCreationReturns500OnJobRunError(self, testapp, create_job,
-                                               bag_upload):
-        create_job.side_effect = Exception
-        testapp.app.debug = False
-        testapp.app.config['PROPAGATE_EXCEPTIONS'] = False
-        r = testapp.post('/jobs/', {'uri': 'foobar', 'type': 'shapefile'},
-                         upload_files=[('file', bag_upload)],
-                         expect_errors=True)
-        assert r.status_code == 500
+    def testJobIsRun(self, testapp, geo_tasks, bag_upload):
+        r = testapp.post('/layers/', upload_files=[('file', bag_upload)])
+        assert Job.query.first().status == 'COMPLETED'
 
-    def testJobCreationReturns415OnUnsupportedFormat(self, testapp, db):
-        r = testapp.post('/jobs/', {'uri': 'foobar', 'type': 'warez'},
-                         expect_errors=True)
+    def testReturns415OnUnsupportedFormat(self, testapp, geo_tasks, bag_upload):
+        with patch('kepler.layer.views.get_datatype') as datatype:
+            datatype.return_value = 'w4rez'
+            r = testapp.post('/layers/', upload_files=[('file', bag_upload)],
+                             expect_errors=True)
         assert r.status_code == 415
 
+
+class TestMarc(object):
+    def testReturns201OnSuccess(self, testapp, marc, marc_tasks):
+        r = testapp.post('/marc/', upload_files=[('file', marc)])
+        assert r.status_code == 201
+
+    def testJobCreated(self, testapp, marc, marc_tasks):
+        r = testapp.post('/marc/', upload_files=[('file', marc)])
+        assert Job.query.count() == 1
+
+    def testJobIsRun(self, testapp, marc, marc_tasks):
+        r = testapp.post('/marc/', upload_files=[('file', marc)])
+        assert Job.query.first().status == 'COMPLETED'
+
+
+class TestJob(object):
     def testJobRetrievalShowsJob(self, testapp, db):
         job = Job(item=Item(uri=u'TestJob'), status='COMPLETED')
         db.session.add(job)

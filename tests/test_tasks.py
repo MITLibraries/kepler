@@ -68,16 +68,16 @@ def testIndexRepoRecordsIndexesRecords(job):
             mock.assert_called_with('foobar')
 
 
-def testSubmitToDspaceUploadsSwordPackage(job, bag):
+def testSubmitToDspaceUploadsSwordPackage(job, bag_tif):
     with patch('kepler.tasks.sword.submit') as mock:
-        submit_to_dspace(job, bag)
+        submit_to_dspace(job, bag_tif)
         mock.assert_called
 
 
-def testSubmitToDspaceAddsHandleToItem(job, bag):
+def testSubmitToDspaceAddsHandleToItem(job, bag_tif):
     with patch('kepler.tasks.sword.submit') as mock:
         mock.return_value = 'foobar'
-        submit_to_dspace(job, bag)
+        submit_to_dspace(job, bag_tif)
         assert job.item.handle == 'foobar'
 
 
@@ -123,7 +123,7 @@ def testUploadToGeoserverUploadsData(job, bag, shapefile):
 
 def testUploadToGeoServerUsesCorrectUrl(job, bag, shapefile):
     with patch('kepler.tasks.put') as mock:
-        job.access = 'Restricted'
+        job.item.access = 'Restricted'
         _upload_to_geoserver(job, bag, 'application/zip')
     assert mock.call_args[0][0] == 'http://example.com/secure-geoserver/'
 

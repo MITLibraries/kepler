@@ -4,6 +4,8 @@ from flask import Flask
 from .extensions import db
 from kepler.job import job_blueprint
 from kepler.item import item_blueprint
+from kepler.layer import layer_blueprint
+from kepler.marc import marc_blueprint
 from .settings import DefaultConfig
 from .exceptions import UnsupportedFormat
 
@@ -27,6 +29,8 @@ def register_extensions(app):
 def register_blueprints(app):
     app.register_blueprint(job_blueprint)
     app.register_blueprint(item_blueprint)
+    app.register_blueprint(layer_blueprint)
+    app.register_blueprint(marc_blueprint)
 
 
 def register_errorhandlers(app):

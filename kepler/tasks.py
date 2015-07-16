@@ -140,7 +140,7 @@ def _upload_to_geoserver(job, bag, mimetype):
         data = get_shapefile(bag)
     elif mimetype == 'image/tiff':
         data = get_geotiff(bag)
-    if job.access == 'Restricted':
+    if job.item.access == 'Restricted':
         url = current_app.config['GEOSERVER_RESTRICTED_URL']
     else:
         url = current_app.config['GEOSERVER_PUBLIC_URL']

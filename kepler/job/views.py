@@ -1,18 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-import os
-import shutil
-import tempfile
 
 from flask.views import View
 from flask import request, render_template
 from sqlalchemy.sql import func
 from sqlalchemy import and_
 
-from kepler.jobs import create_job
 from kepler.models import Job
 from kepler.extensions import db
-from kepler.bag import unpack
 
 
 class JobView(View):
@@ -21,8 +16,6 @@ class JobView(View):
             if request.endpoint.endswith('.index'):
                 return self.list()
             return self.show(*args, **kwargs)
-        if request.method == 'POST':
-            return self.create(*args, **kwargs)
 
     def list(self):
         pending = []
@@ -47,29 +40,9 @@ class JobView(View):
         job = Job.query.get_or_404(id)
         return render_template('job/show.html', job=job)
 
-    def create(self):
-        data = request.files.get('file')
-        tempdir = tempfile.mkdtemp()
-        if data:
-            try:
-                bag = unpack(data, tempdir)
-            except:
-                shutil.rmtree(tempdir)
-                raise
-        else:
-            bag = None
-        try:
-            job = create_job(request.form, bag)
-            job()
-        finally:
-            if os.path.isdir(tempdir):
-                shutil.rmtree(tempdir)
-        return '', 201
-
     @classmethod
     def register(cls, app, endpoint, url):
         view_func = cls.as_view(endpoint)
         app.add_url_rule(url, 'index', methods=['GET'], view_func=view_func)
-        app.add_url_rule(url, 'resource', methods=['POST'], view_func=view_func)
         app.add_url_rule('%s<path:id>' % url, 'resource', methods=['GET'],
                          view_func=view_func)

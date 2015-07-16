@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+import uuid
 
 from mock import patch, Mock
 import pytest
 
 from kepler.models import Job, Item
 from kepler.jobs import create_job, JobRunner, job_completed, job_failed
-from kepler.exceptions import UnsupportedFormat
 
 
 pytestmark = pytest.mark.usefixtures('db')
@@ -19,47 +19,34 @@ def job():
 
 class TestJobFactory(object):
     def testCreatesItem(self, bag):
-        create_job({'type': u'shapefile', 'uri': u'SEAMUS'}, bag)
+        uid = uuid.UUID('d2fe4762-96ec-57cd-89c9-312ec097284b')
+        create_job(uid.urn, bag, [Mock()], 'Public')
         assert Item.query.count() == 1
 
-    def testSetsAccessLevel(self, bag):
-        form = {'type': u'shapefile', 'uri': u'FOO', 'access': u'Restricted'}
-        create_job(form, bag)
-        assert Item.query.first().access == u'Restricted'
-
     def testCreatesJob(self, bag):
-        create_job({'type': u'shapefile', 'uri': u'LEURENT'}, bag)
+        uid = uuid.UUID('d2fe4762-96ec-57cd-89c9-312ec097284b')
+        create_job(uid.urn, bag, [Mock()], 'Public')
         assert Job.query.count() == 1
 
-    def testJobIsCreatedWithPendingStatus(self, bag):
-        create_job({'type': u'shapefile', 'uri': u'RUMBLUS'}, bag)
-        job = Job.query.first()
-        assert job.status == u'PENDING'
-
-    def testReturnsShapefileJobRunner(self, bag):
-        job = create_job({'type': u'shapefile', 'uri': u'KHOLER'}, bag)
-        assert isinstance(job, JobRunner)
-
-    def testReturnsGeotiffJobRunner(self, bag):
-        job = create_job({'type': u'geotiff', 'uri': u'ALPHARD'}, bag)
-        assert isinstance(job, JobRunner)
+    def testJobCreatedAsPending(self, bag):
+        uid = uuid.UUID('d2fe4762-96ec-57cd-89c9-312ec097284b')
+        create_job(uid.urn, bag, [Mock()], 'Public')
+        assert Job.query.first().status == 'PENDING'
 
     def testSetsFailedStatusOnError(self, bag):
+        uid = uuid.UUID('d2fe4762-96ec-57cd-89c9-312ec097284b')
         with patch('kepler.jobs.JobRunner', side_effect=Exception):
             try:
-                create_job({'type': u'shapefile', 'uri': u'FROST'}, bag)
+                create_job(uid.urn, bag, [Mock()], 'Public')
             except Exception:
                 pass
             assert Job.query.first().status == u'FAILED'
 
     def testReRaisesExceptions(self, bag):
+        uid = uuid.UUID('d2fe4762-96ec-57cd-89c9-312ec097284b')
         with patch('kepler.jobs.JobRunner', side_effect=KeyError):
             with pytest.raises(KeyError):
-                create_job({'type': u'shapefile', 'uri': u'MALRONA'}, bag)
-
-    def testRaisesUnsupportedFormatError(self, bag):
-        with pytest.raises(UnsupportedFormat):
-            create_job({'type': u'warez', 'uri': u'BLOODY_VICTORIA'}, bag)
+                create_job(uid.urn, bag, [Mock()], 'Public')
 
 
 class TestJobRunner(object):
