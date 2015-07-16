@@ -9,7 +9,6 @@ addons:
       - libgdal1-dev
       - gdal-bin
 env:
-  - TOX_ENV=py26
   - TOX_ENV=py27
   - TOX_ENV=py33
   - TOX_ENV=py34

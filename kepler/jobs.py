@@ -3,19 +3,12 @@ from __future__ import absolute_import
 
 from blinker import signal
 
-from kepler.models import Job, Item, get_or_create
 from kepler.extensions import db
-from kepler.exceptions import UnsupportedFormat
-from kepler.tasks import *
+from kepler.models import Job, Item, get_or_create
 
 
 job_failed = signal('job-failed')
 job_completed = signal('job-completed')
-
-shapefile_task_list = [upload_shapefile, index_shapefile, ]
-geotiff_task_list = [upload_geotiff, index_geotiff, ]
-repo_task_list = [index_repo_records, ]
-marc_task_list = [index_marc_records, ]
 
 
 @job_failed.connect
@@ -30,25 +23,13 @@ def completed(sender, **kwargs):
     db.session.commit()
 
 
-def create_job(form, data=None):
-    uri = form['uri']
-    job_type = form['type']
-    access = form.get('access', u'Public')
+def create_job(uri, data, task_list, access):
     item = get_or_create(Item, uri=uri, access=access)
     job = Job(item=item, status=u'PENDING')
     db.session.add(job)
     db.session.commit()
     try:
-        if job_type == 'shapefile':
-            return JobRunner(job, data, shapefile_task_list)
-        elif job_type == 'geotiff':
-            return JobRunner(job, data, geotiff_task_list)
-        elif job_type == 'repo':
-            return JobRunner(job, uri, repo_task_list)
-        elif job_type == 'marc':
-            return JobRunner(job, data, marc_task_list)
-        else:
-            raise UnsupportedFormat(job_type)
+        return JobRunner(job, data, task_list)
     except Exception:
         job.status = u'FAILED'
         db.session.commit()

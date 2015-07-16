@@ -3,12 +3,21 @@ from __future__ import absolute_import
 import tempfile
 import os
 
+import pytest
+from mock import patch
+
 from kepler.bag import *
 from kepler.bag import _extract_data
+from kepler.exceptions import FileNotFound, InvalidAccessLevel
 
 
 def test_extract_returns_pathname(bag):
     assert _extract_data(bag, '.zip') == "%sdata/shapefile.zip" % bag
+
+
+def test_extract_raises_exception(bag):
+    with pytest.raises(FileNotFound):
+        _extract_data(bag, '.wut')
 
 
 def test_returns_fgdc_path(bag):
@@ -24,3 +33,22 @@ def test_unpacks_bag(bag_upload):
     unpack(bag_upload, tmp)
     assert os.path.isdir(os.path.join(tmp,
                                       "d2fe4762-96ec-57cd-89c9-312ec097284b"))
+
+
+def test_get_datatype_returns_shapefile(bag):
+    assert get_datatype(bag) == 'shapefile'
+
+
+def test_get_datatype_returns_geotiff(bag_tif):
+    assert get_datatype(bag_tif) == 'geotiff'
+
+
+def test_get_access_returns_access(bag):
+    assert get_access(bag) == 'Public'
+
+
+def test_get_access_raises_exception(bag):
+    with patch('kepler.bag.rights_mapper') as rights:
+        rights.return_value = 'Super Secret'
+        with pytest.raises(InvalidAccessLevel):
+            get_access(bag)

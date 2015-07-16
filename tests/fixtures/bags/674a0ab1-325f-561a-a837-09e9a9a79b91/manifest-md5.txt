@@ -1,0 +1,2 @@
+a9230e370edc35e8346e5a53703a0d99  data/fgdc.xml
+996bc649ee5e2fe5af038de89b973d39  data/grayscale.tif
