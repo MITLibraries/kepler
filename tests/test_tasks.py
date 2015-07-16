@@ -71,7 +71,7 @@ def testIndexRepoRecordsIndexesRecords(job):
 def testSubmitToDspaceUploadsSwordPackage(job, bag_tif):
     with patch('kepler.tasks.sword.submit') as mock:
         submit_to_dspace(job, bag_tif)
-        mock.assert_called
+        assert mock.called
 
 
 def testSubmitToDspaceAddsHandleToItem(job, bag_tif):
