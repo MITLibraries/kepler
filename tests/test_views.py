@@ -67,13 +67,13 @@ class TestJob(object):
         job = Job(item=Item(uri=u'TestJob'), status='COMPLETED')
         db.session.add(job)
         db.session.commit()
-        r = testapp.get('/jobs/%d' % job.id)
+        r = testapp.get('/%d' % job.id)
         assert 'COMPLETED' in r.text
 
     def testJobListReturnsJobs(self, testapp, db):
         db.session.add(Job(item=Item(uri=u'FOO')))
         db.session.add(Job(item=Item(uri=u'BAR')))
-        r = testapp.get('/jobs/')
+        r = testapp.get('/')
         assert 'FOO' in r.text
         assert 'BAR' in r.text
 
@@ -82,7 +82,7 @@ class TestJob(object):
         db.session.add(Job(item=item, time=datetime(2001, 1, 1)))
         db.session.add(Job(item=item, time=datetime(2002, 1, 1),
                            status="COMPLETED"))
-        r = testapp.get('/jobs/')
+        r = testapp.get('/')
         assert 'COMPLETED' in r.text
         assert 'PENDING' not in r.text
 
