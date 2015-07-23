@@ -44,6 +44,7 @@ def put(root, id, data, mimetype):
     with io.open(data, 'rb') as fp:
         r = requests.put(url, data=fp, headers=headers)
     r.raise_for_status()
+    return layer_id(url.rsplit('/', 1)[0], mimetype)
 
 
 def delete(root, id, mimetype):
@@ -52,7 +53,41 @@ def delete(root, id, mimetype):
     r.raise_for_status()
 
 
+def layer_id(url, mimetype):
+    if mimetype == 'application/zip':
+        layer_name = feature_type_name(feature_types(url))
+    elif mimetype == 'image/tiff':
+        layer_name = coverage_name(coverages(url))
+    return "%s:%s" % (current_app.config['GEOSERVER_WORKSPACE'], layer_name)
+
+
+def feature_types(url):
+    json = _get_json(url)
+    return json['dataStore']['featureTypes']
+
+
+def feature_type_name(url):
+    json = _get_json(url)
+    return json['featureTypes']['featureType'][0]['name']
+
+
+def coverages(url):
+    json = _get_json(url)
+    return json['coverageStore']['coverages']
+
+
+def coverage_name(url):
+    json = _get_json(url)
+    return json['coverages']['coverage'][0]['name']
+
+
 def _url_by_access(access):
     if access.lower() == 'restricted':
         return current_app.config['GEOSERVER_RESTRICTED_URL']
     return current_app.config['GEOSERVER_PUBLIC_URL']
+
+
+def _get_json(url):
+    r = requests.get(url, headers={'Accept': 'application/json'})
+    r.raise_for_status()
+    return r.json()
