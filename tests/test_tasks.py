@@ -128,6 +128,13 @@ def testUploadToGeoServerUsesCorrectUrl(job, bag, shapefile):
     assert mock.call_args[0][0] == 'http://example.com/secure-geoserver/'
 
 
+def testUploadToGeoServerSetsLayerId(job, bag, shapefile, db):
+    with patch('kepler.tasks.put') as mock:
+        mock.return_value = 'foo:bar'
+        _upload_to_geoserver(job, bag, 'application/zip')
+    assert job.item.layer_id == 'foo:bar'
+
+
 def testIndexRecordsAddsRecordsToSolr(pysolr_add):
     _index_records([{'uuid': 'foobar'}])
     pysolr_add.assert_called_once_with([{'uuid': 'foobar'}])
