@@ -37,6 +37,7 @@ class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     uri = db.Column(db.Unicode(255), unique=True)
     layer_id = db.Column(db.Unicode(255))
+    handle = db.Column(db.Unicode(255))
     access = db.Column(db.Enum(u'Public', u'Restricted'), default=u'Public')
     jobs = db.relationship('Job', backref='item', lazy='dynamic')
 

@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
+import os.path
+
+
+APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 
 class DefaultConfig(object):
     TESTING = False
     DEBUG = False
+    FGDC_MODS_XSLT = os.path.join(APP_ROOT, 'templates/fgdc_to_mods.xslt')
 
 
 class TestConfig(DefaultConfig):

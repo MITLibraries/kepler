@@ -10,7 +10,8 @@ from mock import Mock, patch
 
 from kepler.tasks import *
 from kepler.tasks import (_index_records, _index_from_fgdc, _load_marc_records,
-                          _upload_to_geoserver, _load_repo_records)
+                          _upload_to_geoserver, _load_repo_records,
+                          _fgdc_to_mods)
 
 
 pytestmark = pytest.mark.usefixtures('app')
@@ -160,3 +161,9 @@ def testIndexMarcRecordsIndexesRecords(job, marc):
 def testLoadMarcRecordsCreatesUuid(marc):
     records = _load_marc_records(marc)
     assert next(records).get('uuid') == 'cb41c773-9570-5feb-8bac-ea6203d1541e'
+
+
+def testFgdcToModsReturnsMods(bag_tif):
+    fgdc = os.path.join(bag_tif, 'data/fgdc.xml')
+    mods = _fgdc_to_mods(fgdc)
+    assert u'<mods:title>Some land</mods:title>' in mods
