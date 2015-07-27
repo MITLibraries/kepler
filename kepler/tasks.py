@@ -144,7 +144,9 @@ def _upload_to_geoserver(job, bag, mimetype):
         url = current_app.config['GEOSERVER_RESTRICTED_URL']
     else:
         url = current_app.config['GEOSERVER_PUBLIC_URL']
-    put(url, job.item.uri, data, mimetype)
+    layer_id = put(url, job.item.uri, data, mimetype)
+    job.item.layer_id = layer_id
+    db.session.commit()
 
 
 def _index_records(records):

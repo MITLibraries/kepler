@@ -76,3 +76,7 @@ class TestItem(object):
         db.session.add(item)
         db.session.commit()
         assert item.access == u'Public'
+
+    def testItemHasLayerId(self, db):
+        item = Item(layer_id='foo:bar')
+        assert item.layer_id == 'foo:bar'
