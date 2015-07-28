@@ -20,6 +20,7 @@ import uuid
 
 from flask import current_app
 from ogre.xml import FGDCParser
+from lxml import etree
 
 from kepler.geoserver import put, wfs_url, wms_url
 from kepler.bag import get_fgdc, get_shapefile, get_geotiff
@@ -70,6 +71,7 @@ def submit_to_dspace(job, data):
     pkg = sword.SWORDPackage(uuid=job.item.uri)
     tiff = get_geotiff(data)
     pkg.datafiles.append(tiff)
+    pkg.metadata = _fgdc_to_mods(get_fgdc(data))
     with tempfile.NamedTemporaryFile(suffix='.zip') as fp:
         pkg.write(fp)
         handle = sword.submit(current_app.config['SWORD_SERVICE_URL'], fp.name,
@@ -171,3 +173,11 @@ def _load_marc_records(data):
                         current_app.config['UUID_NAMESPACE'])
         record.update(uuid=uid)
         yield MitRecord(**record).as_dict()
+
+
+def _fgdc_to_mods(fgdc):
+    xslt = current_app.config['FGDC_MODS_XSLT']
+    xform = etree.XSLT(etree.parse(xslt))
+    doc = etree.parse(fgdc)
+    mods = xform(doc)
+    return etree.tostring(mods, encoding="unicode")

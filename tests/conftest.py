@@ -87,12 +87,9 @@ def marc():
     return _fixture_path('marc.xml')
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def fgdc(bag):
-    xml = os.path.join(bag, 'data/fgdc.xml')
-    fp = io.open(xml, encoding='utf-8')
-    yield fp
-    fp.close()
+    return os.path.join(bag, 'data/fgdc.xml')
 
 
 @pytest.yield_fixture

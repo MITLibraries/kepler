@@ -16,7 +16,7 @@
   <dmdSec ID="dmdSec_1">
     <mdWrap MIMETYPE="text/xml" MDTYPE="MODS">
       <xmlData>
-        {{ metadata }}
+        {{ metadata|safe }}
       </xmlData>
     </mdWrap>
   </dmdSec>
