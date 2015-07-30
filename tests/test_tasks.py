@@ -1,35 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-import tempfile
-import shutil
 import os.path
 
-import git
 import pytest
 from mock import Mock, patch
 
 from kepler.tasks import *
 from kepler.tasks import (_index_records, _index_from_fgdc, _load_marc_records,
-                          _upload_to_geoserver, _load_repo_records,
-                          _fgdc_to_mods)
+                          _upload_to_geoserver, _fgdc_to_mods)
 
 
 pytestmark = pytest.mark.usefixtures('app')
-
-
-@pytest.yield_fixture
-def repo(testapp):
-    remote_dir = tempfile.mkdtemp()
-    local = tempfile.mkdtemp()
-    remote = os.path.join(remote_dir, 'repo')
-    shutil.copytree('tests/fixtures/repo', remote)
-    r = git.Repo.init(remote)
-    r.index.add('*')
-    r.index.commit("Baby's first commit")
-    testapp.app.config['OGM_REPOSITORIES'] = dict([(remote, local)])
-    yield remote
-    shutil.rmtree(remote_dir)
-    shutil.rmtree(local)
 
 
 @pytest.fixture
@@ -59,14 +40,6 @@ def testIndexGeotiffIndexesFromFGDC(job, bag):
     with patch('kepler.tasks._index_from_fgdc') as mock:
         index_geotiff(job, bag)
         mock.assert_called_with(job, bag=bag, dct_references_s=refs)
-
-
-def testIndexRepoRecordsIndexesRecords(job):
-    with patch('kepler.tasks._index_records') as mock:
-        with patch('kepler.tasks._load_repo_records') as repo:
-            repo.return_value = 'foobar'
-            index_repo_records(job, 'foo/bar')
-            mock.assert_called_with('foobar')
 
 
 def testSubmitToDspaceUploadsSwordPackage(job, bag_tif):
@@ -139,11 +112,6 @@ def testUploadToGeoServerSetsLayerId(job, bag, shapefile, db):
 def testIndexRecordsAddsRecordsToSolr(pysolr_add):
     _index_records([{'uuid': 'foobar'}])
     pysolr_add.assert_called_once_with([{'uuid': 'foobar'}])
-
-
-def testLoadRepoRecordsReturnsRecordsIterator(repo):
-    records = _load_repo_records(repo)
-    assert next(records) == {"layer_id_s": "FOOBAR"}
 
 
 def testLoadMarcRecordsReturnsRecordIterator(marc):
