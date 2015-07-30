@@ -13,8 +13,6 @@
 """
 
 from __future__ import absolute_import
-import io
-import json
 import tempfile
 import uuid
 
@@ -26,7 +24,6 @@ from kepler.geoserver import put, wfs_url, wms_url
 from kepler.bag import get_fgdc, get_shapefile, get_geotiff
 from kepler.records import create_record, MitRecord
 from kepler.services.solr import SolrServiceManager
-from kepler.git import repository
 from kepler import sword
 from kepler.utils import make_uuid
 from kepler.extensions import db
@@ -59,10 +56,6 @@ def index_geotiff(job, data):
         'http://schema.org/downloadUrl': job.item.handle
     }
     _index_from_fgdc(job, bag=data, dct_references_s=refs)
-
-
-def index_repo_records(job, repo):
-    _index_records(_load_repo_records(repo))
 
 
 def submit_to_dspace(job, data):
@@ -159,12 +152,6 @@ def _index_records(records):
 
     solr = SolrServiceManager(current_app.config['SOLR_URL'])
     solr.postMetaDataToServer(records)
-
-
-def _load_repo_records(repo):
-    for item in repository(repo):
-        with io.open(item.solr_json, encoding='utf-8') as fp:
-            yield json.load(fp)
 
 
 def _load_marc_records(data):
