@@ -19,11 +19,11 @@ import uuid
 from flask import current_app
 from ogre.xml import FGDCParser
 from lxml import etree
+import pysolr
 
 from kepler.geoserver import put, wfs_url, wms_url
 from kepler.bag import get_fgdc, get_shapefile, get_geotiff
 from kepler.records import create_record, MitRecord
-from kepler.services.solr import SolrServiceManager
 from kepler import sword
 from kepler.utils import make_uuid
 from kepler.extensions import db
@@ -152,8 +152,8 @@ def _index_records(records):
     :param records: iterator of dictionaries to be added to Solr
     """
 
-    solr = SolrServiceManager(current_app.config['SOLR_URL'])
-    solr.postMetaDataToServer(records)
+    solr = pysolr.Solr(current_app.config['SOLR_URL'])
+    solr.add(records)
 
 
 def _load_marc_records(data):
