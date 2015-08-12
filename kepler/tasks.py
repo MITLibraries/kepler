@@ -28,7 +28,7 @@ from kepler import sword
 from kepler.utils import make_uuid
 from kepler.extensions import db
 from kepler.parsers import MarcParser
-from kepler.geo.processing import compress, pyramid
+from kepler.geo import compress, pyramid
 
 
 def index_shapefile(job, data):
