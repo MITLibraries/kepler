@@ -2,8 +2,44 @@
 from __future__ import absolute_import, division
 from contextlib import closing
 import math
-from future.moves.subprocess import check_output
-from kepler.geo.datasources import Raster
+
+from osgeo import gdal
+from subprocess import check_output
+
+
+GDAL_RGB = (gdal.GCI_RedBand, gdal.GCI_GreenBand, gdal.GCI_BlueBand)
+GDAL_PALETTED = gdal.GCI_PaletteIndex
+
+
+class Raster(object):
+    def __init__(self, file):
+        self.ds = gdal.Open(file)
+
+    def bands(self):
+        bands = self.ds.RasterCount
+        for i in range(1, bands+1):
+            yield self.ds.GetRasterBand(i)
+
+    @property
+    def rgb(self):
+        return (self.ds.RasterCount == 3 and
+                all(band.GetColorInterpretation() in GDAL_RGB for band in self.bands()))
+
+    @property
+    def paletted(self):
+        return (self.ds.RasterCount == 1 and
+                self.ds.GetRasterBand(1).GetColorInterpretation() == GDAL_PALETTED)
+
+    @property
+    def width(self):
+        return self.ds.RasterXSize
+
+    @property
+    def height(self):
+        return self.ds.RasterYSize
+
+    def close(self):
+        self.ds = None
 
 
 def compress(file_in, file_out):
@@ -21,7 +57,7 @@ def compress(file_in, file_out):
     """
 
     args = ['-co', 'TILED=YES', '-co', 'COMPRESS=JPEG', '-co',
-            'BLOCKXSIZE=2048', '-co', 'BLOCKYSIZE=2048',]
+            'BLOCKXSIZE=2048', '-co', 'BLOCKYSIZE=2048']
     with closing(Raster(file_in)) as ds:
         if ds.paletted:
             args = args + ['-expand', 'rgb', '-co', 'PHOTOMETRIC=YCBCR']
