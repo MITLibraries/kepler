@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import os.path
 
 import pytest
-from mock import Mock, patch
+from mock import Mock, patch, DEFAULT
 
 from kepler.tasks import *
 from kepler.tasks import (_index_records, _index_from_fgdc, _load_marc_records,
@@ -55,16 +55,32 @@ def testSubmitToDspaceAddsHandleToItem(job, bag_tif):
         assert job.item.handle == 'foobar'
 
 
-def testUploadShapefileCallsUploadWithMimetype(job, bag):
+def testUploadShapefileCallsUploadWithMimetype(job, bag, shapefile):
     with patch('kepler.tasks._upload_to_geoserver') as mock:
         upload_shapefile(job, bag)
-        mock.assert_called_with(job, bag=bag, mimetype='application/zip')
+        kwargs = mock.call_args[1]
+        assert kwargs['mimetype'] == 'application/zip'
 
 
-def testUploadGeotiffCallsUploadWithMimetype(job, bag):
+def testUploadGeotiffCallsUploadWithMimetype(job, bag_tif):
     with patch('kepler.tasks._upload_to_geoserver') as mock:
-        upload_geotiff(job, bag)
-        mock.assert_called_with(job, bag=bag, mimetype='image/tiff')
+        upload_geotiff(job, bag_tif)
+        kwargs = mock.call_args[1]
+        assert kwargs['mimetype'] == 'image/tiff'
+
+
+def testUploadGeotiffCompressesTiff(job, bag_tif):
+    with patch.multiple('kepler.tasks', _upload_to_geoserver=DEFAULT,
+                        compress=DEFAULT, pyramid=DEFAULT) as mocks:
+        upload_geotiff(job, bag_tif)
+        assert mocks['compress'].called
+
+
+def testUploadGeotiffPyramidsTiff(job, bag_tif):
+    with patch.multiple('kepler.tasks', _upload_to_geoserver=DEFAULT,
+                        pyramid=DEFAULT) as mocks:
+        upload_geotiff(job, bag_tif)
+        assert mocks['pyramid'].called
 
 
 def testIndexFromFgdcCreatesRecord(job, bag):
@@ -88,9 +104,9 @@ def testIndexFromFgdcAddsUuid(job, bag):
     assert args[0][0].get('uuid') == 'c8921f5a-eac7-509b-bac5-bd1b2cb202dc'
 
 
-def testUploadToGeoserverUploadsData(job, bag, shapefile):
+def testUploadToGeoserverUploadsData(job, shapefile):
     with patch('kepler.tasks.put') as mock:
-        _upload_to_geoserver(job, bag, 'application/zip')
+        _upload_to_geoserver(job, shapefile, 'application/zip')
     mock.assert_called_once_with('http://example.com/geoserver/', job.item.uri,
                                  shapefile, 'application/zip')
 

@@ -28,6 +28,7 @@ from kepler import sword
 from kepler.utils import make_uuid
 from kepler.extensions import db
 from kepler.parsers import MarcParser
+from kepler.geo.processing import compress, pyramid
 
 
 def index_shapefile(job, data):
@@ -77,20 +78,25 @@ def upload_shapefile(job, data):
     """Upload Shapefile to GeoServer.
 
         :param job: :class:`~kepler.models.Job`
-        :param bag: absolute path to bag containing Shapefile
+        :param data: absolute path to bag containing Shapefile
     """
 
-    _upload_to_geoserver(job, bag=data, mimetype='application/zip')
+    shp = get_shapefile(data)
+    _upload_to_geoserver(job, data=shp, mimetype='application/zip')
 
 
 def upload_geotiff(job, data):
     """Upload GeoTIFF to GeoServer.
 
         :param job: :class:`~kepler.models.Job`
-        :param bag: absolute path to bag containing GeoTIFF
+        :param data: absolute path to bag containing GeoTIFF
     """
 
-    _upload_to_geoserver(job, bag=data, mimetype='image/tiff')
+    tiff = get_geotiff(data)
+    with tempfile.NamedTemporaryFile(suffix='.tif') as fp:
+        compress(tiff, fp.name)
+        pyramid(fp.name)
+        _upload_to_geoserver(job, data=fp.name, mimetype='image/tiff')
 
 
 def index_marc_records(job, data):
@@ -119,7 +125,7 @@ def _index_from_fgdc(job, bag, **kwargs):
     _index_records([record.as_dict()])
 
 
-def _upload_to_geoserver(job, bag, mimetype):
+def _upload_to_geoserver(job, data, mimetype):
     """Uploads Shapefiles and GeoTIFFs to GeoServer.
 
     This is a generic task for uploading data to GeoServer. You should
@@ -127,14 +133,10 @@ def _upload_to_geoserver(job, bag, mimetype):
     and :func:`~upload_geotiff`.
 
     :param job: :class:`~kepler.models.Job`
-    :param bag: absolute path to bag containing Shapefile or GeoTIFF
+    :param data: absolute path to either Shapefile or GeoTIFF
     :param mimetype: one of ``application/zip`` or ``image/tiff``
     """
 
-    if mimetype == 'application/zip':
-        data = get_shapefile(bag)
-    elif mimetype == 'image/tiff':
-        data = get_geotiff(bag)
     if job.item.access == 'Restricted':
         url = current_app.config['GEOSERVER_RESTRICTED_URL']
     else:
