@@ -40,6 +40,17 @@ class TestLayer(object):
         r = testapp.post('/layers/', upload_files=[('file', bag_upload)])
         assert Job.query.first().status == 'COMPLETED'
 
+    def testRunsShapefileTasks(self, testapp, geo_tasks, bag_upload):
+        r = testapp.post('/layers/', upload_files=[('file', bag_upload)])
+        assert geo_tasks['upload_shapefile'].called
+        assert geo_tasks['index_shapefile'].called
+
+    def testRunsGeotiffTasks(self, testapp, geo_tasks, bag_tif_upload):
+        r = testapp.post('/layers/', upload_files=[('file', bag_tif_upload)])
+        assert geo_tasks['upload_geotiff'].called
+        assert geo_tasks['submit_to_dspace'].called
+        assert geo_tasks['index_geotiff'].called
+
     def testReturns415OnUnsupportedFormat(self, testapp, geo_tasks, bag_upload):
         with patch('kepler.layer.views.get_datatype') as datatype:
             datatype.return_value = 'w4rez'
@@ -70,12 +81,20 @@ class TestJob(object):
         r = testapp.get('/%d' % job.id)
         assert 'COMPLETED' in r.text
 
-    def testJobListReturnsJobs(self, testapp, db):
-        db.session.add(Job(item=Item(uri=u'FOO')))
-        db.session.add(Job(item=Item(uri=u'BAR')))
+    def testJobListShowsPendingJobs(self, testapp, db):
+        db.session.add(Job(item=Item(uri=u'FOO'), status='PENDING'))
         r = testapp.get('/')
         assert 'FOO' in r.text
-        assert 'BAR' in r.text
+
+    def testJobListShowsCompletedJobs(self, testapp, db):
+        db.session.add(Job(item=Item(uri=u'FOO'), status='COMPLETED'))
+        r = testapp.get('/')
+        assert 'FOO' in r.text
+
+    def testJobListShowsFailedJobs(self, testapp, db):
+        db.session.add(Job(item=Item(uri=u'FOO'), status='FAILED'))
+        r = testapp.get('/')
+        assert 'FOO' in r.text
 
     def testJobListReturnsOnlyMostRecentJobs(self, testapp, db):
         item = Item(uri=u'Frob')

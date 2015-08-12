@@ -63,6 +63,11 @@ def bag_upload():
 
 
 @pytest.fixture
+def bag_tif_upload():
+    return _fixture_path('bags/674a0ab1-325f-561a-a837-09e9a9a79b91.zip')
+
+
+@pytest.fixture
 def bag_tif():
     return _fixture_path('bags/674a0ab1-325f-561a-a837-09e9a9a79b91/')
 
