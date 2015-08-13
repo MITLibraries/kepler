@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division
-try:
-    from lxml.etree import iterparse
-except ImportError:
-    from xml.etree.ElementTree import iterparse
+from lxml.etree import iterparse
 import pymarc
 import re
 import decimal
