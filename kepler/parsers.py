@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, division
+from __future__ import absolute_import
 from lxml.etree import iterparse
 import pymarc
 import re
-import decimal
+from decimal import Decimal, getcontext
 
 
 class XMLParser(object):
@@ -106,17 +106,17 @@ class MarcParser(XMLParser):
         return record
 
     @classmethod
-    def convert_coord(cls, coordinate):
+    def convert_coord(cls, coordinate, precision=10):
+        o_precision = getcontext().prec
+        getcontext().prec = precision
         matches = cls.COORD_REGEX.search(coordinate)
         if not matches:
             return None
         parts = matches.groupdict()
-        dec = float(parts.get('degrees')) + \
-            float(parts.get('minutes') or 0) / 60 + \
-            float(parts.get('seconds') or 0) / 3600
+        dec = Decimal(parts.get('degrees')) + \
+            Decimal(parts.get('minutes') or 0) / 60 + \
+            Decimal(parts.get('seconds') or 0) / 3600
         if parts.get('hemisphere') and parts.get('hemisphere').lower() in 'ws-':
-            dec = -dec
-        try:
-            return decimal.Decimal(dec)
-        except TypeError:
-            return decimal.Decimal("%.7f" % dec)
+            dec = dec * -1
+        getcontext().prec = o_precision
+        return dec
