@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, division
+from __future__ import absolute_import
 from io import BytesIO
 from xml.etree.ElementTree import Element
-import decimal
+from decimal import Decimal, getcontext
 
 import pytest
 from mock import Mock
@@ -25,12 +25,12 @@ def parser():
     return parser
 
 
-def almost_equal(x, y):
-    try:
-        y = decimal.Decimal(y)
-    except TypeError:
-        y = decimal.Decimal("%.7f" % y)
-    return abs(x - y) <= decimal.Decimal("0.0000001")
+@pytest.yield_fixture()
+def prec_10():
+    o_prec = getcontext().prec
+    getcontext().prec = 10
+    yield
+    getcontext().prec = o_prec
 
 
 class TestXMLParser(object):
@@ -134,12 +134,22 @@ class TestMarcParser(object):
         assert parts.groupdict().get('minutes') == '45'
         assert parts.groupdict().get('seconds') == '67.89'
 
-    def testConvertCoordConvertsStringToDecimal(self):
-        degrees = 12 + 34/60 + 56/3600
-        assert almost_equal(MarcParser.convert_coord("S0123456"), -degrees)
+    def testConvertCoordConvertsStringToDecimal(self, prec_10):
+        degrees = (12 + Decimal(34)/60 + Decimal(56)/3600) * -1
+        assert MarcParser.convert_coord("S0123456") == degrees
 
-        degrees = 123 + 45.6789/60
-        assert almost_equal(MarcParser.convert_coord("12345.6789"), degrees)
+        degrees = 123 + Decimal('45.6789')/60
+        assert MarcParser.convert_coord("12345.6789") == degrees
+
+    def testConvertCoordUsesPrecision(self, prec_10):
+        assert MarcParser.convert_coord("12345.6789", precision=5) == Decimal('123.76')
+
+    def testConvertCoordResetsPrecision(self, prec_10):
+        MarcParser.convert_coord('12345.6789', precision=2)
+        assert Decimal(2)/3 == Decimal('0.6666666667')
+
+    def testConvertCoordReturnsNoneWhenNoMatch(self):
+        assert MarcParser.convert_coord("asdf") is None
 
     def testParsesMarcXml(self, marc):
         parser = MarcParser(marc)

@@ -78,6 +78,9 @@
     <datafield tag="500" ind1=" " ind2=" ">
       <subfield code="a">Includes text and inset of &quot;Heat flow in the Rio Grande rift and adjacient areas.&quot;</subfield>
     </datafield>
+    <datafield tag="520" ind1=" " ind2=" ">
+      <subfield code="a">Here's a summary</subfield>
+    </datafield>
     <datafield tag="504" ind1=" " ind2=" ">
       <subfield code="a">Bibliography.</subfield>
     </datafield>
