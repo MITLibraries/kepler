@@ -60,18 +60,26 @@ def index_geotiff(job, data):
 
 
 def submit_to_dspace(job, data):
-    username = current_app.config['SWORD_SERVICE_USERNAME']
-    password = current_app.config['SWORD_SERVICE_PASSWORD']
-    pkg = sword.SWORDPackage(uuid=job.item.uri)
-    tiff = get_geotiff(data)
-    pkg.datafiles.append(tiff)
-    pkg.metadata = _fgdc_to_mods(get_fgdc(data))
-    with tempfile.NamedTemporaryFile(suffix='.zip') as fp:
-        pkg.write(fp)
-        handle = sword.submit(current_app.config['SWORD_SERVICE_URL'], fp.name,
-                              auth=(username, password))
-    job.item.handle = handle
-    db.session.commit()
+    """Upload GeoTIFF to DSpace.
+
+        .. note:: only runs if `Item.handle` has not previously been set.
+
+        :param job: :class:`~kepler.models.Job`
+        :param data: absolute path to bag containing GeoTIFF
+    """
+    if not job.item.handle:
+        username = current_app.config['SWORD_SERVICE_USERNAME']
+        password = current_app.config['SWORD_SERVICE_PASSWORD']
+        pkg = sword.SWORDPackage(uuid=job.item.uri)
+        tiff = get_geotiff(data)
+        pkg.datafiles.append(tiff)
+        pkg.metadata = _fgdc_to_mods(get_fgdc(data))
+        with tempfile.NamedTemporaryFile(suffix='.zip') as fp:
+            pkg.write(fp)
+            handle = sword.submit(current_app.config['SWORD_SERVICE_URL'], fp.name,
+                                  auth=(username, password))
+        job.item.handle = handle
+        db.session.commit()
 
 
 def upload_shapefile(job, data):
