@@ -16,6 +16,7 @@ pytestmark = pytest.mark.usefixtures('app')
 @pytest.fixture
 def job():
     j = Mock()
+    j.item.handle = None
     j.item.uri = 'urn:uuid:c8921f5a-eac7-509b-bac5-bd1b2cb202dc'
     j.item.access = 'public'
     return j
@@ -53,6 +54,19 @@ def testSubmitToDspaceAddsHandleToItem(job, bag_tif):
         mock.return_value = 'foobar'
         submit_to_dspace(job, bag_tif)
         assert job.item.handle == 'foobar'
+
+
+def testSubmitToDspaceWithExistingHandleDoesNotSubmit(job, bag_tif):
+    job.item.handle = "popcorn"
+    with patch('kepler.tasks.sword.submit') as mock:
+        submit_to_dspace(job, bag_tif)
+        assert not mock.called
+
+
+def testSubmitToDspaceWithExistingHandleDoesNotChangeHandle(job, bag_tif):
+    job.item.handle = "popcorn"
+    submit_to_dspace(job, bag_tif)
+    assert job.item.handle == "popcorn"
 
 
 def testUploadShapefileCallsUploadWithMimetype(job, bag, shapefile):
