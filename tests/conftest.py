@@ -93,6 +93,16 @@ def marc():
 
 
 @pytest.fixture
+def marc_bad034():
+    return _fixture_path('marc_bad034.xml')
+
+
+@pytest.fixture
+def marc_really_bad034():
+    return _fixture_path('marc_really_bad034.xml')
+
+
+@pytest.fixture
 def fgdc(bag):
     return os.path.join(bag, 'data/fgdc.xml')
 

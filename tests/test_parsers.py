@@ -142,7 +142,8 @@ class TestMarcParser(object):
         assert MarcParser.convert_coord("12345.6789") == degrees
 
     def testConvertCoordUsesPrecision(self, prec_10):
-        assert MarcParser.convert_coord("12345.6789", precision=5) == Decimal('123.76')
+        assert MarcParser.convert_coord("12345.6789",
+                                        precision=5) == Decimal('123.76')
 
     def testConvertCoordResetsPrecision(self, prec_10):
         MarcParser.convert_coord('12345.6789', precision=2)
@@ -156,3 +157,30 @@ class TestMarcParser(object):
         iparser = iter(parser)
         record = next(iparser)
         assert record['dc_title_s'] == 'Geothermal resources of New Mexico'
+
+    def testParsesGoodMarc034(self, marc):
+        parser = MarcParser(marc)
+        iparser = iter(parser)
+        record = next(iparser)
+        assert record['_bbox_w'] == Decimal('-109')
+        assert record['_bbox_e'] == Decimal('-103')
+        assert record['_bbox_n'] == Decimal('37')
+        assert record['_bbox_s'] == Decimal('31')
+
+    def testPadsandParsesBadMarc034(self, marc_bad034):
+        parser = MarcParser(marc_bad034)
+        iparser = iter(parser)
+        record = next(iparser)
+        assert record['_bbox_w'] == Decimal('-99')
+        assert record['_bbox_e'] == Decimal('99')
+        assert record['_bbox_n'] == Decimal('37')
+        assert record['_bbox_s'] == Decimal('-31')
+
+    def testPadsandParsesReallyBadMarc034(self, marc_really_bad034):
+        parser = MarcParser(marc_really_bad034)
+        iparser = iter(parser)
+        record = next(iparser)
+        assert record['_bbox_w'] == Decimal('-9')
+        assert record['_bbox_e'] == Decimal('9')
+        assert record['_bbox_n'] == Decimal('7')
+        assert record['_bbox_s'] == Decimal('-1')
