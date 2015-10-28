@@ -5,8 +5,26 @@
       <citeinfo>
         <origin>Ginnungagap, the Yawning Emptiness of Abyssal Chaos</origin>
         <title>Some land</title>
+        <pubdate>20031001</pubdate>
       </citeinfo>
     </citation>
-    <accconst>Unrestricted Access Online</accconst>
+    <descript>
+      <abstract>This is a picture of some land. It has some stuff on it.</abstract>
+    </descript>
+    <accconst>Unrestricted Access Online.</accconst>
+    <spdom>
+      <bounding>
+        <westbc>10</westbc>
+        <eastbc>30</eastbc>
+        <northbc>71</northbc>
+        <southbc>70</southbc>
+      </bounding>
+    </spdom>
   </idinfo>
+  <spdoinfo>
+    <direct>Raster</direct>
+  </spdoinfo>
+  <distinfo>
+    <distliab>Use at your own risk.</distliab>
+  </distinfo>
 </metadata>
