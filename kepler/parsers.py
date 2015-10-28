@@ -99,10 +99,14 @@ class MarcParser(XMLParser):
             record['_location'] = self._record['876']['B']
         record['_marc_id'] = self._record['001'].value()
         if '034' in self._record:
-            record['_bbox_w'] = self.convert_coord(self._record['034']['d'])
-            record['_bbox_e'] = self.convert_coord(self._record['034']['e'])
-            record['_bbox_n'] = self.convert_coord(self._record['034']['f'])
-            record['_bbox_s'] = self.convert_coord(self._record['034']['g'])
+            record['_bbox_w'] = self.convert_coord(self.pad_034(
+                                                   self._record['034']['d']))
+            record['_bbox_e'] = self.convert_coord(self.pad_034(
+                                                   self._record['034']['e']))
+            record['_bbox_n'] = self.convert_coord(self.pad_034(
+                                                   self._record['034']['f']))
+            record['_bbox_s'] = self.convert_coord(self.pad_034(
+                                                   self._record['034']['g']))
         return record
 
     @classmethod
@@ -120,3 +124,10 @@ class MarcParser(XMLParser):
             dec = dec * -1
         getcontext().prec = o_precision
         return dec
+
+    @classmethod
+    def pad_034(self, coordinate):
+        h, c = coordinate[0], coordinate[1:]
+        if h in 'NSEW':
+            c = "{:>07}".format(c)
+        return h + c

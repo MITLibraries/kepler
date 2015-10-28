@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<collection xmlns="http://www.loc.gov/MARC21/slim" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/MARC21/slim http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd">
+  <record>
+    <leader>02269nem  2200409   45q0</leader>
+    <controlfield tag="FMT">MP</controlfield>
+    <controlfield tag="LDR">02269nem  2200409   45q0</controlfield>
+    <controlfield tag="001">000713067</controlfield>
+    <controlfield tag="003">MCM</controlfield>
+    <controlfield tag="005">20010608223715.0</controlfield>
+    <controlfield tag="008">830412s1980    dcuag  ca a  f  0   eng</controlfield>
+    <datafield tag="010" ind1=" " ind2=" ">
+      <subfield code="a">   83691665 /MAPS/r84</subfield>
+    </datafield>
+    <datafield tag="034" ind1="1" ind2=" ">
+      <subfield code="a">a</subfield>
+      <subfield code="b">500000</subfield>
+      <subfield code="d">W990000</subfield>
+      <subfield code="e">E990000</subfield>
+      <subfield code="f">N370000</subfield>
+      <subfield code="g">S310000</subfield>
+    </datafield>
+    <datafield tag="035" ind1=" " ind2=" ">
+      <subfield code="a">MITb10713067</subfield>
+    </datafield>
+    <datafield tag="035" ind1=" " ind2=" ">
+      <subfield code="a">(OCoLC)09620099</subfield>
+    </datafield>
+    <datafield tag="035" ind1=" " ind2=" ">
+      <subfield code="a">GLIS00713067</subfield>
+    </datafield>
+    <datafield tag="040" ind1=" " ind2=" ">
+      <subfield code="a">DLC</subfield>
+      <subfield code="c">DLC</subfield>
+      <subfield code="d">IAS</subfield>
+      <subfield code="d">MYG</subfield>
+    </datafield>
+    <datafield tag="050" ind1="0" ind2=" ">
+      <subfield code="a">G4321.C9 1980</subfield>
+      <subfield code="b">.N4</subfield>
+    </datafield>
+    <datafield tag="052" ind1=" " ind2=" ">
+      <subfield code="a">4321</subfield>
+    </datafield>
+    <datafield tag="086" ind1="0" ind2=" ">
+      <subfield code="a">C 55.22/2:N 42 M/980</subfield>
+    </datafield>
+    <datafield tag="099" ind1=" " ind2=" ">
+      <subfield code="a">G4321.C9 1980 .N4</subfield>
+    </datafield>
+    <datafield tag="110" ind1="2" ind2=" ">
+      <subfield code="a">New Mexico Energy Institute at New Mexico State University.</subfield>
+    </datafield>
+    <datafield tag="245" ind1="1" ind2="0">
+      <subfield code="a">Geothermal resources of New Mexico</subfield>
+      <subfield code="h">[cartographic material] /</subfield>
+      <subfield code="c">geothermal data compiled by the New Mexico Energy Institute at New Mexico State University ; map produced by the National Geophysical and Solar-Terrestrial Data Center, National Oceanic and Atmospheric Administration for the Division of Geothermal Energy, United States Department of Energy ; geothermal data for this map were compiled and interpreted by Chandler A. Swanberg ; map produced by Joy A. Ikelman and Albert E. Theberge in cooperation with the Earth Science Laboratory/University of Utah Research Institute.</subfield>
+    </datafield>
+    <datafield tag="255" ind1=" " ind2=" ">
+      <subfield code="a">Scale 1:500,000. 1 cm. equals 5 km. 1 in. equals approx. 8 miles ;</subfield>
+      <subfield code="b">Lambert conformal conic proj. based on standard parallels 33° and 45°</subfield>
+      <subfield code="c">(W 109°--W 103°/N 37°--N 31°).</subfield>
+    </datafield>
+    <datafield tag="260" ind1=" " ind2=" ">
+      <subfield code="a">[Washington, D.C.] :</subfield>
+      <subfield code="b">Division of Geothermal Energy ;</subfield>
+      <subfield code="a">Las Cruces, N.M. :</subfield>
+      <subfield code="b">Map available free of charge from New Mexico Energy Institute,</subfield>
+      <subfield code="c">1980.</subfield>
+    </datafield>
+    <datafield tag="300" ind1=" " ind2=" ">
+      <subfield code="a">1 map :</subfield>
+      <subfield code="b">col. ;</subfield>
+      <subfield code="c">135 x 118 cm.</subfield>
+    </datafield>
+    <datafield tag="500" ind1=" " ind2=" ">
+      <subfield code="a">Relief shown by contours and spot heights.</subfield>
+    </datafield>
+    <datafield tag="500" ind1=" " ind2=" ">
+      <subfield code="a">Includes text and inset of &quot;Heat flow in the Rio Grande rift and adjacient areas.&quot;</subfield>
+    </datafield>
+    <datafield tag="520" ind1=" " ind2=" ">
+      <subfield code="a">Here's a summary</subfield>
+    </datafield>
+    <datafield tag="504" ind1=" " ind2=" ">
+      <subfield code="a">Bibliography.</subfield>
+    </datafield>
+    <datafield tag="650" ind1=" " ind2="0">
+      <subfield code="a">Earth temperature</subfield>
+      <subfield code="z">New Mexico</subfield>
+      <subfield code="v">Maps.</subfield>
+    </datafield>
+    <datafield tag="650" ind1=" " ind2="0">
+      <subfield code="a">Geothermal resources</subfield>
+      <subfield code="z">New Mexico</subfield>
+      <subfield code="v">Maps.</subfield>
+    </datafield>
+    <datafield tag="700" ind1="1" ind2=" ">
+      <subfield code="a">Swanberg, Chandler A.</subfield>
+    </datafield>
+    <datafield tag="700" ind1="1" ind2=" ">
+      <subfield code="a">Ikelman, Joy A.</subfield>
+    </datafield>
+    <datafield tag="700" ind1="1" ind2=" ">
+      <subfield code="a">Theberge, Albert E.</subfield>
+    </datafield>
+    <datafield tag="710" ind1="2" ind2=" ">
+      <subfield code="a">National Geophysical and Solar-Terrestrial Data Center.</subfield>
+    </datafield>
+    <datafield tag="710" ind1="1" ind2=" ">
+      <subfield code="a">United States.</subfield>
+      <subfield code="b">Department of Energy.</subfield>
+      <subfield code="b">Division of Geothermal Energy.</subfield>
+    </datafield>
+    <datafield tag="710" ind1="2" ind2=" ">
+      <subfield code="a">University of Utah.</subfield>
+      <subfield code="b">Research Institute.</subfield>
+      <subfield code="b">Earth Science Laboratory.</subfield>
+    </datafield>
+    <datafield tag="049" ind1=" " ind2=" ">
+      <subfield code="a">MYGL</subfield>
+    </datafield>
+    <datafield tag="910" ind1=" " ind2=" ">
+      <subfield code="a">recon950321kbh</subfield>
+    </datafield>
+    <datafield tag="949" ind1=" " ind2=" ">
+      <subfield code="a">MYGL</subfield>
+      <subfield code="l">L*MAP</subfield>
+      <subfield code="m">MAP7</subfield>
+      <subfield code="b">39080009171429</subfield>
+    </datafield>
+    <datafield tag="876" ind1="-" ind2="1">
+      <subfield code="l">MIT01</subfield>
+      <subfield code="L">MARC 21 Library</subfield>
+      <subfield code="m">BOOK</subfield>
+      <subfield code="1">SCI</subfield>
+      <subfield code="A">Hayden Library</subfield>
+      <subfield code="2">MAPRM</subfield>
+      <subfield code="B">Map Room</subfield>
+      <subfield code="h">G4321.C9 1980 .N4</subfield>
+      <subfield code="k">MAP</subfield>
+      <subfield code="5">39080009171429</subfield>
+      <subfield code="8">19950626</subfield>
+      <subfield code="f">04</subfield>
+      <subfield code="F">One Week Loan</subfield>
+    </datafield>
+  </record>
+</collection>
