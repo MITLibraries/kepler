@@ -2,3 +2,4 @@
 .tox
 docs/_build
 instance
+.cache
