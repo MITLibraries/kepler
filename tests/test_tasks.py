@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import os.path
 
 import pytest
+import requests_mock
 from mock import Mock, patch, DEFAULT
 
 from kepler.tasks import *
@@ -54,6 +55,35 @@ def testSubmitToDspaceAddsHandleToItem(job, bag_tif):
         mock.return_value = 'foobar'
         submit_to_dspace(job, bag_tif)
         assert job.item.handle == 'foobar'
+
+
+def testGetGeotiffUrlFromDspaceAddsGeotiffUrlToItem(job, oai_ore):
+    with requests_mock.mock() as m:
+        m.get('http://example.com/metadata/handle/1234.5/67890/ore.xml',
+              text=oai_ore)
+        job.item.handle = 'http://hdl.handle.net/1234.5/67890'
+        get_geotiff_url_from_dspace(job)
+        assert job.item.tiff_url == 'http://example.com/bitstream/handle/1234.5/67890/248077.tif?sequence=4'
+
+
+def testGetGeotiffUrlFromDspaceErrorsOnNoTiffs(job, oai_ore_no_tiffs):
+    with requests_mock.mock() as m:
+        m.get('http://example.com/metadata/handle/1234.5/67890/ore.xml',
+              text=oai_ore_no_tiffs)
+        job.item.handle = 'http://hdl.handle.net/1234.5/67890'
+        with pytest.raises(Exception) as excinfo:
+            get_geotiff_url_from_dspace(job)
+        assert 'Expected 1 tiff, found 0' == str(excinfo.value)
+
+
+def testGetGeotiffUrlFromDspaceErrorsOnMultipleTiffs(job, oai_ore_two_tiffs):
+    with requests_mock.mock() as m:
+        m.get('http://example.com/metadata/handle/1234.5/67890/ore.xml',
+              text=oai_ore_two_tiffs)
+        job.item.handle = 'http://hdl.handle.net/1234.5/67890'
+        with pytest.raises(Exception) as excinfo:
+            get_geotiff_url_from_dspace(job)
+        assert 'Expected 1 tiff, found 2' == str(excinfo.value)
 
 
 def testSubmitToDspaceWithExistingHandleDoesNotSubmit(job, bag_tif):

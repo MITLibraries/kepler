@@ -40,6 +40,7 @@ class Item(db.Model):
     handle = db.Column(db.Unicode(255))
     access = db.Column(db.Enum(u'Public', u'Restricted'), default=u'Public')
     jobs = db.relationship('Job', backref='item', lazy='dynamic')
+    tiff_url = db.Column(db.Unicode(255))
 
     def __repr__(self):
         return '<Item #%d: %r>' % (self.id, self.uri)

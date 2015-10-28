@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom" xmlns:ore="http://www.openarchives.org/ore/terms/" xmlns:oreatom="http://www.openarchives.org/ore/atom/" xmlns:dcterms="http://purl.org/dc/terms/">
+<atom:id>http://example.com/oai/metadata/handle/1234.5/67890/ore.xml</atom:id>
+<atom:link rel="alternate" href="http://hdl.handle.net/1234.5/67890"/>
+<atom:link rel="http://www.openarchives.org/ore/terms/describes" href="http://example.com/oai/metadata/handle/1234.5/67890/ore.xml"/>
+<atom:link rel="self" href="http://example.com/oai/metadata/handle/1234.5/67890/ore.xml#atom" type="application/atom+xml"/>
+<atom:published>2015-10-28T09:54:24.339-04:00</atom:published>
+<atom:updated>2015-10-28T09:54:24.343-04:00</atom:updated>
+<atom:source>
+    <atom:generator uri="http://example.com/oai">Some Server Somewhere</atom:generator>
+</atom:source>
+<atom:title>This is a title.</atom:title>
+<atom:category scheme="http://www.openarchives.org/ore/terms/" term="http://www.openarchives.org/ore/terms/Aggregation" label="Aggregation"/>
+<atom:category scheme="http://www.openarchives.org/ore/atom/modified" term="2014-05-29T02:26:08.501-04:00"/>
+<atom:category scheme="http://www.dspace.org/objectModel/" term="DSpaceItem" label="DSpace Item"/>
+<atom:link rel="http://www.openarchives.org/ore/terms/aggregates" href="http://example.com/bitstream/handle/1234.5/67890/248077_cp.jpg.jpg?sequence=5" title="248077_cp.jpg.jpg" type="image/jpeg" length="2393"/>
+<atom:link rel="http://www.openarchives.org/ore/terms/aggregates" href="http://example.com/bitstream/handle/1234.5/67890/248077_sv.jpg.jpg?sequence=6" title="248077_sv.jpg.jpg" type="image/jpeg" length="2539"/>
+<atom:link rel="http://www.openarchives.org/ore/terms/aggregates" href="http://example.com/bitstream/handle/1234.5/67890/248077_tm.jpg.jpg?sequence=7" title="248077_tm.jpg.jpg" type="image/jpeg" length="1591"/>
+<atom:link rel="http://www.openarchives.org/ore/terms/aggregates" href="http://example.com/bitstream/handle/1234.5/67890/248077.tif?sequence=4" title="248077.tif" type="image/tiff" length="20859226"/>
+<atom:link rel="http://www.openarchives.org/ore/terms/aggregates" href="http://example.com/bitstream/handle/1234.5/67890/248077_cp.jpg?sequence=1" title="248077_cp.jpg" type="image/jpeg" length="1614753"/>
+<atom:link rel="http://www.openarchives.org/ore/terms/aggregates" href="http://example.com/bitstream/handle/1234.5/67890/248077_sv.jpg?sequence=2" title="248077_sv.jpg" type="image/jpeg" length="5771544"/>
+<atom:link rel="http://www.openarchives.org/ore/terms/aggregates" href="http://example.com/bitstream/handle/1234.5/67890/248077_tm.jpg?sequence=3" title="248077_tm.jpg" type="image/jpeg" length="10361"/>
+<oreatom:triples>
+    <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="http://example.com/oai/metadata/handle/1234.5/67890/ore.xml">
+    <rdf:type rdf:resource="http://www.dspace.org/objectModel/DSpaceItem"/>
+    <dcterms:modified>2014-05-29T02:26:08.501-04:00</dcterms:modified>
+</rdf:Description>
+<rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="http://example.com/bitstream/handle/1234.5/67890/248077_cp.jpg.jpg?sequence=5">
+<rdf:type rdf:resource="http://www.dspace.org/objectModel/DSpaceBitstream"/>
+<dcterms:description>THUMBNAIL</dcterms:description>
+</rdf:Description>
+<rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="http://example.com/bitstream/handle/1234.5/67890/248077_sv.jpg.jpg?sequence=6">
+<rdf:type rdf:resource="http://www.dspace.org/objectModel/DSpaceBitstream"/>
+<dcterms:description>THUMBNAIL</dcterms:description>
+</rdf:Description>
+<rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="http://example.com/bitstream/handle/1234.5/67890/248077_tm.jpg.jpg?sequence=7">
+<rdf:type rdf:resource="http://www.dspace.org/objectModel/DSpaceBitstream"/>
+<dcterms:description>THUMBNAIL</dcterms:description>
+</rdf:Description>
+<rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="http://example.com/bitstream/handle/1234.5/67890/248077.png?sequence=4">
+<rdf:type rdf:resource="http://www.dspace.org/objectModel/DSpaceBitstream"/>
+<dcterms:description>HIDDEN</dcterms:description>
+</rdf:Description>
+<rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="http://example.com/bitstream/handle/1234.5/67890/248077_cp.jpg?sequence=1">
+<rdf:type rdf:resource="http://www.dspace.org/objectModel/DSpaceBitstream"/>
+<dcterms:description>ORIGINAL</dcterms:description>
+</rdf:Description>
+<rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="http://example.com/bitstream/handle/1234.5/67890/248077_sv.jpg?sequence=2">
+<rdf:type rdf:resource="http://www.dspace.org/objectModel/DSpaceBitstream"/>
+<dcterms:description>ORIGINAL</dcterms:description>
+</rdf:Description>
+<rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" rdf:about="http://example.com/bitstream/handle/1234.5/67890/248077_tm.jpg?sequence=3">
+<rdf:type rdf:resource="http://www.dspace.org/objectModel/DSpaceBitstream"/>
+<dcterms:description>ORIGINAL</dcterms:description>
+</rdf:Description>
+</oreatom:triples>
+</atom:entry>

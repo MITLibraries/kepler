@@ -107,6 +107,27 @@ def fgdc(bag):
     return os.path.join(bag, 'data/fgdc.xml')
 
 
+@pytest.fixture
+def oai_ore():
+    with io.open(_fixture_path('oai_ore.xml'), 'r') as fp:
+        resp = fp.read()
+    return resp
+
+
+@pytest.fixture
+def oai_ore_no_tiffs():
+    with io.open(_fixture_path('oai_ore_no_tiffs.xml'), 'r') as fp:
+        resp = fp.read()
+    return resp
+
+
+@pytest.fixture
+def oai_ore_two_tiffs():
+    with io.open(_fixture_path('oai_ore_two_tiffs.xml'), 'r') as fp:
+        resp = fp.read()
+    return resp
+
+
 @pytest.yield_fixture
 def pysolr_add():
     patcher = patch('pysolr.Solr.add')
