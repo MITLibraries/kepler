@@ -20,6 +20,7 @@ class TestConfig(DefaultConfig):
     GEOSERVER_RESTRICTED_URL = 'http://example.com/secure-geoserver/'
     GEOSERVER_WORKSPACE = 'mit'
     GEOSERVER_DATASTORE = 'data'
+    OAI_ORE_URL = 'http://example.com/metadata/handle/'
     SOLR_URL = 'http://localhost:8983/solr/geoblacklight/'
     SWORD_SERVICE_URL = 'http://example.com/sword'
     SWORD_SERVICE_USERNAME = 'swordymcswordmuffin'

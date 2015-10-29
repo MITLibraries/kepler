@@ -20,6 +20,7 @@ from flask import current_app
 from ogre.xml import FGDCParser
 from lxml import etree
 import pysolr
+import requests
 
 from kepler.geoserver import put, wfs_url, wms_url
 from kepler.bag import get_fgdc, get_shapefile, get_geotiff
@@ -76,10 +77,34 @@ def submit_to_dspace(job, data):
         pkg.metadata = _fgdc_to_mods(get_fgdc(data))
         with tempfile.NamedTemporaryFile(suffix='.zip') as fp:
             pkg.write(fp)
-            handle = sword.submit(current_app.config['SWORD_SERVICE_URL'], fp.name,
-                                  auth=(username, password))
+            handle = sword.submit(current_app.config['SWORD_SERVICE_URL'],
+                                  fp.name, auth=(username, password))
         job.item.handle = handle
         db.session.commit()
+
+
+def get_geotiff_url_from_dspace(job):
+    """Retrieve the GeoTIFF URL from a DSpace Handle.
+
+        .. note:: assumes the OAI-ORE only contains a single TIFF.
+
+        :param job: :class:`~kepler.models.Job`
+    """
+    handle = job.item.handle.replace('http://hdl.handle.net/', '')
+    ore_url = current_app.config['OAI_ORE_URL'] + handle + '/ore.xml'
+    r = requests.get(ore_url)
+    r.raise_for_status()
+    doc = etree.fromstring(r.content)
+    tif_urls = doc.xpath(
+        '//rdf:Description/@rdf:about[contains(., ".tif")]',
+        namespaces={'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'})
+
+    if len(tif_urls) != 1:
+        raise Exception('Expected 1 tiff, found ' + str(len(tif_urls)))
+    else:
+        job.item.tiff_url = tif_urls[0]
+
+    db.session.commit()
 
 
 def upload_shapefile(job, data):

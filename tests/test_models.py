@@ -84,3 +84,7 @@ class TestItem(object):
     def testItemHasHandle(self, db):
         item = Item(handle='http://hdl.handle.net/123456789/3')
         assert item.handle == 'http://hdl.handle.net/123456789/3'
+
+    def testItemHasTiffUrl(self, db):
+        item = Item(tiff_url='http://example.com/bitstream/handle/1234.5/67890/248077.tif?sequence=4')
+        assert item.tiff_url == 'http://example.com/bitstream/handle/1234.5/67890/248077.tif?sequence=4'
