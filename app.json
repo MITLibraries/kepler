@@ -1,0 +1,7 @@
+{
+  "name": "kepler",
+  "buildpacks": [{
+    "url": "https://github.com/dulaccc/heroku-buildpack-geodjango.git#1.1"
+  }
+  ]
+}
