@@ -12,6 +12,23 @@ class DefaultConfig(object):
     FGDC_MODS_XSLT = os.path.join(APP_ROOT, 'templates/fgdc_to_mods.xslt')
 
 
+class HerokuConfig(DefaultConfig):
+    def __init__(self):
+        self.SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
+        self.SECRET_KEY = os.environ['SECRET_KEY']
+        self.GEOSERVER_PUBLIC_URL = os.environ['GEOSERVER_PUBLIC_URL']
+        self.GEOSERVER_RESTRICTED_URL = os.environ['GEOSERVER_RESTRICTED_URL']
+        self.GEOSERVER_WORKSPACE = os.environ['GEOSERVER_WORKSPACE']
+        self.GEOSERVER_DATASTORE = os.environ['GEOSERVER_DATASTORE']
+        self.SOLR_URL = os.environ['SOLR_URL']
+        self.OAI_ORE_URL = os.environ['OAI_ORE_URL']
+        self.SWORD_SERVICE_URL = os.environ['SWORD_SERVICE_URL']
+        self.SWORD_SERVICE_USERNAME = os.environ['SWORD_SERVICE_USERNAME']
+        self.SWORD_SERVICE_PASSWORD = os.environ['SWORD_SERVICE_PASSWORD']
+        self.UUID_NAMESPACE = os.environ['UUID_NAMESPACE']
+        self.GDAL_BIN_DIR = os.environ['GDAL_BIN_DIR']
+
+
 class TestConfig(DefaultConfig):
     TESTING = True
     DEBUG = True

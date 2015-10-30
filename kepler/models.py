@@ -16,8 +16,8 @@ def get_or_create(Model, **kwargs):
 
 class Job(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    status = db.Column(db.Enum(u'PENDING', u'COMPLETED', u'FAILED'),
-                       default=u'PENDING')
+    status = db.Column(db.Enum(u'PENDING', u'COMPLETED', u'FAILED',
+                               name='status'), default=u'PENDING')
     time = db.Column(db.DateTime(timezone=True), default=datetime.now)
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'))
 
@@ -38,7 +38,8 @@ class Item(db.Model):
     uri = db.Column(db.Unicode(255), unique=True)
     layer_id = db.Column(db.Unicode(255))
     handle = db.Column(db.Unicode(255))
-    access = db.Column(db.Enum(u'Public', u'Restricted'), default=u'Public')
+    access = db.Column(db.Enum(u'Public', u'Restricted', name='access'),
+                       default=u'Public')
     jobs = db.relationship('Job', backref='item', lazy='dynamic')
     tiff_url = db.Column(db.Unicode(255))
 

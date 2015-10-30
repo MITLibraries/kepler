@@ -6,11 +6,13 @@ Flask-SQLAlchemy==2.0
 GDAL==1.10.0
 gitdb==0.6.4
 GitPython==1.0.1
+gunicorn==19.3.0
 itsdangerous==0.24
 Jinja2==2.8
 lxml==3.4.4
 MarkupSafe==0.23
 -e git+https://github.com/MITLibraries/ogre-toolkit@a7cb0da6289c1fe702ba82d00bb8f5c293e4fbc1#egg=Ogre_Toolkit-master
+psycopg2==2.6.1
 pymarc==3.0.4
 pysolr==3.3.2
 python-dateutil==2.4.2
