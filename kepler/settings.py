@@ -26,7 +26,6 @@ class HerokuConfig(DefaultConfig):
         self.SWORD_SERVICE_USERNAME = os.environ['SWORD_SERVICE_USERNAME']
         self.SWORD_SERVICE_PASSWORD = os.environ['SWORD_SERVICE_PASSWORD']
         self.UUID_NAMESPACE = os.environ['UUID_NAMESPACE']
-        self.GDAL_BIN_DIR = os.environ['GDAL_BIN_DIR']
 
 
 class TestConfig(DefaultConfig):
