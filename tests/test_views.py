@@ -28,38 +28,39 @@ def marc_tasks():
 
 
 class TestLayer(object):
-    def testReturns201OnSuccess(self, testapp, geo_tasks, bag_upload):
-        r = testapp.post('/layers/', upload_files=[('file', bag_upload)])
+    def testReturns201OnSuccess(self, auth_testapp, geo_tasks, bag_upload):
+        r = auth_testapp.post('/layers/', upload_files=[('file', bag_upload)])
         assert r.status_code == 201
 
-    def testJobCreated(self, testapp, geo_tasks, bag_upload):
-        r = testapp.post('/layers/', upload_files=[('file', bag_upload)])
+    def testJobCreated(self, auth_testapp, geo_tasks, bag_upload):
+        auth_testapp.post('/layers/', upload_files=[('file', bag_upload)])
         assert Job.query.count() == 1
 
-    def testJobIsRun(self, testapp, geo_tasks, bag_upload):
-        r = testapp.post('/layers/', upload_files=[('file', bag_upload)])
+    def testJobIsRun(self, auth_testapp, geo_tasks, bag_upload):
+        auth_testapp.post('/layers/', upload_files=[('file', bag_upload)])
         assert Job.query.first().status == 'COMPLETED'
 
-    def testRunsShapefileTasks(self, testapp, geo_tasks, bag_upload):
-        r = testapp.post('/layers/', upload_files=[('file', bag_upload)])
+    def testRunsShapefileTasks(self, auth_testapp, geo_tasks, bag_upload):
+        auth_testapp.post('/layers/', upload_files=[('file', bag_upload)])
         assert geo_tasks['upload_shapefile'].called
         assert geo_tasks['index_shapefile'].called
 
-    def testRunsGeotiffTasks(self, testapp, geo_tasks, bag_tif_upload):
-        r = testapp.post('/layers/', upload_files=[('file', bag_tif_upload)])
+    def testRunsGeotiffTasks(self, auth_testapp, geo_tasks, bag_tif_upload):
+        auth_testapp.post('/layers/', upload_files=[('file', bag_tif_upload)])
         assert geo_tasks['upload_geotiff'].called
         assert geo_tasks['submit_to_dspace'].called
         assert geo_tasks['index_geotiff'].called
 
-    def testReturns415OnUnsupportedFormat(self, testapp, geo_tasks, bag_upload):
+    def testReturns415OnUnsupportedFormat(self, auth_testapp, geo_tasks,
+                                          bag_upload):
         with patch('kepler.layer.views.get_datatype') as datatype:
             datatype.return_value = 'w4rez'
-            r = testapp.post('/layers/', upload_files=[('file', bag_upload)],
-                             expect_errors=True)
+            r = auth_testapp.post('/layers/',
+                                  upload_files=[('file', bag_upload)],
+                                  expect_errors=True)
         assert r.status_code == 415
 
     def testReturns401OnNoAuthentication(self, testapp):
-        testapp.authorization = None
         r = testapp.post('/layers/', expect_errors=True)
         assert r.status_code == 401
 
@@ -70,20 +71,19 @@ class TestLayer(object):
 
 
 class TestMarc(object):
-    def testReturns201OnSuccess(self, testapp, marc, marc_tasks):
-        r = testapp.post('/marc/', upload_files=[('file', marc)])
+    def testReturns201OnSuccess(self, auth_testapp, marc, marc_tasks):
+        r = auth_testapp.post('/marc/', upload_files=[('file', marc)])
         assert r.status_code == 201
 
-    def testJobCreated(self, testapp, marc, marc_tasks):
-        r = testapp.post('/marc/', upload_files=[('file', marc)])
+    def testJobCreated(self, auth_testapp, marc, marc_tasks):
+        auth_testapp.post('/marc/', upload_files=[('file', marc)])
         assert Job.query.count() == 1
 
-    def testJobIsRun(self, testapp, marc, marc_tasks):
-        r = testapp.post('/marc/', upload_files=[('file', marc)])
+    def testJobIsRun(self, auth_testapp, marc, marc_tasks):
+        auth_testapp.post('/marc/', upload_files=[('file', marc)])
         assert Job.query.first().status == 'COMPLETED'
 
     def testReturns401OnNoAuthentication(self, testapp):
-        testapp.authorization = None
         r = testapp.post('/marc/', expect_errors=True)
         assert r.status_code == 401
 
