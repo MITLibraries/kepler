@@ -1,7 +1,23 @@
 {
   "name": "kepler",
+  "scripts": {
+    "postdeploy": "python manage.py db upgrade"
+  },
+  "env": {
+    "GEOSERVER_DATASTORE": "data",
+    "GEOSERVER_PUBLIC_URL": "http://example.com/geoserver/",
+    "GEOSERVER_RESTRICTED_URL": "http://example.com/secure-geoserver/",
+    "GEOSERVER_WORKSPACE": "mit",
+    "OAI_ORE_URL": "http://example.com/metadata/handle/",
+    "PATH": "/app/.geodjango/gdal/bin:/usr/local/bin:/usr/bin:/bin",
+    "SECRET_KEY": "secret",
+    "SOLR_URL": "http://localhost:8983/solr/geoblacklight/",
+    "SWORD_SERVICE_PASSWORD": "vorpalblade",
+    "SWORD_SERVICE_URL": "http://example.com/sword",
+    "SWORD_SERVICE_USERNAME": "swordymcswordmuffin",
+    "UUID_NAMESPACE": "arrowsmith.mit.edu"
+  },
   "buildpacks": [{
     "url": "https://github.com/dulaccc/heroku-buildpack-geodjango.git#1.1"
-  }
-  ]
+  }]
 }

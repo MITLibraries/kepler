@@ -13,7 +13,6 @@ from .exceptions import UnsupportedFormat
 def create_app(cfg_obj=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(DefaultConfig)
-    app.config.from_pyfile('app.cfg', silent=True)
     app.config.from_object(cfg_obj)
 
     register_extensions(app)
