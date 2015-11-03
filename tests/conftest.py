@@ -35,7 +35,22 @@ def app():
 
 @pytest.fixture
 def testapp(app):
+    """A non-authorized test application.
+
+    Use this for GET requests that don't require authentication.
+    """
     return TestApp(app)
+
+
+@pytest.fixture
+def auth_testapp(app):
+    """An authorized test application.
+
+    Use this for POST requests requiring authentication.
+    """
+    _app = TestApp(app)
+    _app.authorization = ('Basic', ('username', 'password'))
+    return _app
 
 
 @pytest.yield_fixture
