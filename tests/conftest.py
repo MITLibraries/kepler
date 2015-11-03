@@ -35,7 +35,9 @@ def app():
 
 @pytest.fixture
 def testapp(app):
-    return TestApp(app)
+    _app = TestApp(app)
+    _app.authorization = ('Basic', ('username', 'password'))
+    return _app
 
 
 @pytest.yield_fixture

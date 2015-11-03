@@ -58,6 +58,16 @@ class TestLayer(object):
                              expect_errors=True)
         assert r.status_code == 415
 
+    def testReturns401OnNoAuthentication(self, testapp):
+        testapp.authorization = None
+        r = testapp.post('/layers/', expect_errors=True)
+        assert r.status_code == 401
+
+    def testReturns401OnBadAuthentication(self, testapp):
+        testapp.authorization = ('Basic', ('username', 'wat'))
+        r = testapp.post('/layers/', expect_errors=True)
+        assert r.status_code == 401
+
 
 class TestMarc(object):
     def testReturns201OnSuccess(self, testapp, marc, marc_tasks):
@@ -71,6 +81,16 @@ class TestMarc(object):
     def testJobIsRun(self, testapp, marc, marc_tasks):
         r = testapp.post('/marc/', upload_files=[('file', marc)])
         assert Job.query.first().status == 'COMPLETED'
+
+    def testReturns401OnNoAuthentication(self, testapp):
+        testapp.authorization = None
+        r = testapp.post('/marc/', expect_errors=True)
+        assert r.status_code == 401
+
+    def testReturns401OnBadAuthentication(self, testapp):
+        testapp.authorization = ('Basic', ('username', 'foobar'))
+        r = testapp.post('/marc/', expect_errors=True)
+        assert r.status_code == 401
 
 
 class TestJob(object):

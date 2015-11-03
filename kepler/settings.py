@@ -42,3 +42,4 @@ class TestConfig(DefaultConfig):
     SWORD_SERVICE_USERNAME = 'swordymcswordmuffin'
     SWORD_SERVICE_PASSWORD = 'vorpalblade'
     UUID_NAMESPACE = 'arrowsmith.mit.edu'
+    CLIENT_AUTH = 'username:password'

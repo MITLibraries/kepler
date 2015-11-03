@@ -8,6 +8,7 @@ import uuid
 from flask import request
 from flask.views import View
 
+from kepler import client_auth_required
 from kepler.bag import unpack, get_datatype, get_access
 from kepler.exceptions import UnsupportedFormat
 from kepler.jobs import create_job
@@ -43,5 +44,5 @@ class LayerView(View):
 
     @classmethod
     def register(cls, app, endpoint, url):
-        view_func = cls.as_view(endpoint)
+        view_func = client_auth_required(cls.as_view(endpoint))
         app.add_url_rule(url, 'resource', methods=['POST'], view_func=view_func)
