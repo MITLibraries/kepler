@@ -41,8 +41,11 @@ def delete_url(root, id, mimetype):
 def put(root, id, data, mimetype):
     url = put_url(root, id, mimetype)
     headers = {'Content-type': mimetype}
+    username = current_app.config['GEOSERVER_AUTH_USER']
+    password = current_app.config['GEOSERVER_AUTH_PASS']
     with io.open(data, 'rb') as fp:
-        r = requests.put(url, data=fp, headers=headers)
+        r = requests.put(url, data=fp, headers=headers,
+                         auth=(username, password))
     r.raise_for_status()
     return layer_id(url.rsplit('/', 1)[0], mimetype)
 
@@ -88,6 +91,9 @@ def _url_by_access(access):
 
 
 def _get_json(url):
-    r = requests.get(url, headers={'Accept': 'application/json'})
+    username = current_app.config['GEOSERVER_AUTH_USER']
+    password = current_app.config['GEOSERVER_AUTH_PASS']
+    r = requests.get(url, headers={'Accept': 'application/json'},
+                     auth=(username, password))
     r.raise_for_status()
     return r.json()

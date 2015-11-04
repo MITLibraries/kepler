@@ -26,6 +26,8 @@ class HerokuConfig(DefaultConfig):
         self.SWORD_SERVICE_USERNAME = os.environ['SWORD_SERVICE_USERNAME']
         self.SWORD_SERVICE_PASSWORD = os.environ['SWORD_SERVICE_PASSWORD']
         self.UUID_NAMESPACE = os.environ['UUID_NAMESPACE']
+        self.GEOSERVER_AUTH_USER = os.environ['GEOSERVER_AUTH_USER']
+        self.GEOSERVER_AUTH_PASS = os.environ['GEOSERVER_AUTH_PASS']
 
 
 class TestConfig(DefaultConfig):
@@ -43,3 +45,5 @@ class TestConfig(DefaultConfig):
     SWORD_SERVICE_PASSWORD = 'vorpalblade'
     UUID_NAMESPACE = 'arrowsmith.mit.edu'
     CLIENT_AUTH = 'username:password'
+    GEOSERVER_AUTH_USER = 'username'
+    GEOSERVER_AUTH_PASS = 'password'
