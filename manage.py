@@ -2,24 +2,17 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-from flask.ext.script import Manager, Server
-
+from flask.ext.script import Manager
+from flask.ext.migrate import Migrate, MigrateCommand
 from kepler.app import create_app
+from kepler.settings import HerokuConfig
 from kepler.extensions import db
 
+app = create_app(HerokuConfig())
 
-manager = Manager(create_app())
-manager.add_command("runserver", Server())
-
-
-@manager.command
-def dropdb():
-    db.drop_all()
-
-
-@manager.command
-def createdb():
-    db.create_all()
+migrate = Migrate(app, db)
+manager = Manager(app)
+manager.add_command('db', MigrateCommand)
 
 
 if __name__ == '__main__':

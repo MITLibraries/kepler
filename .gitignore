@@ -3,3 +3,5 @@
 docs/_build
 instance
 .cache
+*.pyc
+.env
