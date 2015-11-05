@@ -1,0 +1,242 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Welcome to Kepler’s documentation! &mdash; Kepler 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Kepler 0.1 documentation" href="#" />
+    <link rel="next" title="Metadata" href="metadata.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="welcome-to-kepler-s-documentation">
+<h1>Welcome to Kepler&#8217;s documentation!<a class="headerlink" href="#welcome-to-kepler-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Kepler automates several aspects of the GIS data workflow process.</p>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>Kepler relies on GDAL to perform a few necessary steps in processing GeoTIFFs. You will need to make sure you have the <code class="docutils literal"><span class="pre">libgdal</span></code>, <code class="docutils literal"><span class="pre">libgdal-dev</span></code> and <code class="docutils literal"><span class="pre">gdal-bin</span></code> packages installed on your system before installing the python dependencies. The version of the system GDAL should match the version of the python bindings specified in the <code class="docutils literal"><span class="pre">requirements.txt</span></code> file. Make a note of where the header files have been installed. This should usually be <code class="docutils literal"><span class="pre">/usr/include/gdal</span></code>, but you can check with:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ gdal-config --cflags
+</pre></div>
+</div>
+<p>Then, from the project root:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ env CPLUS_INCLUDE_PATH=/usr/include/gdal \
+&gt; C_INCLUDE_PATH=/usr/include/gdal \
+&gt; pip install -r requirements.txt
+</pre></div>
+</div>
+<p>Replace <code class="docutils literal"><span class="pre">/usr/include/gdal</span></code> with wherever the header files are on your system.</p>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<p>Kepler uses environment variables to manage application configuration. These should be placed in a <code class="docutils literal"><span class="pre">.env</span></code> file at the root of the project. The following variables should be set:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="43%" />
+<col width="57%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">SQLALCHEMY_DATABASE_URI</span></code></td>
+<td>Location of sqlite database</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">GEOSERVER_PUBLIC_URL</span></code></td>
+<td>URL for public GeoServer instance</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">GEOSERVER_RESTRICTED_URL</span></code></td>
+<td>URL for secure GeoServer instance</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">GEOSERVER_WORKSPACE</span></code></td>
+<td>Name of workspace for data</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">GEOSERVER_DATASTORE</span></code></td>
+<td>Name of datastore for shapefiles</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">SOLR_URL</span></code></td>
+<td>URL for GeoBlacklight Solr instance</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">SWORD_SERVICE_URL</span></code></td>
+<td>URL for DSpace SWORD service</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">SWORD_SERVICE_USERNAME</span></code></td>
+<td>Username for SWORD service</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">SWORD_SERVICE_PASSWORD</span></code></td>
+<td>Password for SWORD service</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">UUID_NAMESPACE</span></code></td>
+<td>The namespace used in generating the
+version 5 UUID</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">SECRET_KEY</span></code></td>
+<td>Randomly generated key</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">OAI_ORE_URL</span></code></td>
+<td>URL for OAI ORE DSpace service</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">GEOSERVER_AUTH_USER</span></code></td>
+<td>Username for GeoServer REST service</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">GEOSERVER_AUTH_PASS</span></code></td>
+<td>Password for GeoServer REST service</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="running-the-application-locally">
+<h2>Running the Application Locally<a class="headerlink" href="#running-the-application-locally" title="Permalink to this headline">¶</a></h2>
+<p>The application can be run locally using either the heroku toolbelt or honcho. For example, from project root:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ honcho start
+</pre></div>
+</div>
+</div>
+<div class="section" id="running-the-tests">
+<h2>Running the Tests<a class="headerlink" href="#running-the-tests" title="Permalink to this headline">¶</a></h2>
+<p>You should have python binaries for 2.7, 3.3 and 3.4 available on your system. Install <a class="reference external" href="https://tox.readthedocs.org/en/latest/">tox</a> and run:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ tox
+</pre></div>
+</div>
+</div>
+<div class="section" id="building-the-documentation">
+<h2>Building the Documentation<a class="headerlink" href="#building-the-documentation" title="Permalink to this headline">¶</a></h2>
+<p>In order to generate the documentation you have to make sure <a class="reference external" href="http://sphinx-doc.org/latest/index.html">Sphinx</a> is installed in a virtualenv <cite>along with all the kepler dependencies</cite>. One possibility is to create a different virtualenv for generating the docs. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ cd /path/to/kepler
+$ mkvirtualenv kepler-docs
+(kepler-docs)$ pip install Sphinx
+(kepler-docs)$ env CPLUS_INCLUDE_PATH=/usr/local/include \
+    C_INCLUDE_PATH=/usr/local/include pip install -r requirements.txt
+(kepler-docs)$ cd docs
+(kepler-docs)$ make html
+</pre></div>
+</div>
+<p>This will place the built documents in <code class="docutils literal"><span class="pre">kepler/docs/_build/</span></code>.</p>
+</div>
+<div class="section" id="documentation-contents">
+<h2>Documentation Contents<a class="headerlink" href="#documentation-contents" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="metadata.html">Metadata</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="metadata.html#layer-ids">Layer IDs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="metadata.html#layer-slugs">Layer Slugs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="application.html">Source Docs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="application.html#module-kepler.sword">kepler.sword</a></li>
+<li class="toctree-l2"><a class="reference internal" href="application.html#module-kepler.tasks">kepler.tasks</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">Kepler</a></h1>
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=MITLibraries&repo=kepler&type=watch&count=False&size=large"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/MITLibraries/kepler">
+    <img
+        alt="https://secure.travis-ci.org/MITLibraries/kepler.png?branch=master"
+        src="https://secure.travis-ci.org/MITLibraries/kepler.png?branch=master"
+    >
+</a>
+</p>
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="metadata.html">Metadata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="application.html">Source Docs</a></li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Welcome to Kepler&#8217;s documentation!</a><ul>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#configuration">Configuration</a></li>
+<li><a class="reference internal" href="#running-the-application-locally">Running the Application Locally</a></li>
+<li><a class="reference internal" href="#running-the-tests">Running the Tests</a></li>
+<li><a class="reference internal" href="#building-the-documentation">Building the Documentation</a></li>
+<li><a class="reference internal" href="#documentation-contents">Documentation Contents</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, MIT Libraries.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="_sources/index.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

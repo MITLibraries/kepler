@@ -1,0 +1,411 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Source Docs &mdash; Kepler 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Kepler 0.1 documentation" href="index.html" />
+    <link rel="prev" title="Metadata" href="metadata.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="source-docs">
+<h1>Source Docs<a class="headerlink" href="#source-docs" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-kepler.sword">
+<span id="kepler-sword"></span><h2>kepler.sword<a class="headerlink" href="#module-kepler.sword" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="kepler.sword.SWORDPackage">
+<em class="property">class </em><code class="descclassname">kepler.sword.</code><code class="descname">SWORDPackage</code><span class="sig-paren">(</span><em>uuid</em>, <em>metadata=None</em>, <em>datafiles=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#kepler.sword.SWORDPackage" title="Permalink to this definition">¶</a></dt>
+<dd><p>A SWORD Package.</p>
+<p>This provids a container for the metadata and data files comprising a
+SWORD package. Use the <a class="reference internal" href="#kepler.sword.SWORDPackage.write" title="kepler.sword.SWORDPackage.write"><code class="xref py py-func docutils literal"><span class="pre">write()</span></code></a> method
+to serialize the package:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">kepler.sword</span> <span class="kn">import</span> <span class="n">SWORDPackage</span>
+
+<span class="n">pkg</span> <span class="o">=</span> <span class="n">SWORDPackage</span><span class="p">(</span><span class="n">uuid</span><span class="o">=</span><span class="s">&#39;1234&#39;</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="s">&#39;&lt;xml...&gt;&#39;</span><span class="p">)</span>
+<span class="n">pkg</span><span class="o">.</span><span class="n">datafiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;some/data/file.tif&#39;</span><span class="p">)</span>
+<span class="n">pkg</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;sword.zip&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>uuid</strong> &#8211; file uuid</li>
+<li><strong>metadata</strong> &#8211; metadata string to be added to mods record</li>
+<li><strong>datafiles</strong> &#8211; list of filenames to be added to SWORD package</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="kepler.sword.SWORDPackage.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>file</em><span class="sig-paren">)</span><a class="headerlink" href="#kepler.sword.SWORDPackage.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serialize the SWORD package.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file</strong> &#8211; file name or file pointer to write package to</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="kepler.sword.create_mets">
+<code class="descclassname">kepler.sword.</code><code class="descname">create_mets</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#kepler.sword.create_mets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a METS file for inclusion in SWORD package.</p>
+<p>This will look for a <code class="docutils literal"><span class="pre">mets.xml</span></code> template in the current app&#8217;s template
+directory and apply the supplied <code class="docutils literal"><span class="pre">kwargs</span></code> as a context.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>kwargs</strong> &#8211; context for METS template</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="kepler.sword.submit">
+<code class="descclassname">kepler.sword.</code><code class="descname">submit</code><span class="sig-paren">(</span><em>service</em>, <em>package</em>, <em>auth=None</em><span class="sig-paren">)</span><a class="headerlink" href="#kepler.sword.submit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Submit a SWORD package.</p>
+<p>Submits the given package to the specified SWORD service. If the submission
+was successful, the handle of the created resource will be returned.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>service</strong> &#8211; URL for SWORD service</li>
+<li><strong>package</strong> &#8211; path to SWORD package on file system</li>
+<li><strong>auth</strong> &#8211; tuple containing username and password for authenticating to
+SWORD service if required</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="kepler.sword.sword_headers">
+<code class="descclassname">kepler.sword.</code><code class="descname">sword_headers</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#kepler.sword.sword_headers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns SWORD headers for specified package.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Params filename:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">name of SWORD package</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-kepler.tasks">
+<span id="kepler-tasks"></span><h2>kepler.tasks<a class="headerlink" href="#module-kepler.tasks" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>kepler.tasks<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>This module provides a set of tasks that send data to different Web
+services. Each task has the same signature:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">task</span><span class="p">(</span><span class="n">job</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In most cases, the data will be an absolute path to a
+<a class="reference external" href="https://tools.ietf.org/html/draft-kunze-bagit-10">bag</a>.</p>
+<dl class="function">
+<dt id="kepler.tasks._index_from_fgdc">
+<code class="descclassname">kepler.tasks.</code><code class="descname">_index_from_fgdc</code><span class="sig-paren">(</span><em>job</em>, <em>bag</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#kepler.tasks._index_from_fgdc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Index a GeoServer-bound layer from the attached FGDC metadata.</p>
+<p>This will pull the FGDC metadata out of the Bag and add any necessary
+fields before indexing in Solr.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>job</strong> &#8211; <code class="xref py py-class docutils literal"><span class="pre">Job</span></code></li>
+<li><strong>bag</strong> &#8211; absolute path to bag containing FGDC metadata</li>
+<li><strong>**kwargs</strong> &#8211; additional fields to add to the record</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="kepler.tasks._index_records">
+<code class="descclassname">kepler.tasks.</code><code class="descname">_index_records</code><span class="sig-paren">(</span><em>records</em><span class="sig-paren">)</span><a class="headerlink" href="#kepler.tasks._index_records" title="Permalink to this definition">¶</a></dt>
+<dd><p>Indexes records in Solr.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>records</strong> &#8211; iterator of dictionaries to be added to Solr</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="kepler.tasks._upload_to_geoserver">
+<code class="descclassname">kepler.tasks.</code><code class="descname">_upload_to_geoserver</code><span class="sig-paren">(</span><em>job</em>, <em>data</em>, <em>mimetype</em><span class="sig-paren">)</span><a class="headerlink" href="#kepler.tasks._upload_to_geoserver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uploads Shapefiles and GeoTIFFs to GeoServer.</p>
+<p>This is a generic task for uploading data to GeoServer. You should
+instead use the specific data type functions: <a class="reference internal" href="#kepler.tasks.upload_shapefile" title="kepler.tasks.upload_shapefile"><code class="xref py py-func docutils literal"><span class="pre">upload_shapefile()</span></code></a>
+and <a class="reference internal" href="#kepler.tasks.upload_geotiff" title="kepler.tasks.upload_geotiff"><code class="xref py py-func docutils literal"><span class="pre">upload_geotiff()</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>job</strong> &#8211; <code class="xref py py-class docutils literal"><span class="pre">Job</span></code></li>
+<li><strong>data</strong> &#8211; absolute path to either Shapefile or GeoTIFF</li>
+<li><strong>mimetype</strong> &#8211; one of <code class="docutils literal"><span class="pre">application/zip</span></code> or <code class="docutils literal"><span class="pre">image/tiff</span></code></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="kepler.tasks.get_geotiff_url_from_dspace">
+<code class="descclassname">kepler.tasks.</code><code class="descname">get_geotiff_url_from_dspace</code><span class="sig-paren">(</span><em>job</em><span class="sig-paren">)</span><a class="headerlink" href="#kepler.tasks.get_geotiff_url_from_dspace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve the GeoTIFF URL from a DSpace Handle.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">assumes the OAI-ORE only contains a single TIFF.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>job</strong> &#8211; <code class="xref py py-class docutils literal"><span class="pre">Job</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="kepler.tasks.index_geotiff">
+<code class="descclassname">kepler.tasks.</code><code class="descname">index_geotiff</code><span class="sig-paren">(</span><em>job</em>, <em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#kepler.tasks.index_geotiff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Index an uploaded GeoTIFF file in Solr.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>job</strong> &#8211; <code class="xref py py-class docutils literal"><span class="pre">Job</span></code></li>
+<li><strong>bag</strong> &#8211; absolute path to bag containing GeoTIFF</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="kepler.tasks.index_shapefile">
+<code class="descclassname">kepler.tasks.</code><code class="descname">index_shapefile</code><span class="sig-paren">(</span><em>job</em>, <em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#kepler.tasks.index_shapefile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Index an uploaded Shapefile in Solr.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>job</strong> &#8211; <code class="xref py py-class docutils literal"><span class="pre">Job</span></code></li>
+<li><strong>bag</strong> &#8211; absolute path to bag containing Shapefile</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="kepler.tasks.submit_to_dspace">
+<code class="descclassname">kepler.tasks.</code><code class="descname">submit_to_dspace</code><span class="sig-paren">(</span><em>job</em>, <em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#kepler.tasks.submit_to_dspace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Upload GeoTIFF to DSpace.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">only runs if <cite>Item.handle</cite> has not previously been set.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>job</strong> &#8211; <code class="xref py py-class docutils literal"><span class="pre">Job</span></code></li>
+<li><strong>data</strong> &#8211; absolute path to bag containing GeoTIFF</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="kepler.tasks.upload_geotiff">
+<code class="descclassname">kepler.tasks.</code><code class="descname">upload_geotiff</code><span class="sig-paren">(</span><em>job</em>, <em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#kepler.tasks.upload_geotiff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Upload GeoTIFF to GeoServer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>job</strong> &#8211; <code class="xref py py-class docutils literal"><span class="pre">Job</span></code></li>
+<li><strong>data</strong> &#8211; absolute path to bag containing GeoTIFF</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="kepler.tasks.upload_shapefile">
+<code class="descclassname">kepler.tasks.</code><code class="descname">upload_shapefile</code><span class="sig-paren">(</span><em>job</em>, <em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#kepler.tasks.upload_shapefile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Upload Shapefile to GeoServer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>job</strong> &#8211; <code class="xref py py-class docutils literal"><span class="pre">Job</span></code></li>
+<li><strong>data</strong> &#8211; absolute path to bag containing Shapefile</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Kepler</a></h1>
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=MITLibraries&repo=kepler&type=watch&count=False&size=large"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/MITLibraries/kepler">
+    <img
+        alt="https://secure.travis-ci.org/MITLibraries/kepler.png?branch=master"
+        src="https://secure.travis-ci.org/MITLibraries/kepler.png?branch=master"
+    >
+</a>
+</p>
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="metadata.html">Metadata</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Source Docs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-kepler.sword">kepler.sword</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-kepler.tasks">kepler.tasks</a></li>
+</ul>
+</li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Source Docs</a><ul>
+<li><a class="reference internal" href="#module-kepler.sword">kepler.sword</a></li>
+<li><a class="reference internal" href="#module-kepler.tasks">kepler.tasks</a><ul>
+<li><a class="reference internal" href="#id1">kepler.tasks</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, MIT Libraries.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="_sources/application.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
