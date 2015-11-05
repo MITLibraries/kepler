@@ -135,7 +135,14 @@ $ mkvirtualenv kepler-docs
 (kepler-docs)$ make html
 </pre></div>
 </div>
-<p>This will place the built documents in <code class="docutils literal"><span class="pre">kepler/docs/_build/</span></code>.</p>
+<p>This will place the built documents in <code class="docutils literal"><span class="pre">kepler/docs/_build/</span></code>. The built docs can be uploaded to the <a class="reference external" href="http://mitlibraries.github.io/kepler/">project page</a> using <a class="reference external" href="https://github.com/davisp/ghp-import">ghp-import</a>. It is recommended to install      <code class="docutils literal"><span class="pre">ghp-import</span></code> using <a class="reference external" href="https://github.com/mitsuhiko/pipsi">pipsi</a>:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ pipsi install ghp-import
+$ cd /path/to/kepler
+$ ghp-import -n docs/_build/html
+$ git co gh-pages
+$ git push origin gh-pages
+</pre></div>
+</div>
 </div>
 <div class="section" id="documentation-contents">
 <h2>Documentation Contents<a class="headerlink" href="#documentation-contents" title="Permalink to this headline">¶</a></h2>

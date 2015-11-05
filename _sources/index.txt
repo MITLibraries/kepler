@@ -91,7 +91,13 @@ In order to generate the documentation you have to make sure `Sphinx <http://sph
     (kepler-docs)$ cd docs
     (kepler-docs)$ make html
 
-This will place the built documents in ``kepler/docs/_build/``.
+This will place the built documents in ``kepler/docs/_build/``. The built docs can be uploaded to the `project page <http://mitlibraries.github.io/kepler/>`_ using `ghp-import <https://github.com/davisp/ghp-import>`_. It is recommended to install      ``ghp-import`` using `pipsi <https://github.com/mitsuhiko/pipsi>`_::
+
+    $ pipsi install ghp-import
+    $ cd /path/to/kepler
+    $ ghp-import -n docs/_build/html
+    $ git co gh-pages
+    $ git push origin gh-pages
 
 
 Documentation Contents
