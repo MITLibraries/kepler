@@ -6,6 +6,7 @@ from mock import patch, Mock
 from requests import HTTPError
 
 from kepler.geoserver import *
+from kepler.geoserver import _get_json
 
 
 pytestmark = pytest.mark.usefixtures('app')
@@ -80,10 +81,20 @@ class TestGeoServer(object):
         assert delete_url(root, 'foo', 'image/tiff') == \
             '%srest/workspaces/mit/coveragestores/foo?recurse=true' % root
 
+    def testGetJsonUsesAuth(self, requests):
+        _get_json(root)
+        call = requests.get.call_args
+        assert call[1].get('auth') == ('username', 'password')
+
     def testPutUploadsData(self, requests, bag_upload):
         put(root, 'foo', bag_upload, 'application/zip')
         call = requests.put.call_args
         assert call[1].get('data').name == bag_upload
+
+    def testPutUsesBasicAuth(self, requests, bag_upload):
+        put(root, 'foo', bag_upload, 'application/zip')
+        call = requests.put.call_args
+        assert call[1].get('auth') == ('username', 'password')
 
     def testPutReturnsLayerId(self, requests, bag_upload):
         with patch('kepler.geoserver.layer_id') as mock:
