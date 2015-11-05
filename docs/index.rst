@@ -25,21 +25,13 @@ Then, from the project root::
 Replace ``/usr/include/gdal`` with wherever the header files are on your system.
 
 
-Running the Tests
------------------
-
-You should have python binaries for 2.6, 2.7, 3.3 and 3.4 available on your system. Install `tox <https://tox.readthedocs.org/en/latest/>`_ and run::
-
-    $ tox
-
-
 Configuration
 -------------
 
-Kepler uses `Flask's instance folders <http://flask.pocoo.org/docs/config/#instance-folders>`_ to manage application configuration. Any settings should be placed in ``/path/to/kepler/instance/app.cfg``. Any of the builtin configuration variables provided by Flask can be set here. In addition, the following variables should be set:
+Kepler uses environment variables to manage application configuration. These should be placed in a ``.env`` file at the root of the project. The following variables should be set:
 
 +------------------------------+---------------------------------------+
-| ``SQLALCHEMY_DATABASE_URL``  | Location of sqlite database           |
+| ``SQLALCHEMY_DATABASE_URI``  | Location of sqlite database           |
 +------------------------------+---------------------------------------+
 | ``GEOSERVER_PUBLIC_URL``     | URL for public GeoServer instance     |
 +------------------------------+---------------------------------------+
@@ -60,18 +52,50 @@ Kepler uses `Flask's instance folders <http://flask.pocoo.org/docs/config/#insta
 | ``UUID_NAMESPACE``           | The namespace used in generating the  |
 |                              | version 5 UUID                        |
 +------------------------------+---------------------------------------+
+| ``SECRET_KEY``               | Randomly generated key                |
++------------------------------+---------------------------------------+
+| ``OAI_ORE_URL``              | URL for OAI ORE DSpace service        |
++------------------------------+---------------------------------------+
+| ``GEOSERVER_AUTH_USER``      | Username for GeoServer REST service   |
++------------------------------+---------------------------------------+
+| ``GEOSERVER_AUTH_PASS``      | Password for GeoServer REST service   |
++------------------------------+---------------------------------------+
+
+
+Running the Application Locally
+-------------------------------
+
+The application can be run locally using either the heroku toolbelt or honcho. For example, from project root::
+
+    $ honcho start
+
+
+Running the Tests
+-----------------
+
+You should have python binaries for 2.7, 3.3 and 3.4 available on your system. Install `tox <https://tox.readthedocs.org/en/latest/>`_ and run::
+
+    $ tox
 
 
 Building the Documentation
 --------------------------
 
-Make sure `Sphinx <http://sphinx-doc.org/latest/index.html>`_ is installed. Then::
+In order to generate the documentation you have to make sure `Sphinx <http://sphinx-doc.org/latest/index.html>`_ is installed in a virtualenv `along with all the kepler dependencies`. One possibility is to create a different virtualenv for generating the docs. For example::
 
-    $ cd docs
-    $ make html
+    $ cd /path/to/kepler
+    $ mkvirtualenv kepler-docs
+    (kepler-docs)$ pip install Sphinx
+    (kepler-docs)$ env CPLUS_INCLUDE_PATH=/usr/local/include \
+        C_INCLUDE_PATH=/usr/local/include pip install -r requirements.txt
+    (kepler-docs)$ cd docs
+    (kepler-docs)$ make html
+
+This will place the built documents in ``kepler/docs/_build/``.
 
 
-Contents:
+Documentation Contents
+----------------------
 
 .. toctree::
    :maxdepth: 2
