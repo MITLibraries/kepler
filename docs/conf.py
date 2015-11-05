@@ -118,6 +118,8 @@ html_theme = 'alabaster'
 html_theme_options = {
     'github_user': 'MITLibraries',
     'github_repo': 'kepler',
+    'github_count': False,
+    'travis_button': True
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
@@ -159,7 +161,7 @@ html_static_path = ['_static']
 
 # Custom sidebar templates, maps document names to template names.
 html_sidebars = {
-    '**': ['about.html', 'navigation.html', 'searchbox.html', ]
+    '**': ['about.html', 'navigation.html', 'searchbox.html', 'localtoc.html']
 }
 
 # Additional templates that should be rendered to pages, maps page names to
