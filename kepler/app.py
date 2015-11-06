@@ -20,13 +20,13 @@ def create_app(cfg_obj=None):
     register_extensions(app)
     register_blueprints(app)
     register_errorhandlers(app)
-    app.logger.info("Application Startup Complete")
+    app.logger.info('Application Startup Complete')
     return app
 
 
 def register_extensions(app):
     db.init_app(app)
-    app.logger.info("Extensions registered")
+    app.logger.info('Extensions registered')
 
 
 def register_blueprints(app):
@@ -34,20 +34,18 @@ def register_blueprints(app):
     app.register_blueprint(item_blueprint)
     app.register_blueprint(layer_blueprint)
     app.register_blueprint(marc_blueprint)
-    app.logger.info("Blueprints registered")
+    app.logger.info('Blueprints registered')
 
 
 def register_errorhandlers(app):
     def handle_unsupported_format(error):
         return '', 415
     app.errorhandler(UnsupportedFormat)(handle_unsupported_format)
-    app.logger.info("Error Handlers registered")
+    app.logger.info('Error Handlers registered')
 
 
 def register_loggers(app):
-    formatter = logging.Formatter(
-        "[%(asctime)s] [%(name)s] [%(levelname)s] [%(message)s]",
-        datefmt='%Y-%m-%d %H:%M:%S %z')
+    formatter = logging.Formatter("[%(name)s] [%(levelname)s] %(message)s")
 
     logging.getLogger().setLevel(logging.DEBUG)
 
@@ -60,7 +58,7 @@ def register_loggers(app):
     app.logger.addHandler(handler)
 
     # http logging
-    requests_log = logging.getLogger("requests.packages.urllib3")
+    requests_log = logging.getLogger('requests.packages.urllib3')
     requests_log.setLevel(logging.DEBUG)
     requests_log.addHandler(handler)
-    app.logger.info("Loggers registered")
+    app.logger.info('Loggers registered')
