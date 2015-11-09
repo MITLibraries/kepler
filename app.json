@@ -4,6 +4,8 @@
     "postdeploy": "python manage.py db upgrade"
   },
   "env": {
+    "GEOSERVER_AUTH_USER": "username",
+    "GEOSERVER_AUTH_PASS": "securepassword",
     "GEOSERVER_DATASTORE": "data",
     "GEOSERVER_PUBLIC_URL": "http://example.com/geoserver/",
     "GEOSERVER_RESTRICTED_URL": "http://example.com/secure-geoserver/",
