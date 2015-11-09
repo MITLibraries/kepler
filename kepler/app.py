@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-import logging
+import logging.config
+import os
+import yaml
 from flask import Flask
 from .extensions import db
 from kepler.job import job_blueprint
@@ -45,20 +47,7 @@ def register_errorhandlers(app):
 
 
 def register_loggers(app):
-    formatter = logging.Formatter("[%(name)s] [%(levelname)s] %(message)s")
-
-    logging.getLogger().setLevel(logging.DEBUG)
-
-    # stdout log handler
-    handler = logging.StreamHandler()
-    handler.setFormatter(formatter)
-    handler.setLevel(logging.DEBUG)
-
-    # general flask app logger
-    app.logger.addHandler(handler)
-
-    # http logging
-    requests_log = logging.getLogger('requests.packages.urllib3')
-    requests_log.setLevel(logging.DEBUG)
-    requests_log.addHandler(handler)
+    logging_config = os.getenv('LOGGING_CONFIG', 'kepler/logging.conf')
+    with open(logging_config) as f:
+        logging.config.dictConfig(yaml.load(f))
     app.logger.info('Loggers registered')
