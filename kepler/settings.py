@@ -21,6 +21,8 @@ class HerokuConfig(DefaultConfig):
         self.GEOSERVER_WORKSPACE = os.environ['GEOSERVER_WORKSPACE']
         self.GEOSERVER_DATASTORE = os.environ['GEOSERVER_DATASTORE']
         self.SOLR_URL = os.environ['SOLR_URL']
+        self.SOLR_AUTH_USER = os.environ['SOLR_AUTH_USER']
+        self.SOLR_AUTH_PASS = os.environ['SOLR_AUTH_PASS']
         self.OAI_ORE_URL = os.environ['OAI_ORE_URL']
         self.SWORD_SERVICE_URL = os.environ['SWORD_SERVICE_URL']
         self.SWORD_SERVICE_USERNAME = os.environ['SWORD_SERVICE_USERNAME']

@@ -14,6 +14,8 @@
     "PATH": "/app/.geodjango/gdal/bin:/usr/local/bin:/usr/bin:/bin",
     "SECRET_KEY": "secret",
     "SOLR_URL": "http://localhost:8983/solr/geoblacklight/",
+    "SOLR_AUTH_USER": {"required": true},
+    "SOLR_AUTH_PASS": {"required": true},
     "SWORD_SERVICE_PASSWORD": "vorpalblade",
     "SWORD_SERVICE_URL": "http://example.com/sword",
     "SWORD_SERVICE_USERNAME": "swordymcswordmuffin",

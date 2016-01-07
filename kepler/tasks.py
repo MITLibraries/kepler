@@ -185,7 +185,11 @@ def _index_records(records):
     :param records: iterator of dictionaries to be added to Solr
     """
 
+    auth = (current_app.config.get('SOLR_AUTH_USER'),
+            current_app.config.get('SOLR_AUTH_PASS'))
     solr = pysolr.Solr(current_app.config['SOLR_URL'])
+    if all(auth):
+        solr.auth = auth
     solr.add(records)
 
 
