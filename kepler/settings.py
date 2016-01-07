@@ -14,6 +14,7 @@ class DefaultConfig(object):
 
 class HerokuConfig(DefaultConfig):
     def __init__(self):
+        self.CLIENT_AUTH = os.environ['CLIENT_AUTH']
         self.SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
         self.SECRET_KEY = os.environ['SECRET_KEY']
         self.GEOSERVER_PUBLIC_URL = os.environ['GEOSERVER_PUBLIC_URL']
