@@ -4,6 +4,7 @@
     "postdeploy": "python manage.py db upgrade"
   },
   "env": {
+    "CLIENT_AUTH": {"required": true},
     "GEOSERVER_AUTH_USER": "username",
     "GEOSERVER_AUTH_PASS": "securepassword",
     "GEOSERVER_DATASTORE": "data",
