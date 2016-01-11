@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 
 from flask import abort, current_app, request
+import requests
 
 
 def authenticate_client(username, password):
@@ -16,3 +17,7 @@ def client_auth_required(f):
             abort(401)
         return f(*args, **kwargs)
     return wrapper
+
+
+solr_session = requests.Session()
+solr_session.stream = False

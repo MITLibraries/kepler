@@ -22,6 +22,7 @@ from lxml import etree
 import pysolr
 import requests
 
+import kepler
 from kepler.geoserver import put, wfs_url, wms_url
 from kepler.bag import get_fgdc, get_shapefile, get_geotiff
 from kepler.records import create_record, MitRecord
@@ -30,6 +31,11 @@ from kepler.utils import make_uuid
 from kepler.extensions import db
 from kepler.parsers import MarcParser
 from kepler.geo import compress, pyramid
+
+try:
+    from itertools import imap as map
+except ImportError:
+    pass
 
 
 def index_shapefile(job, data):
@@ -188,9 +194,10 @@ def _index_records(records):
     auth = (current_app.config.get('SOLR_AUTH_USER'),
             current_app.config.get('SOLR_AUTH_PASS'))
     solr = pysolr.Solr(current_app.config['SOLR_URL'])
+    solr.session = kepler.solr_session
     if all(auth):
         solr.session.auth = auth
-    solr.add(records)
+    solr.add(map(_prep_solr_record, records))
 
 
 def _load_marc_records(data):
@@ -207,3 +214,18 @@ def _fgdc_to_mods(fgdc):
     doc = etree.parse(fgdc)
     mods = xform(doc)
     return etree.tostring(mods, encoding="unicode")
+
+
+def _prep_solr_record(record):
+    """Normalize field values for pysolr.
+
+    `pysolr` does not handle sets, so these need to be converted to
+    lists before being added to solr.
+    """
+    return {k: _normalize_sets(v) for k, v in record.items()}
+
+
+def _normalize_sets(value):
+    if isinstance(value, set):
+        return list(value)
+    return value

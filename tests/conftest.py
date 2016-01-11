@@ -8,6 +8,8 @@ import shutil
 import pytest
 from webtest import TestApp
 from mock import patch, Mock
+import requests
+import requests_mock
 
 from kepler.app import create_app
 from kepler.extensions import db as _db
@@ -144,9 +146,12 @@ def oai_ore_two_tiffs():
 
 
 @pytest.yield_fixture
-def pysolr_add():
-    patcher = patch('pysolr.Solr.add')
-    yield patcher.start()
+def pysolr():
+    adapter = requests_mock.Adapter()
+    patcher = patch('kepler.solr_session', new_callable=requests.Session)
+    sess = patcher.start()
+    sess.mount('mock', adapter)
+    yield adapter
     patcher.stop()
 
 
