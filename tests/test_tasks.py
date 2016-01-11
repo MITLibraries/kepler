@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import os.path
 
 import pytest
+import requests
 import requests_mock
 from mock import Mock, patch, DEFAULT
 
@@ -169,9 +170,19 @@ def testUploadToGeoServerSetsLayerId(job, bag, shapefile, db):
     assert job.item.layer_id == 'foo:bar'
 
 
-def testIndexRecordsAddsRecordsToSolr(pysolr_add):
+def testIndexRecordsAddsRecordsToSolr(pysolr):
+    pysolr.register_uri(requests_mock.ANY, requests_mock.ANY)
     _index_records([{'uuid': 'foobar'}])
-    pysolr_add.assert_called_once_with([{'uuid': 'foobar'}])
+    req = pysolr.request_history[0]
+    assert '<doc><field name="uuid">foobar</field></doc>' in req.text
+
+
+def testIndexRecordsConvertsSets(pysolr):
+    pysolr.register_uri(requests_mock.ANY, requests_mock.ANY)
+    _index_records([{'dc_creator_s': set(['Foo', 'Bar'])}])
+    req = pysolr.request_history[0]
+    assert '<field name="dc_creator_s">Foo</field>' in req.text
+    assert '<field name="dc_creator_s">Bar</field>' in req.text
 
 
 def testLoadMarcRecordsReturnsRecordIterator(marc):
