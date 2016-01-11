@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 import os.path
+import uuid
 
 import pytest
 import requests
@@ -152,7 +153,8 @@ def testIndexFromFgdcAddsUuid(job, bag):
 def testUploadToGeoserverUploadsData(job, shapefile):
     with patch('kepler.tasks.put') as mock:
         _upload_to_geoserver(job, shapefile, 'application/zip')
-    mock.assert_called_once_with('http://example.com/geoserver/', job.item.uri,
+    mock.assert_called_once_with('http://example.com/geoserver/',
+                                 str(uuid.UUID(job.item.uri)),
                                  shapefile, 'application/zip')
 
 
