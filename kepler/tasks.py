@@ -61,7 +61,7 @@ def index_geotiff(job, data):
 
     refs = {
         'http://www.opengis.net/def/serviceType/ogc/wms': wms_url(job.item.access),
-        'http://schema.org/downloadUrl': job.item.handle
+        'http://schema.org/downloadUrl': job.item.tiff_url
     }
     _index_from_fgdc(job, bag=data, dct_references_s=refs)
 
