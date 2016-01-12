@@ -62,6 +62,26 @@ class TestGeoServer(object):
         assert wfs_url('Public') == 'http://example.com/geoserver/wfs'
         assert wfs_url('Restricted') == 'http://example.com/secure-geoserver/wfs'
 
+    def test_wms_url_works_without_trailing_slash(self):
+        with patch('kepler.geoserver._url_by_access') as m:
+            m.return_value = 'http://example.com/secure'
+            assert wms_url('Public') == 'http://example.com/secure/wms'
+
+    def test_wms_url_works_with_trailing_slash(self):
+        with patch('kepler.geoserver._url_by_access') as m:
+            m.return_value = 'http://example.com/secure/'
+            assert wms_url('Public') == 'http://example.com/secure/wms'
+
+    def test_wfs_url_works_without_trailing_slash(self):
+        with patch('kepler.geoserver._url_by_access') as m:
+            m.return_value = 'http://example.com/secure'
+            assert wfs_url('Public') == 'http://example.com/secure/wfs'
+
+    def test_wfs_Url_works_with_trailing_slash(self):
+        with patch('kepler.geoserver._url_by_access') as m:
+            m.return_value = 'http://example.com/secure/'
+            assert wfs_url('Public') == 'http://example.com/secure/wfs'
+
     def testServiceUrlGeneratesUrl(self):
         assert service_url(root, 'foo') == '%srest/workspaces/foo/' % root
 

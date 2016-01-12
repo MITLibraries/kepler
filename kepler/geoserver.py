@@ -7,11 +7,11 @@ from flask import current_app
 
 
 def wms_url(access):
-    return '%swms' % _url_by_access(access)
+    return '%s/wms' % _url_by_access(access).rstrip('/')
 
 
 def wfs_url(access):
-    return '%swfs' % _url_by_access(access)
+    return '%s/wfs' % _url_by_access(access).rstrip('/')
 
 
 def service_url(root_url, workspace):
