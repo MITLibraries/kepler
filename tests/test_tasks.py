@@ -4,7 +4,6 @@ import os.path
 import uuid
 
 import pytest
-import requests
 import requests_mock
 from mock import Mock, patch, DEFAULT
 
@@ -40,7 +39,7 @@ def testIndexGeotiffIndexesFromFGDC(job, bag):
         'http://www.opengis.net/def/serviceType/ogc/wms': 'http://example.com/geoserver/wms',
         'http://schema.org/downloadUrl': 'http://example.com/foobar',
     }
-    job.item.handle = 'http://example.com/foobar'
+    job.item.tiff_url = 'http://example.com/foobar'
     with patch('kepler.tasks._index_from_fgdc') as mock:
         index_geotiff(job, bag)
         mock.assert_called_with(job, bag=bag, dct_references_s=refs)
