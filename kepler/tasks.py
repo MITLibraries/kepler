@@ -24,7 +24,8 @@ import requests
 
 import kepler
 from kepler.geoserver import put, wfs_url, wms_url
-from kepler.bag import get_fgdc, get_shapefile, get_geotiff
+from kepler.bag import (get_fgdc, get_shapefile, get_geotiff,
+                        get_shapefile_name)
 from kepler.records import create_record, MitRecord
 from kepler import sword
 from kepler.utils import make_uuid
@@ -49,7 +50,12 @@ def index_shapefile(job, data):
         'http://www.opengis.net/def/serviceType/ogc/wms': wms_url(job.item.access),
         'http://www.opengis.net/def/serviceType/ogc/wfs': wfs_url(job.item.access),
     }
-    _index_from_fgdc(job, bag=data, dct_references_s=refs)
+    uid = uuid.UUID(job.item.uri)
+    shp_name = get_shapefile_name(data)
+    layer_id = "%s:%s" % (current_app.config['GEOSERVER_WORKSPACE'],
+                          shp_name)
+    _index_from_fgdc(job, bag=data, dct_references_s=refs, uuid=str(uid),
+                     layer_id_s=layer_id)
 
 
 def index_geotiff(job, data):
@@ -63,7 +69,10 @@ def index_geotiff(job, data):
         'http://www.opengis.net/def/serviceType/ogc/wms': wms_url(job.item.access),
         'http://schema.org/downloadUrl': job.item.tiff_url
     }
-    _index_from_fgdc(job, bag=data, dct_references_s=refs)
+    uid = uuid.UUID(job.item.uri)
+    layer_id = "%s:%s" % (current_app.config['GEOSERVER_WORKSPACE'], uid)
+    _index_from_fgdc(job, bag=data, dct_references_s=refs, uuid=str(uid),
+                     layer_id_s=layer_id)
 
 
 def submit_to_dspace(job, data):
@@ -153,12 +162,6 @@ def _index_from_fgdc(job, bag, **kwargs):
     :param \**kwargs: additional fields to add to the record
     """
 
-    uid = uuid.UUID(job.item.uri)
-    layer_id = "%s:%s" % (current_app.config['GEOSERVER_WORKSPACE'], uid)
-    kwargs.update({
-        "layer_id_s": layer_id,
-        "uuid": str(uid),
-    })
     fgdc = get_fgdc(bag)
     record = create_record(fgdc, FGDCParser, **kwargs)
     _index_records([record.as_dict()])

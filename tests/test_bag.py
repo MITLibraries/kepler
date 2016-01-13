@@ -28,6 +28,10 @@ def test_returns_shapefile_path(bag):
     assert get_shapefile(bag) == "%sdata/shapefile.zip" % bag
 
 
+def test_returns_shapefile_name(bag):
+    assert get_shapefile_name(bag) == 'SDE_DATA_BD_A8GNS_2003'
+
+
 def test_unpacks_bag(bag_upload):
     tmp = tempfile.mkdtemp()
     unpack(bag_upload, tmp)
