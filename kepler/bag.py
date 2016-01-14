@@ -16,6 +16,15 @@ def get_shapefile(bag):
     return _extract_data(bag, '.zip')
 
 
+def get_shapefile_name(bag):
+    shp = get_shapefile(bag)
+    with ZipFile(shp) as zf:
+        files = zf.namelist()
+    for f in files:
+        if f.endswith('.shp'):
+            return f.rstrip('.shp')
+
+
 def get_geotiff(bag):
     return _extract_data(bag, '.tif')
 

@@ -31,7 +31,9 @@ def testIndexShapefileIndexesFromFGDC(job, bag):
     }
     with patch('kepler.tasks._index_from_fgdc') as mock:
         index_shapefile(job, bag)
-        mock.assert_called_with(job, bag=bag, dct_references_s=refs)
+        mock.assert_called_with(job, bag=bag, dct_references_s=refs,
+                                uuid='c8921f5a-eac7-509b-bac5-bd1b2cb202dc',
+                                layer_id_s='mit:SDE_DATA_BD_A8GNS_2003')
 
 
 def testIndexGeotiffIndexesFromFGDC(job, bag):
@@ -42,7 +44,9 @@ def testIndexGeotiffIndexesFromFGDC(job, bag):
     job.item.tiff_url = 'http://example.com/foobar'
     with patch('kepler.tasks._index_from_fgdc') as mock:
         index_geotiff(job, bag)
-        mock.assert_called_with(job, bag=bag, dct_references_s=refs)
+        mock.assert_called_with(job, bag=bag, dct_references_s=refs,
+                                uuid='c8921f5a-eac7-509b-bac5-bd1b2cb202dc',
+                                layer_id_s='mit:c8921f5a-eac7-509b-bac5-bd1b2cb202dc')
 
 
 def testSubmitToDspaceUploadsSwordPackage(job, bag_tif):
@@ -130,23 +134,11 @@ def testUploadGeotiffPyramidsTiff(job, bag_tif):
 
 def testIndexFromFgdcCreatesRecord(job, bag):
     with patch('kepler.tasks._index_records') as mock:
-        _index_from_fgdc(job, bag)
+        _index_from_fgdc(job, bag, layer_id_s='mit:SDE_DATA_BD_A8GNS_2003',
+                         uuid='c8921f5a-eac7-509b-bac5-bd1b2cb202dc')
         args = mock.call_args[0]
     assert args[0][0].get('dc_title_s') == 'Bermuda (Geographic Feature Names, 2003)'
-
-
-def testIndexFromFgdcAddsLayerId(job, bag):
-    with patch('kepler.tasks._index_records') as mock:
-        _index_from_fgdc(job, bag)
-        args = mock.call_args[0]
-    assert args[0][0].get('layer_id_s') == 'mit:c8921f5a-eac7-509b-bac5-bd1b2cb202dc'
-
-
-def testIndexFromFgdcAddsUuid(job, bag):
-    with patch('kepler.tasks._index_records') as mock:
-        _index_from_fgdc(job, bag)
-        args = mock.call_args[0]
-    assert args[0][0].get('uuid') == 'c8921f5a-eac7-509b-bac5-bd1b2cb202dc'
+    assert args[0][0].get('layer_id_s') == 'mit:SDE_DATA_BD_A8GNS_2003'
 
 
 def testUploadToGeoserverUploadsData(job, shapefile):
