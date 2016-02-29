@@ -9,7 +9,7 @@ from kepler.records import rights_mapper
 
 
 def get_fgdc(bag):
-    return _extract_data(bag, 'fgdc.xml')
+    return _extract_data(bag, '.xml')
 
 
 def get_shapefile(bag):
