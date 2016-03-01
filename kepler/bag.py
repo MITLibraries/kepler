@@ -22,7 +22,7 @@ def get_shapefile_name(bag):
         files = zf.namelist()
     for f in files:
         if f.endswith('.shp'):
-            return f.rstrip('.shp')
+            return os.path.splitext(os.path.basename(f))[0]
 
 
 def get_geotiff(bag):
