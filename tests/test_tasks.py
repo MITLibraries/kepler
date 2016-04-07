@@ -5,8 +5,9 @@ import uuid
 
 import pytest
 import requests_mock
-from mock import Mock, patch, DEFAULT
+from mock import patch, DEFAULT
 
+from kepler.models import Job, Item
 from kepler.tasks import *
 from kepler.tasks import (_index_records, _index_from_fgdc, _load_marc_records,
                           _upload_to_geoserver, _fgdc_to_mods)
@@ -16,11 +17,10 @@ pytestmark = pytest.mark.usefixtures('app')
 
 
 @pytest.fixture
-def job():
-    j = Mock()
-    j.item.handle = None
-    j.item.uri = 'urn:uuid:c8921f5a-eac7-509b-bac5-bd1b2cb202dc'
-    j.item.access = 'public'
+def job(db):
+    j = Job(item=Item(uri=u'urn:uuid:c8921f5a-eac7-509b-bac5-bd1b2cb202dc',
+                      access=u'Public'))
+    db.session.add(j)
     return j
 
 
@@ -63,6 +63,7 @@ def testIndexGeotiffIndexesFromFGDC(job, bag):
 
 def testSubmitToDspaceUploadsSwordPackage(job, bag_tif):
     with patch('kepler.tasks.sword.submit') as mock:
+        mock.return_value = 'frobber'
         submit_to_dspace(job, bag_tif)
         assert mock.called
 
@@ -155,6 +156,7 @@ def testIndexFromFgdcCreatesRecord(job, bag):
 
 def testUploadToGeoserverUploadsData(job, shapefile):
     with patch('kepler.tasks.put') as mock:
+        mock.return_value = 'foo:bar'
         _upload_to_geoserver(job, shapefile, 'application/zip')
     mock.assert_called_once_with('http://example.com/geoserver/',
                                  str(uuid.UUID(job.item.uri)),
@@ -164,6 +166,7 @@ def testUploadToGeoserverUploadsData(job, shapefile):
 def testUploadToGeoServerUsesCorrectUrl(job, bag, shapefile):
     with patch('kepler.tasks.put') as mock:
         job.item.access = 'Restricted'
+        mock.return_value = 'foo:bar'
         _upload_to_geoserver(job, bag, 'application/zip')
     assert mock.call_args[0][0] == 'http://example.com/secure-geoserver/'
 
