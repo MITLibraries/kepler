@@ -1,21 +1,25 @@
-sudo: required
-dist: trusty
+sudo: false
 notifications:
   email: false
 language: python
 env:
   global:
-    - CPLUS_INCLUDE_PATH=/usr/include/gdal
-    - C_INCLUDE_PATH=/usr/include/gdal
+    - CPLUS_INCLUDE_PATH=$HOME/gdal/include
+    - C_INCLUDE_PATH=$HOME/gdal/include
+    - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/gdal/lib
+    - PATH=$PATH:$HOME/gdal/bin
   matrix:
     - TOX_ENV=py27
     - TOX_ENV=py33
     - TOX_ENV=py34
     - TOX_ENV=coveralls
+cache:
+  directories:
+    - $HOME/gdal
 before_install:
-  - sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable -y
-  - sudo apt-get update -q
-  - sudo apt-get install -y libgdal1h libgdal1-dev gdal-bin
+  - bash install-gdal.sh
+before_script:
+  - echo "Using gdal version $(gdal-config --version)"
 install:
   - pip install tox
 script:
