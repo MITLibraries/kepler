@@ -54,6 +54,8 @@ def index_shapefile(job, data):
     shp_name = get_shapefile_name(data)
     layer_id = "%s:%s" % (current_app.config['GEOSERVER_WORKSPACE'],
                           shp_name)
+    job.item.layer_id = layer_id
+    db.session.commit()
     _index_from_fgdc(job, bag=data, dct_references_s=refs, uuid=str(uid),
                      layer_id_s=layer_id)
 
@@ -71,6 +73,8 @@ def index_geotiff(job, data):
     }
     uid = uuid.UUID(job.item.uri)
     layer_id = "%s:%s" % (current_app.config['GEOSERVER_WORKSPACE'], uid)
+    job.item.layer_id = layer_id
+    db.session.commit()
     _index_from_fgdc(job, bag=data, dct_references_s=refs, uuid=str(uid),
                      layer_id_s=layer_id)
 

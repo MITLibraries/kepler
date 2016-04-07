@@ -102,19 +102,22 @@ class TestJob(object):
         assert 'COMPLETED' in r.text
 
     def testJobListShowsPendingJobs(self, testapp, db):
-        db.session.add(Job(item=Item(uri=u'FOO'), status='PENDING'))
+        db.session.add(Job(item=Item(uri=u'FOO', layer_id=u'BAR'),
+                       status='PENDING'))
         r = testapp.get('/')
-        assert 'FOO' in r.text
+        assert 'BAR' in r.text
 
     def testJobListShowsCompletedJobs(self, testapp, db):
-        db.session.add(Job(item=Item(uri=u'FOO'), status='COMPLETED'))
+        db.session.add(Job(item=Item(uri=u'FOO', layer_id=u'BAR'),
+                       status='COMPLETED'))
         r = testapp.get('/')
-        assert 'FOO' in r.text
+        assert 'BAR' in r.text
 
     def testJobListShowsFailedJobs(self, testapp, db):
-        db.session.add(Job(item=Item(uri=u'FOO'), status='FAILED'))
+        db.session.add(Job(item=Item(uri=u'FOO', layer_id=u'BAR'),
+                       status='FAILED'))
         r = testapp.get('/')
-        assert 'FOO' in r.text
+        assert 'BAR' in r.text
 
     def testJobListReturnsOnlyMostRecentJobs(self, testapp, db):
         item = Item(uri=u'Frob')

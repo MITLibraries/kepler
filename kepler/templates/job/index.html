@@ -9,7 +9,7 @@
           {% for job in failed %}
             <li class="list-group-item">
               <a href="{{ url_for('.resource', id=job.id) }}">
-                {{ job.item.uri }}
+                {{ job.item.layer_id }}
               </a>
               <span class="label label-danger">{{ job.status }}</span>
               ({{ job.time.strftime('%Y-%m-%dT%H:%M:%S%z') }})
@@ -25,7 +25,7 @@
           {% for job in pending %}
             <li class="list-group-item">
               <a href="{{ url_for('.resource', id=job.id) }}">
-                {{ job.item.uri }}
+                {{ job.item.layer_id }}
               </a>
               <span class="label label-warning">{{ job.status }}</span>
               ({{ job.time.strftime('%Y-%m-%dT%H:%M:%S%z') }})
@@ -43,7 +43,7 @@
           {% for job in completed %}
             <li class="list-group-item">
               <a href="{{ url_for('.resource', id=job.id) }}">
-                {{ job.item.uri }}
+                {{ job.item.layer_id }}
               </a>
               <span class="label label-success">{{ job.status }}</span>
               ({{ job.time.strftime('%Y-%m-%dT%H:%M:%S%z') }})
