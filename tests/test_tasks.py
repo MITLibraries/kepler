@@ -36,6 +36,18 @@ def testIndexShapefileIndexesFromFGDC(job, bag):
                                 layer_id_s='mit:SDE_DATA_BD_A8GNS_2003')
 
 
+def test_index_shapefile_assigns_layer_id(job, bag):
+    with patch('kepler.tasks._index_from_fgdc') as mock:
+        index_shapefile(job, bag)
+        assert job.item.layer_id == 'mit:SDE_DATA_BD_A8GNS_2003'
+
+
+def test_index_geotiff_assigns_layer_id(job, bag):
+    with patch('kepler.tasks._index_from_fgdc') as mock:
+        index_geotiff(job, bag)
+        assert job.item.layer_id == 'mit:c8921f5a-eac7-509b-bac5-bd1b2cb202dc'
+
+
 def testIndexGeotiffIndexesFromFGDC(job, bag):
     refs = {
         'http://www.opengis.net/def/serviceType/ogc/wms': 'http://example.com/geoserver/wms',
