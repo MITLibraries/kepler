@@ -3,16 +3,16 @@ from __future__ import absolute_import
 import io
 import tempfile
 import os
+import re
 import shutil
 
 import pytest
 from webtest import TestApp
 from mock import patch, Mock
-import requests
 import requests_mock
 
 from kepler.app import create_app
-from kepler.extensions import db as _db
+from kepler.extensions import db as _db, solr, geoserver as _geoserver
 from kepler.settings import TestConfig
 
 
@@ -62,6 +62,31 @@ def db(app):
         _db.create_all()
     yield _db
     _db.drop_all()
+
+
+@pytest.fixture
+def geoserver_resp():
+    def resp(request, context):
+        host = re.search('(mock://[a-z\.]*)/', request.url).group(1)
+        data = host + '/geoserver/rest/workspaces/mit/datastores/data'
+        cvg = host + '/geoserver/rest/workspaces/mit/coveragestores/foo'
+        return {
+            'dataStore': {'featureTypes': data + '/foobar'},
+            'featureTypes': {'featureType': [{'name': 'shapefile1'}]},
+            'coverageStore': {'coverages': cvg + '/foobar'},
+            'coverages': {'coverage': [{'name': 'geotiff1'}]}
+        }
+    return resp
+
+
+@pytest.fixture
+def geoserver(app, geoserver_resp):
+    a = requests_mock.Adapter()
+    a.register_uri('PUT', requests_mock.ANY)
+    a.register_uri('GET', requests_mock.ANY, json=geoserver_resp)
+    _geoserver.public.session.mount('mock://', a)
+    _geoserver.secure.session.mount('mock://', a)
+    return a
 
 
 @pytest.fixture
@@ -145,14 +170,12 @@ def oai_ore_two_tiffs():
     return resp
 
 
-@pytest.yield_fixture
-def pysolr():
+@pytest.fixture
+def pysolr(app):
     adapter = requests_mock.Adapter()
-    patcher = patch('kepler.solr_session', new_callable=requests.Session)
-    sess = patcher.start()
-    sess.mount('mock', adapter)
-    yield adapter
-    patcher.stop()
+    adapter.register_uri(requests_mock.ANY, requests_mock.ANY)
+    solr.session.mount('mock', adapter)
+    return adapter
 
 
 @pytest.yield_fixture

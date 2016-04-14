@@ -35,10 +35,10 @@ class HerokuConfig(DefaultConfig):
 
 class TestConfig(DefaultConfig):
     TESTING = True
-    DEBUG = True
+    DEBUG = False
     SQLALCHEMY_DATABASE_URI = 'sqlite://'
-    GEOSERVER_PUBLIC_URL = 'http://example.com/geoserver/'
-    GEOSERVER_RESTRICTED_URL = 'http://example.com/secure-geoserver/'
+    GEOSERVER_PUBLIC_URL = 'mock://example.com/geoserver/'
+    GEOSERVER_RESTRICTED_URL = 'mock://secure.example.com/geoserver/'
     GEOSERVER_WORKSPACE = 'mit'
     GEOSERVER_DATASTORE = 'data'
     OAI_ORE_URL = 'http://example.com/metadata/handle/'

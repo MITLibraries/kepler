@@ -22,14 +22,12 @@ from lxml import etree
 import pysolr
 import requests
 
-import kepler
-from kepler.geoserver import put, wfs_url, wms_url
 from kepler.bag import (get_fgdc, get_shapefile, get_geotiff,
                         get_shapefile_name)
 from kepler.records import create_record, MitRecord
 from kepler import sword
 from kepler.utils import make_uuid
-from kepler.extensions import db
+from kepler.extensions import db, solr as solr_session, geoserver
 from kepler.parsers import MarcParser
 from kepler.geo import compress, pyramid
 
@@ -46,14 +44,14 @@ def index_shapefile(job, data):
         :param bag: absolute path to bag containing Shapefile
     """
 
+    gs = _get_geoserver(job.item.access)
     refs = {
-        'http://www.opengis.net/def/serviceType/ogc/wms': wms_url(job.item.access),
-        'http://www.opengis.net/def/serviceType/ogc/wfs': wfs_url(job.item.access),
+        'http://www.opengis.net/def/serviceType/ogc/wms': gs.wms_url,
+        'http://www.opengis.net/def/serviceType/ogc/wfs': gs.wfs_url,
     }
     uid = uuid.UUID(job.item.uri)
     shp_name = get_shapefile_name(data)
-    layer_id = "%s:%s" % (current_app.config['GEOSERVER_WORKSPACE'],
-                          shp_name)
+    layer_id = "%s:%s" % (gs.workspace, shp_name)
     job.item.layer_id = layer_id
     db.session.commit()
     _index_from_fgdc(job, bag=data, dct_references_s=refs, uuid=str(uid),
@@ -67,12 +65,13 @@ def index_geotiff(job, data):
     :param bag: absolute path to bag containing GeoTIFF
     """
 
+    gs = _get_geoserver(job.item.access)
     refs = {
-        'http://www.opengis.net/def/serviceType/ogc/wms': wms_url(job.item.access),
+        'http://www.opengis.net/def/serviceType/ogc/wms': gs.wms_url,
         'http://schema.org/downloadUrl': job.item.tiff_url
     }
     uid = uuid.UUID(job.item.uri)
-    layer_id = "%s:%s" % (current_app.config['GEOSERVER_WORKSPACE'], uid)
+    layer_id = "%s:%s" % (gs.workspace, uid)
     job.item.layer_id = layer_id
     db.session.commit()
     _index_from_fgdc(job, bag=data, dct_references_s=refs, uuid=str(uid),
@@ -183,11 +182,8 @@ def _upload_to_geoserver(job, data, mimetype):
     :param mimetype: one of ``application/zip`` or ``image/tiff``
     """
 
-    if job.item.access == 'Restricted':
-        url = current_app.config['GEOSERVER_RESTRICTED_URL']
-    else:
-        url = current_app.config['GEOSERVER_PUBLIC_URL']
-    layer_id = put(url, str(uuid.UUID(job.item.uri)), data, mimetype)
+    gs = _get_geoserver(job.item.access)
+    layer_id = gs.put(str(uuid.UUID(job.item.uri)), data, mimetype)
     job.item.layer_id = layer_id
     db.session.commit()
 
@@ -198,12 +194,8 @@ def _index_records(records):
     :param records: iterator of dictionaries to be added to Solr
     """
 
-    auth = (current_app.config.get('SOLR_AUTH_USER'),
-            current_app.config.get('SOLR_AUTH_PASS'))
     solr = pysolr.Solr(current_app.config['SOLR_URL'])
-    solr.session = kepler.solr_session
-    if all(auth):
-        solr.session.auth = auth
+    solr.session = solr_session.session
     solr.add(map(_prep_solr_record, records))
 
 
@@ -236,3 +228,9 @@ def _normalize_sets(value):
     if isinstance(value, set):
         return list(value)
     return value
+
+
+def _get_geoserver(access):
+    if access.lower() == 'restricted':
+        return geoserver.secure
+    return geoserver.public
