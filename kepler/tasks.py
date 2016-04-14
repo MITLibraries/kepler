@@ -20,14 +20,13 @@ from flask import current_app
 from ogre.xml import FGDCParser
 from lxml import etree
 import pysolr
-import requests
 
 from kepler.bag import (get_fgdc, get_shapefile, get_geotiff,
                         get_shapefile_name)
 from kepler.records import create_record, MitRecord
 from kepler import sword
 from kepler.utils import make_uuid
-from kepler.extensions import db, solr as solr_session, geoserver
+from kepler.extensions import db, solr as solr_session, geoserver, dspace
 from kepler.parsers import MarcParser
 from kepler.geo import compress, pyramid
 
@@ -87,8 +86,6 @@ def submit_to_dspace(job, data):
         :param data: absolute path to bag containing GeoTIFF
     """
     if not job.item.handle:
-        username = current_app.config['SWORD_SERVICE_USERNAME']
-        password = current_app.config['SWORD_SERVICE_PASSWORD']
         pkg = sword.SWORDPackage(uuid=job.item.uri)
         tiff = get_geotiff(data)
         pkg.datafiles.append(tiff)
@@ -96,7 +93,7 @@ def submit_to_dspace(job, data):
         with tempfile.NamedTemporaryFile(suffix='.zip') as fp:
             pkg.write(fp)
             handle = sword.submit(current_app.config['SWORD_SERVICE_URL'],
-                                  fp.name, auth=(username, password))
+                                  fp.name)
         job.item.handle = handle
         db.session.commit()
 
@@ -110,7 +107,7 @@ def get_geotiff_url_from_dspace(job):
     """
     handle = job.item.handle.replace('http://hdl.handle.net/', '')
     ore_url = current_app.config['OAI_ORE_URL'] + handle + '/ore.xml'
-    r = requests.get(ore_url)
+    r = dspace.session.get(ore_url)
     r.raise_for_status()
     doc = etree.fromstring(r.content)
     tif_urls = doc.xpath(

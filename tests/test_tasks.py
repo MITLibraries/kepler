@@ -63,54 +63,46 @@ def test_index_geotiff_indexes_from_fgdc(job, bag):
                                 layer_id_s='mit:c8921f5a-eac7-509b-bac5-bd1b2cb202dc')
 
 
-def testSubmitToDspaceUploadsSwordPackage(job, bag_tif):
-    with patch('kepler.tasks.sword.submit') as mock:
-        mock.return_value = 'frobber'
-        submit_to_dspace(job, bag_tif)
-        assert mock.called
+def test_submit_to_dspace_uploads_sword_package(sword, job, bag_tif):
+    submit_to_dspace(job, bag_tif)
+    req = sword.request_history[0]
+    assert 'X-Packaging' in req.headers
+    assert req.text.name.endswith('.zip')
 
 
-def testSubmitToDspaceAddsHandleToItem(job, bag_tif):
-    with patch('kepler.tasks.sword.submit') as mock:
-        mock.return_value = 'foobar'
-        submit_to_dspace(job, bag_tif)
-        assert job.item.handle == 'foobar'
+def test_submit_to_dspace_adds_handle_to_item(sword, job, bag_tif):
+    submit_to_dspace(job, bag_tif)
+    assert job.item.handle == 'mit.edu:dusenbury-device:1'
 
 
-def testGetGeotiffUrlFromDspaceAddsGeotiffUrlToItem(job, oai_ore):
-    with requests_mock.mock() as m:
-        m.get('http://example.com/metadata/handle/1234.5/67890/ore.xml',
-              text=oai_ore)
-        job.item.handle = 'http://hdl.handle.net/1234.5/67890'
+def test_get_geotiff_url_adds_url_to_item(dspace, job, oai_ore):
+    dspace.register_uri('GET', requests_mock.ANY, text=oai_ore)
+    job.item.handle = 'http://hdl.handle.net/1234.5/67890'
+    get_geotiff_url_from_dspace(job)
+    assert job.item.tiff_url == 'http://example.com/bitstream/handle/1234.5/67890/248077.tif?sequence=4'
+
+
+def test_get_geotiff_url_errors_on_no_tiff(dspace, job, oai_ore_no_tiffs):
+    dspace.register_uri('GET', requests_mock.ANY, text=oai_ore_no_tiffs)
+    job.item.handle = 'http://hdl.handle.net/1234.5/67890'
+    with pytest.raises(Exception) as excinfo:
         get_geotiff_url_from_dspace(job)
-        assert job.item.tiff_url == 'http://example.com/bitstream/handle/1234.5/67890/248077.tif?sequence=4'
+    assert 'Expected 1 tiff, found 0' == str(excinfo.value)
 
 
-def testGetGeotiffUrlFromDspaceErrorsOnNoTiffs(job, oai_ore_no_tiffs):
-    with requests_mock.mock() as m:
-        m.get('http://example.com/metadata/handle/1234.5/67890/ore.xml',
-              text=oai_ore_no_tiffs)
-        job.item.handle = 'http://hdl.handle.net/1234.5/67890'
-        with pytest.raises(Exception) as excinfo:
-            get_geotiff_url_from_dspace(job)
-        assert 'Expected 1 tiff, found 0' == str(excinfo.value)
+def test_get_geotiff_url_errors_on_multiple_tiffs(dspace, job,
+                                                  oai_ore_two_tiffs):
+    dspace.register_uri('GET', requests_mock.ANY, text=oai_ore_two_tiffs)
+    job.item.handle = 'http://hdl.handle.net/1234.5/67890'
+    with pytest.raises(Exception) as excinfo:
+        get_geotiff_url_from_dspace(job)
+    assert 'Expected 1 tiff, found 2' == str(excinfo.value)
 
 
-def testGetGeotiffUrlFromDspaceErrorsOnMultipleTiffs(job, oai_ore_two_tiffs):
-    with requests_mock.mock() as m:
-        m.get('http://example.com/metadata/handle/1234.5/67890/ore.xml',
-              text=oai_ore_two_tiffs)
-        job.item.handle = 'http://hdl.handle.net/1234.5/67890'
-        with pytest.raises(Exception) as excinfo:
-            get_geotiff_url_from_dspace(job)
-        assert 'Expected 1 tiff, found 2' == str(excinfo.value)
-
-
-def testSubmitToDspaceWithExistingHandleDoesNotSubmit(job, bag_tif):
+def test_does_not_submit_to_dspace_with_existing_handle(sword, job, bag_tif):
     job.item.handle = "popcorn"
-    with patch('kepler.tasks.sword.submit') as mock:
-        submit_to_dspace(job, bag_tif)
-        assert not mock.called
+    submit_to_dspace(job, bag_tif)
+    assert not sword.called
 
 
 def testSubmitToDspaceWithExistingHandleDoesNotChangeHandle(job, bag_tif):

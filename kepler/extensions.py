@@ -7,11 +7,16 @@ import requests
 from kepler.geoserver import GeoService
 
 
-class Solr(object):
+class BaseExtension(object):
     def __init__(self, app=None):
         if app is not None:
             self.init_app(app)
 
+    def init_app(self, app):
+        raise NotImplementedError
+
+
+class Solr(BaseExtension):
     def init_app(self, app):
         auth = (app.config.get('SOLR_AUTH_USER'),
                 app.config.get('SOLR_AUTH_PASS'))
@@ -19,11 +24,7 @@ class Solr(object):
         self.session.auth = auth
 
 
-class GeoServer(object):
-    def __init__(self, app=None):
-        if app is not None:
-            self.init_app(app)
-
+class GeoServer(BaseExtension):
     def init_app(self, app):
         auth = (app.config.get('GEOSERVER_AUTH_USER'),
                 app.config.get('GEOSERVER_AUTH_PASS'))
@@ -51,6 +52,15 @@ class GeoServer(object):
         return self._secure
 
 
+class DSpace(BaseExtension):
+    def init_app(self, app):
+        auth = (app.config.get('SWORD_SERVICE_USERNAME'),
+                app.config.get('SWORD_SERVICE_PASSWORD'))
+        self.session = requests.Session()
+        self.session.auth = auth
+
+
 db = SQLAlchemy()
 solr = Solr()
 geoserver = GeoServer()
+dspace = DSpace()

@@ -8,11 +8,11 @@ import shutil
 
 import pytest
 from webtest import TestApp
-from mock import patch, Mock
 import requests_mock
 
 from kepler.app import create_app
-from kepler.extensions import db as _db, solr, geoserver as _geoserver
+from kepler.extensions import (db as _db, dspace as _dspace,
+                               geoserver as _geoserver, solr)
 from kepler.settings import TestConfig
 
 
@@ -178,20 +178,20 @@ def pysolr(app):
     return adapter
 
 
-@pytest.yield_fixture
-def sword_service(sword):
-    patcher = patch('kepler.sword.requests')
-    req = patcher.start()
-    req.post.return_value = Mock(text=sword)
-    yield req
-    patcher.stop()
+@pytest.fixture
+def dspace():
+    adapter = requests_mock.Adapter()
+    adapter.register_uri(requests_mock.ANY, requests_mock.ANY)
+    _dspace.session.mount('mock://', adapter)
+    return adapter
 
 
 @pytest.fixture
-def sword():
+def sword(dspace):
     with io.open(_fixture_path('sword.xml'), 'r') as fp:
         resp = fp.read()
-    return resp
+    m = dspace.register_uri('POST', requests_mock.ANY, text=resp)
+    return m
 
 
 def _fixture_path(path):

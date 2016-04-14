@@ -5,8 +5,8 @@ import tempfile
 import zipfile
 
 import pytest
-from mock import Mock
 from requests import HTTPError
+import requests_mock
 
 from kepler.sword import *
 
@@ -41,22 +41,19 @@ def testSwordHeadersReturnsHeaders():
     assert sword_headers('dusenbury_device') == headers
 
 
-def testSubmitPostsToDSpace(sword_service):
-    submit('http://example.com/sword', 'tests/fixtures/sword.zip')
-    args = sword_service.post.call_args[0]
-    kwargs = sword_service.post.call_args[1]
-    assert args[0] == 'http://example.com/sword'
-    assert kwargs.get('headers') == sword_headers('sword.zip')
-    assert kwargs.get('data').name == 'tests/fixtures/sword.zip'
+def test_submit_posts_to_dspace(sword):
+    submit('mock://example.com/sword', 'tests/fixtures/sword.zip')
+    req = sword.request_history[0]
+    assert req.url == 'mock://example.com/sword'
+    assert req.text.name == 'tests/fixtures/sword.zip'
 
 
-def testSubmitReturnsHandle(sword_service):
-    handle = submit('foo', 'tests/fixtures/sword.zip')
+def test_submit_returns_handle(sword):
+    handle = submit('mock://example.com/sword', 'tests/fixtures/sword.zip')
     assert handle == 'mit.edu:dusenbury-device:1'
 
 
-def testSubmitRaisesErrorOnFailedSubmission(sword_service):
-    sword_service.post.return_value = \
-        Mock(**{'raise_for_status.side_effect': HTTPError})
+def test_submit_raises_error_on_failed_submission(dspace):
+    dspace.register_uri('POST', requests_mock.ANY, status_code=500)
     with pytest.raises(HTTPError):
-        submit('foo', 'tests/fixtures/sword.zip')
+        submit('mock://example.com/sword', 'tests/fixtures/sword.zip')
