@@ -2,15 +2,17 @@
 from __future__ import absolute_import
 import logging.config
 import os
-import yaml
+
 from flask import Flask
-from .extensions import db
+import yaml
+
+from kepler.extensions import db, solr, geoserver, dspace
 from kepler.job import job_blueprint
 from kepler.item import item_blueprint
 from kepler.layer import layer_blueprint
 from kepler.marc import marc_blueprint
-from .settings import DefaultConfig
-from .exceptions import UnsupportedFormat
+from kepler.settings import DefaultConfig
+from kepler.exceptions import UnsupportedFormat
 
 
 def create_app(cfg_obj=None):
@@ -28,6 +30,9 @@ def create_app(cfg_obj=None):
 
 def register_extensions(app):
     db.init_app(app)
+    solr.init_app(app)
+    geoserver.init_app(app)
+    dspace.init_app(app)
     app.logger.info('Extensions registered')
 
 

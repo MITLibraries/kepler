@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 import os.path
-import uuid
 
 import pytest
 import requests_mock
@@ -24,10 +23,12 @@ def job(db):
     return j
 
 
-def testIndexShapefileIndexesFromFGDC(job, bag):
+def test_index_shapefile_indexes_from_fgdc(job, bag):
     refs = {
-        'http://www.opengis.net/def/serviceType/ogc/wms': 'http://example.com/geoserver/wms',
-        'http://www.opengis.net/def/serviceType/ogc/wfs': 'http://example.com/geoserver/wfs',
+        'http://www.opengis.net/def/serviceType/ogc/wms':
+        'mock://example.com/geoserver/wms',
+        'http://www.opengis.net/def/serviceType/ogc/wfs':
+        'mock://example.com/geoserver/wfs',
     }
     with patch('kepler.tasks._index_from_fgdc') as mock:
         index_shapefile(job, bag)
@@ -48,9 +49,10 @@ def test_index_geotiff_assigns_layer_id(job, bag):
         assert job.item.layer_id == 'mit:c8921f5a-eac7-509b-bac5-bd1b2cb202dc'
 
 
-def testIndexGeotiffIndexesFromFGDC(job, bag):
+def test_index_geotiff_indexes_from_fgdc(job, bag):
     refs = {
-        'http://www.opengis.net/def/serviceType/ogc/wms': 'http://example.com/geoserver/wms',
+        'http://www.opengis.net/def/serviceType/ogc/wms':
+        'mock://example.com/geoserver/wms',
         'http://schema.org/downloadUrl': 'http://example.com/foobar',
     }
     job.item.tiff_url = 'http://example.com/foobar'
@@ -61,54 +63,46 @@ def testIndexGeotiffIndexesFromFGDC(job, bag):
                                 layer_id_s='mit:c8921f5a-eac7-509b-bac5-bd1b2cb202dc')
 
 
-def testSubmitToDspaceUploadsSwordPackage(job, bag_tif):
-    with patch('kepler.tasks.sword.submit') as mock:
-        mock.return_value = 'frobber'
-        submit_to_dspace(job, bag_tif)
-        assert mock.called
+def test_submit_to_dspace_uploads_sword_package(sword, job, bag_tif):
+    submit_to_dspace(job, bag_tif)
+    req = sword.request_history[0]
+    assert 'X-Packaging' in req.headers
+    assert req.text.name.endswith('.zip')
 
 
-def testSubmitToDspaceAddsHandleToItem(job, bag_tif):
-    with patch('kepler.tasks.sword.submit') as mock:
-        mock.return_value = 'foobar'
-        submit_to_dspace(job, bag_tif)
-        assert job.item.handle == 'foobar'
+def test_submit_to_dspace_adds_handle_to_item(sword, job, bag_tif):
+    submit_to_dspace(job, bag_tif)
+    assert job.item.handle == 'mit.edu:dusenbury-device:1'
 
 
-def testGetGeotiffUrlFromDspaceAddsGeotiffUrlToItem(job, oai_ore):
-    with requests_mock.mock() as m:
-        m.get('http://example.com/metadata/handle/1234.5/67890/ore.xml',
-              text=oai_ore)
-        job.item.handle = 'http://hdl.handle.net/1234.5/67890'
+def test_get_geotiff_url_adds_url_to_item(dspace, job, oai_ore):
+    dspace.register_uri('GET', requests_mock.ANY, text=oai_ore)
+    job.item.handle = 'http://hdl.handle.net/1234.5/67890'
+    get_geotiff_url_from_dspace(job)
+    assert job.item.tiff_url == 'http://example.com/bitstream/handle/1234.5/67890/248077.tif?sequence=4'
+
+
+def test_get_geotiff_url_errors_on_no_tiff(dspace, job, oai_ore_no_tiffs):
+    dspace.register_uri('GET', requests_mock.ANY, text=oai_ore_no_tiffs)
+    job.item.handle = 'http://hdl.handle.net/1234.5/67890'
+    with pytest.raises(Exception) as excinfo:
         get_geotiff_url_from_dspace(job)
-        assert job.item.tiff_url == 'http://example.com/bitstream/handle/1234.5/67890/248077.tif?sequence=4'
+    assert 'Expected 1 tiff, found 0' == str(excinfo.value)
 
 
-def testGetGeotiffUrlFromDspaceErrorsOnNoTiffs(job, oai_ore_no_tiffs):
-    with requests_mock.mock() as m:
-        m.get('http://example.com/metadata/handle/1234.5/67890/ore.xml',
-              text=oai_ore_no_tiffs)
-        job.item.handle = 'http://hdl.handle.net/1234.5/67890'
-        with pytest.raises(Exception) as excinfo:
-            get_geotiff_url_from_dspace(job)
-        assert 'Expected 1 tiff, found 0' == str(excinfo.value)
+def test_get_geotiff_url_errors_on_multiple_tiffs(dspace, job,
+                                                  oai_ore_two_tiffs):
+    dspace.register_uri('GET', requests_mock.ANY, text=oai_ore_two_tiffs)
+    job.item.handle = 'http://hdl.handle.net/1234.5/67890'
+    with pytest.raises(Exception) as excinfo:
+        get_geotiff_url_from_dspace(job)
+    assert 'Expected 1 tiff, found 2' == str(excinfo.value)
 
 
-def testGetGeotiffUrlFromDspaceErrorsOnMultipleTiffs(job, oai_ore_two_tiffs):
-    with requests_mock.mock() as m:
-        m.get('http://example.com/metadata/handle/1234.5/67890/ore.xml',
-              text=oai_ore_two_tiffs)
-        job.item.handle = 'http://hdl.handle.net/1234.5/67890'
-        with pytest.raises(Exception) as excinfo:
-            get_geotiff_url_from_dspace(job)
-        assert 'Expected 1 tiff, found 2' == str(excinfo.value)
-
-
-def testSubmitToDspaceWithExistingHandleDoesNotSubmit(job, bag_tif):
+def test_does_not_submit_to_dspace_with_existing_handle(sword, job, bag_tif):
     job.item.handle = "popcorn"
-    with patch('kepler.tasks.sword.submit') as mock:
-        submit_to_dspace(job, bag_tif)
-        assert not mock.called
+    submit_to_dspace(job, bag_tif)
+    assert not sword.called
 
 
 def testSubmitToDspaceWithExistingHandleDoesNotChangeHandle(job, bag_tif):
@@ -154,39 +148,31 @@ def testIndexFromFgdcCreatesRecord(job, bag):
     assert args[0][0].get('layer_id_s') == 'mit:SDE_DATA_BD_A8GNS_2003'
 
 
-def testUploadToGeoserverUploadsData(job, shapefile):
-    with patch('kepler.tasks.put') as mock:
-        mock.return_value = 'foo:bar'
-        _upload_to_geoserver(job, shapefile, 'application/zip')
-    mock.assert_called_once_with('http://example.com/geoserver/',
-                                 str(uuid.UUID(job.item.uri)),
-                                 shapefile, 'application/zip')
+def test_upload_to_geoserver_uploads_data(geoserver, job, shapefile):
+    _upload_to_geoserver(job, shapefile, 'application/zip')
+    req = geoserver.request_history[0]
+    assert req.text.name == shapefile
 
 
-def testUploadToGeoServerUsesCorrectUrl(job, bag, shapefile):
-    with patch('kepler.tasks.put') as mock:
-        job.item.access = 'Restricted'
-        mock.return_value = 'foo:bar'
-        _upload_to_geoserver(job, bag, 'application/zip')
-    assert mock.call_args[0][0] == 'http://example.com/secure-geoserver/'
+def test_upload_to_geoserver_uses_correct_url(geoserver, job, shapefile):
+    job.item.access = 'Restricted'
+    _upload_to_geoserver(job, shapefile, 'application/zip')
+    req = geoserver.request_history[0]
+    assert req.url.startswith('mock://secure.example.com/geoserver')
 
 
-def testUploadToGeoServerSetsLayerId(job, bag, shapefile, db):
-    with patch('kepler.tasks.put') as mock:
-        mock.return_value = 'foo:bar'
-        _upload_to_geoserver(job, bag, 'application/zip')
-    assert job.item.layer_id == 'foo:bar'
+def test_upload_to_geoserver_sets_layer_id(geoserver, job, shapefile):
+    _upload_to_geoserver(job, shapefile, 'application/zip')
+    assert job.item.layer_id == 'mit:shapefile1'
 
 
 def testIndexRecordsAddsRecordsToSolr(pysolr):
-    pysolr.register_uri(requests_mock.ANY, requests_mock.ANY)
     _index_records([{'uuid': 'foobar'}])
     req = pysolr.request_history[0]
     assert '<doc><field name="uuid">foobar</field></doc>' in req.text
 
 
 def testIndexRecordsConvertsSets(pysolr):
-    pysolr.register_uri(requests_mock.ANY, requests_mock.ANY)
     _index_records([{'dc_creator_s': set(['Foo', 'Bar'])}])
     req = pysolr.request_history[0]
     assert '<field name="dc_creator_s">Foo</field>' in req.text

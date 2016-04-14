@@ -6,8 +6,9 @@ import os.path
 import io
 
 import arrow
-import requests
 from flask import current_app
+
+from kepler.extensions import dspace
 
 
 class SWORDPackage(object):
@@ -66,7 +67,7 @@ def submit(service, package, auth=None):
 
     headers = sword_headers(os.path.basename(package))
     with io.open(package, 'rb') as fp:
-        r = requests.post(service, data=fp, headers=headers, auth=auth)
+        r = dspace.session.post(service, data=fp, headers=headers)
     r.raise_for_status()
     doc = ET.fromstring(r.text)
     handle = doc.find('.//{http://www.w3.org/2005/Atom}id').text
