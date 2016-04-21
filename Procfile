@@ -1,1 +1,1 @@
-web: gunicorn kepler.wsgi --log-file=-
+web: gunicorn -t 60 kepler.wsgi --log-file=-
