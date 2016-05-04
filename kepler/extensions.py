@@ -2,7 +2,9 @@
 from __future__ import absolute_import
 
 from flask.ext.sqlalchemy import SQLAlchemy
+import redis
 import requests
+from rq import Queue
 
 from kepler.geoserver import GeoService
 
@@ -60,7 +62,16 @@ class DSpace(BaseExtension):
         self.session.auth = auth
 
 
+class RQ(BaseExtension):
+    def init_app(self, app):
+        # skip async worker in test
+        async = not app.config.get('TESTING', False)
+        conn = redis.from_url(app.config['REDISTOGO_URL'])
+        self.q = Queue(connection=conn, async=async)
+
+
 db = SQLAlchemy()
 solr = Solr()
 geoserver = GeoServer()
 dspace = DSpace()
+req = RQ()

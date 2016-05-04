@@ -35,8 +35,7 @@ def test_returns_shapefile_name(bag):
 def test_unpacks_bag(bag_upload):
     tmp = tempfile.mkdtemp()
     unpack(bag_upload, tmp)
-    assert os.path.isdir(os.path.join(tmp,
-                                      "d2fe4762-96ec-57cd-89c9-312ec097284b"))
+    assert os.path.isfile(os.path.join(tmp, 'bag-info.txt'))
 
 
 def test_get_datatype_returns_shapefile(bag):
