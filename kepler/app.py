@@ -6,7 +6,7 @@ import os
 from flask import Flask
 import yaml
 
-from kepler.extensions import db, solr, geoserver, dspace
+from kepler.extensions import db, solr, geoserver, dspace, req
 from kepler.job import job_blueprint
 from kepler.item import item_blueprint
 from kepler.layer import layer_blueprint
@@ -33,6 +33,7 @@ def register_extensions(app):
     solr.init_app(app)
     geoserver.init_app(app)
     dspace.init_app(app)
+    req.init_app(app)
     app.logger.info('Extensions registered')
 
 

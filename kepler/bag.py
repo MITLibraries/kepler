@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-from zipfile import ZipFile
 import os
 import re
+import shutil
+from zipfile import ZipFile
 
 from kepler.exceptions import FileNotFound, InvalidAccessLevel
 from kepler.records import rights_mapper
@@ -33,10 +34,13 @@ def unpack(bag, path):
     archive = ZipFile(bag, 'r')
     try:
         archive.extractall(path)
+        bagdir = os.path.join(path, os.listdir(path)[0])
+        for f in os.listdir(bagdir):
+            shutil.move(os.path.join(bagdir, f), path)
+        shutil.rmtree(bagdir)
     finally:
         archive.close()
-    bagdir = os.listdir(path).pop()
-    return os.path.join(path, bagdir)
+    return path
 
 
 def get_datatype(bag):

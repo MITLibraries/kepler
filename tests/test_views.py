@@ -3,55 +3,28 @@ from __future__ import absolute_import
 from datetime import datetime
 
 import pytest
-from mock import patch, DEFAULT
+from mock import patch
 
 from kepler.models import Job, Item
 
 
-pytestmark = pytest.mark.usefixtures('db')
-
-
-@pytest.yield_fixture
-def geo_tasks():
-    patcher = patch.multiple('kepler.layer.views', upload_shapefile=DEFAULT,
-                             index_shapefile=DEFAULT, upload_geotiff=DEFAULT,
-                             submit_to_dspace=DEFAULT, index_geotiff=DEFAULT)
-    yield patcher.start()
-    patcher.stop()
-
-
-@pytest.yield_fixture
-def marc_tasks():
-    patcher = patch('kepler.marc.views.index_marc_records')
-    yield patcher.start()
-    patcher.stop()
+pytestmark = pytest.mark.usefixtures('db', 'geoserver', 'pysolr', 'sword')
 
 
 class TestLayer(object):
-    def testReturns201OnSuccess(self, auth_testapp, geo_tasks, bag_upload):
+    def testReturns201OnSuccess(self, auth_testapp, bag_upload):
         r = auth_testapp.post('/layers/', upload_files=[('file', bag_upload)])
         assert r.status_code == 201
 
-    def testJobCreated(self, auth_testapp, geo_tasks, bag_upload):
-        auth_testapp.post('/layers/', upload_files=[('file', bag_upload)])
-        assert Job.query.count() == 1
-
-    def testJobIsRun(self, auth_testapp, geo_tasks, bag_upload):
+    def testShapefileJobIsRun(self, auth_testapp, bag_upload):
         auth_testapp.post('/layers/', upload_files=[('file', bag_upload)])
         assert Job.query.first().status == 'COMPLETED'
 
-    def testRunsShapefileTasks(self, auth_testapp, geo_tasks, bag_upload):
-        auth_testapp.post('/layers/', upload_files=[('file', bag_upload)])
-        assert geo_tasks['upload_shapefile'].called
-        assert geo_tasks['index_shapefile'].called
-
-    def testRunsGeotiffTasks(self, auth_testapp, geo_tasks, bag_tif_upload):
+    def testTiffJobIsRun(self, auth_testapp, bag_tif_upload):
         auth_testapp.post('/layers/', upload_files=[('file', bag_tif_upload)])
-        assert geo_tasks['upload_geotiff'].called
-        assert geo_tasks['submit_to_dspace'].called
-        assert geo_tasks['index_geotiff'].called
+        assert Job.query.first().status == 'COMPLETED'
 
-    def testReturns415OnUnsupportedFormat(self, auth_testapp, geo_tasks,
+    def testReturns415OnUnsupportedFormat(self, auth_testapp,
                                           bag_upload):
         with patch('kepler.layer.views.get_datatype') as datatype:
             datatype.return_value = 'w4rez'
@@ -71,15 +44,11 @@ class TestLayer(object):
 
 
 class TestMarc(object):
-    def testReturns201OnSuccess(self, auth_testapp, marc, marc_tasks):
+    def testReturns201OnSuccess(self, auth_testapp, marc):
         r = auth_testapp.post('/marc/', upload_files=[('file', marc)])
         assert r.status_code == 201
 
-    def testJobCreated(self, auth_testapp, marc, marc_tasks):
-        auth_testapp.post('/marc/', upload_files=[('file', marc)])
-        assert Job.query.count() == 1
-
-    def testJobIsRun(self, auth_testapp, marc, marc_tasks):
+    def testJobIsRun(self, auth_testapp, marc):
         auth_testapp.post('/marc/', upload_files=[('file', marc)])
         assert Job.query.first().status == 'COMPLETED'
 

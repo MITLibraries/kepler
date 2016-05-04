@@ -16,6 +16,8 @@ env:
 cache:
   directories:
     - $HOME/gdal
+services:
+  - redis-server
 before_install:
   - bash install-gdal.sh
 before_script:

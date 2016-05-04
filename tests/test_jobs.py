@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+import tempfile
 import uuid
 
 from mock import patch, Mock
@@ -50,14 +51,15 @@ class TestJobFactory(object):
 
 
 class TestJobRunner(object):
-    def testCompletedSignalSentOnSuccess(self, job, bag):
-        run = JobRunner(job, bag, [Mock()])
+    def testCompletedSignalSentOnSuccess(self, job):
+        run = JobRunner(job, tempfile.mkdtemp(), [Mock()])
         with patch('kepler.jobs.job_completed.send') as mock:
             run()
         assert mock.call_count == 1
 
-    def testFailedSignalSentOnError(self, job, bag):
-        run = JobRunner(job, bag, [Mock(side_effect=Exception)])
+    def testFailedSignalSentOnError(self, job):
+        run = JobRunner(job, tempfile.mkdtemp(),
+                        [Mock(side_effect=Exception)])
         with patch('kepler.jobs.job_failed.send') as mock:
             try:
                 run()
@@ -65,17 +67,18 @@ class TestJobRunner(object):
                 pass
         assert mock.call_count == 1
 
-    def testExceptionReRaisedOnFailure(self, job, bag):
-        run = JobRunner(job, bag, [Mock(side_effect=KeyError)])
+    def testExceptionReRaisedOnFailure(self, job):
+        run = JobRunner(job, tempfile.mkdtemp(),
+                        [Mock(side_effect=KeyError)])
         with pytest.raises(KeyError):
             run()
 
 
 class TestJobSignals(object):
     def testCompletedSetsCompletedStatus(self, job):
-        job_completed.send(Mock(job=job))
+        job_completed.send(JobRunner(job, tempfile.mkdtemp(), []))
         assert job.status == u'COMPLETED'
 
     def testFailedSetsFailedStatus(self, job):
-        job_failed.send(Mock(job=job))
+        job_failed.send(JobRunner(job, tempfile.mkdtemp(), []))
         assert job.status == u'FAILED'

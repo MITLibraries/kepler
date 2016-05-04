@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+import shutil
 
 from blinker import signal
 
@@ -13,12 +14,14 @@ job_completed = signal('job-completed')
 
 @job_failed.connect
 def failure(sender, **kwargs):
+    shutil.rmtree(sender.data, ignore_errors=True)
     sender.job.status = u'FAILED'
     db.session.commit()
 
 
 @job_completed.connect
 def completed(sender, **kwargs):
+    shutil.rmtree(sender.data, ignore_errors=True)
     sender.job.status = u'COMPLETED'
     db.session.commit()
 

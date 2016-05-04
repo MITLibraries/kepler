@@ -31,6 +31,7 @@ class HerokuConfig(DefaultConfig):
         self.UUID_NAMESPACE = os.environ['UUID_NAMESPACE']
         self.GEOSERVER_AUTH_USER = os.environ['GEOSERVER_AUTH_USER']
         self.GEOSERVER_AUTH_PASS = os.environ['GEOSERVER_AUTH_PASS']
+        self.REDISTOGO_URL = os.environ['REDISTOGO_URL']
 
 
 class TestConfig(DefaultConfig):
@@ -50,3 +51,4 @@ class TestConfig(DefaultConfig):
     CLIENT_AUTH = 'username:password'
     GEOSERVER_AUTH_USER = 'username'
     GEOSERVER_AUTH_PASS = 'password'
+    REDISTOGO_URL = 'redis://localhost:6379'
