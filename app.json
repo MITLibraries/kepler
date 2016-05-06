@@ -5,26 +5,32 @@
   },
   "env": {
     "CLIENT_AUTH": {"required": true},
-    "GEOSERVER_AUTH_USER": "username",
-    "GEOSERVER_AUTH_PASS": "securepassword",
-    "GEOSERVER_DATASTORE": "data",
-    "GEOSERVER_PUBLIC_URL": "http://example.com/geoserver/",
-    "GEOSERVER_RESTRICTED_URL": "http://example.com/secure-geoserver/",
-    "GEOSERVER_WORKSPACE": "mit",
-    "OAI_ORE_URL": "http://example.com/metadata/handle/",
-    "PATH": "/app/.geodjango/gdal/bin:/usr/local/bin:/usr/bin:/bin",
-    "SECRET_KEY": "secret",
-    "SOLR_URL": "http://localhost:8983/solr/geoblacklight/",
+    "GEOSERVER_AUTH_USER": {"required": true},
+    "GEOSERVER_AUTH_PASS": {"required": true},
+    "GEOSERVER_DATASTORE": {"required": true},
+    "GEOSERVER_PUBLIC_URL": {"required": true},
+    "GEOSERVER_RESTRICTED_URL": {"required": true},
+    "GEOSERVER_WORKSPACE": {"required": true},
+    "OAI_ORE_URL": {"required": true},
+    "PATH": {"required": true},
+    "GDAL_BIN_DIR": {"required": true},
+    "SECRET_KEY": {"required": true},
+    "SOLR_URL": {"required": true},
     "SOLR_AUTH_USER": {"required": true},
     "SOLR_AUTH_PASS": {"required": true},
-    "SWORD_SERVICE_PASSWORD": "vorpalblade",
-    "SWORD_SERVICE_URL": "http://example.com/sword",
-    "SWORD_SERVICE_USERNAME": "swordymcswordmuffin",
-    "UUID_NAMESPACE": "arrowsmith.mit.edu"
+    "SWORD_SERVICE_PASSWORD": {"required": true},
+    "SWORD_SERVICE_URL": {"required": true},
+    "SWORD_SERVICE_USERNAME": {"required": true},
+    "UUID_NAMESPACE": {"required": true}
   },
   "buildpacks": [{
-    "url": "https://github.com/cyberdelia/heroku-geo-buildpack.git#1.3"
-  }, {
-    "url": "heroku/python"
-  }]
+      "url": "https://github.com/cyberdelia/heroku-geo-buildpack.git#1.3"
+    }, {
+      "url": "heroku/python"
+    }
+  ],
+  "addons": [
+    "heroku-postgresql",
+    "redistogo"
+  ]
 }
