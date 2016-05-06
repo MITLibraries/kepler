@@ -14,8 +14,11 @@ pytestmark = pytest.mark.usefixtures('db')
 
 
 @pytest.fixture
-def job():
-    return Job(item=Item(uri=u'FOO'), status=u'PENDING')
+def job(db):
+    j = Job(item=Item(uri=u'FOO'), status=u'PENDING')
+    db.session.add(j)
+    db.session.commit()
+    return j
 
 
 class TestJobFactory(object):
@@ -52,13 +55,13 @@ class TestJobFactory(object):
 
 class TestJobRunner(object):
     def testCompletedSignalSentOnSuccess(self, job):
-        run = JobRunner(job, tempfile.mkdtemp(), [Mock()])
+        run = JobRunner(job.id, tempfile.mkdtemp(), [Mock()])
         with patch('kepler.jobs.job_completed.send') as mock:
             run()
         assert mock.call_count == 1
 
     def testFailedSignalSentOnError(self, job):
-        run = JobRunner(job, tempfile.mkdtemp(),
+        run = JobRunner(job.id, tempfile.mkdtemp(),
                         [Mock(side_effect=Exception)])
         with patch('kepler.jobs.job_failed.send') as mock:
             try:
@@ -68,7 +71,7 @@ class TestJobRunner(object):
         assert mock.call_count == 1
 
     def testExceptionReRaisedOnFailure(self, job):
-        run = JobRunner(job, tempfile.mkdtemp(),
+        run = JobRunner(job.id, tempfile.mkdtemp(),
                         [Mock(side_effect=KeyError)])
         with pytest.raises(KeyError):
             run()
@@ -76,9 +79,9 @@ class TestJobRunner(object):
 
 class TestJobSignals(object):
     def testCompletedSetsCompletedStatus(self, job):
-        job_completed.send(JobRunner(job, tempfile.mkdtemp(), []))
+        job_completed.send(JobRunner(job.id, tempfile.mkdtemp(), []), job=job)
         assert job.status == u'COMPLETED'
 
     def testFailedSetsFailedStatus(self, job):
-        job_failed.send(JobRunner(job, tempfile.mkdtemp(), []))
+        job_failed.send(JobRunner(job.id, tempfile.mkdtemp(), []), job=job)
         assert job.status == u'FAILED'
