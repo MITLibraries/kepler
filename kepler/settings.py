@@ -32,6 +32,8 @@ class HerokuConfig(DefaultConfig):
         self.GEOSERVER_AUTH_USER = os.environ['GEOSERVER_AUTH_USER']
         self.GEOSERVER_AUTH_PASS = os.environ['GEOSERVER_AUTH_PASS']
         self.REDISTOGO_URL = os.environ['REDISTOGO_URL']
+        self.REDIS_URL = os.environ['REDISTOGO_URL']
+        self.RQ_POLL_INTERVAL = 2500
 
 
 class TestConfig(DefaultConfig):
