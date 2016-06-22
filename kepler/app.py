@@ -5,6 +5,7 @@ import os
 
 from flask import Flask
 import yaml
+import rq_dashboard
 
 from kepler.extensions import db, solr, geoserver, dspace, req
 from kepler.job import job_blueprint
@@ -42,6 +43,7 @@ def register_blueprints(app):
     app.register_blueprint(item_blueprint)
     app.register_blueprint(layer_blueprint)
     app.register_blueprint(marc_blueprint)
+    app.register_blueprint(rq_dashboard.blueprint, url_prefix='/rq')
     app.logger.info('Blueprints registered')
 
 
