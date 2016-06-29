@@ -8,42 +8,41 @@ from mock import patch
 from kepler.models import Job, Item
 
 
-pytestmark = pytest.mark.usefixtures('db', 'geoserver', 'pysolr', 'sword')
+pytestmark = pytest.mark.usefixtures('db', 'pysolr', 'sword', 'geoserver')
 
 
 class TestLayer(object):
-    def testReturns201OnSuccess(self, auth_testapp, bag_upload):
-        r = auth_testapp.post('/layers/', upload_files=[('file', bag_upload)])
+    def testReturns201OnSuccess(self, s3, auth_testapp, bag_upload):
+        s3.client.upload_file(bag_upload, 'test_bucket',
+                              'd2fe4762-96ec-57cd-89c9-312ec097284b')
+        r = auth_testapp.put('/layers/d2fe4762-96ec-57cd-89c9-312ec097284b')
         assert r.status_code == 201
 
-    def testShapefileJobIsRun(self, auth_testapp, bag_upload):
-        auth_testapp.post('/layers/', upload_files=[('file', bag_upload)])
-        assert Job.query.first().status == 'COMPLETED'
+    def testShapefileJobIsRun(self, s3, auth_testapp, bag_upload):
+        s3.client.upload_file(bag_upload, 'test_bucket',
+                              'd2fe4762-96ec-57cd-89c9-312ec097284b')
+        auth_testapp.put('/layers/d2fe4762-96ec-57cd-89c9-312ec097284b')
+        assert Job.query.first().status == 'PENDING'
 
-    def testTiffJobIsRun(self, auth_testapp, bag_tif_upload):
-        auth_testapp.post('/layers/', upload_files=[('file', bag_tif_upload)])
-        assert Job.query.first().status == 'COMPLETED'
-
-    def testReturns415OnUnsupportedFormat(self, auth_testapp,
-                                          bag_upload):
-        with patch('kepler.layer.views.get_datatype') as datatype:
-            datatype.return_value = 'w4rez'
-            r = auth_testapp.post('/layers/',
-                                  upload_files=[('file', bag_upload)],
-                                  expect_errors=True)
-        assert r.status_code == 415
+    def testTiffJobIsRun(self, s3, auth_testapp, bag_tif_upload):
+        s3.client.upload_file(bag_tif_upload, 'test_bucket',
+                              '674a0ab1-325f-561a-a837-09e9a9a79b91')
+        auth_testapp.put('/layers/674a0ab1-325f-561a-a837-09e9a9a79b91')
+        assert Job.query.first().status == 'PENDING'
 
     def testReturns401OnNoAuthentication(self, testapp):
-        r = testapp.post('/layers/', expect_errors=True)
+        r = testapp.put('/layers/674a0ab1-325f-561a-a837-09e9a9a79b91',
+                        expect_errors=True)
         assert r.status_code == 401
 
     def testReturns401OnBadAuthentication(self, testapp):
         testapp.authorization = ('Basic', ('username', 'wat'))
-        r = testapp.post('/layers/', expect_errors=True)
+        r = testapp.put('/layers/674a0ab1-325f-561a-a837-09e9a9a79b91',
+                        expect_errors=True)
         assert r.status_code == 401
 
 
-class TestMarc(object):
+class xTestMarc(object):
     def testReturns201OnSuccess(self, auth_testapp, marc):
         r = auth_testapp.post('/marc/', upload_files=[('file', marc)])
         assert r.status_code == 201

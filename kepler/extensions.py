@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
+import boto3
 from flask.ext.sqlalchemy import SQLAlchemy
 import redis
 import requests
@@ -70,8 +71,25 @@ class RQ(BaseExtension):
         self.q = Queue(connection=conn, async=async)
 
 
+class S3(BaseExtension):
+    def init_app(self, app):
+        s3_url = app.config.get('S3_TEST_URL')
+        kwargs = {}
+        if s3_url:
+            kwargs = {
+                'endpoint_url': s3_url,
+                'config': boto3.session.Config(s3={'addressing_style': 'virtual'})
+            }
+        self.client = boto3.client('s3',
+            aws_access_key_id=app.config.get('S3_ACCESS_KEY_ID'),
+            aws_secret_access_key=app.config.get('S3_SECRET_ACCESS_KEY'),
+            **kwargs
+        )
+
+
 db = SQLAlchemy()
 solr = Solr()
 geoserver = GeoServer()
 dspace = DSpace()
 req = RQ()
+s3 = S3()

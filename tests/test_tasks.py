@@ -111,30 +111,25 @@ def testSubmitToDspaceWithExistingHandleDoesNotChangeHandle(job, bag_tif):
     assert job.item.handle == "popcorn"
 
 
-def testUploadShapefileCallsUploadWithMimetype(job, bag, shapefile):
-    with patch('kepler.tasks._upload_to_geoserver') as mock:
-        upload_shapefile(job, bag)
-        kwargs = mock.call_args[1]
-        assert kwargs['mimetype'] == 'application/zip'
+def test_upload_shapefile_sets_import_url(job, bag, geoserver):
+    upload_shapefile(job, bag)
+    assert job.import_url == 'mock://example.com/geoserver/rest/imports/0'
 
 
-def testUploadGeotiffCallsUploadWithMimetype(job, bag_tif):
-    with patch('kepler.tasks._upload_to_geoserver') as mock:
-        upload_geotiff(job, bag_tif)
-        kwargs = mock.call_args[1]
-        assert kwargs['mimetype'] == 'image/tiff'
+def test_upload_geotiff_sets_import_url(job, bag_tif, geoserver):
+    upload_geotiff(job, bag_tif)
+    assert job.import_url == 'mock://example.com/geoserver/rest/imports/0'
 
 
-def testUploadGeotiffCompressesTiff(job, bag_tif):
-    with patch.multiple('kepler.tasks', _upload_to_geoserver=DEFAULT,
-                        compress=DEFAULT, pyramid=DEFAULT) as mocks:
+def testUploadGeotiffCompressesTiff(job, bag_tif, geoserver):
+    with patch.multiple('kepler.tasks', compress=DEFAULT,
+                        pyramid=DEFAULT) as mocks:
         upload_geotiff(job, bag_tif)
         assert mocks['compress'].called
 
 
-def testUploadGeotiffPyramidsTiff(job, bag_tif):
-    with patch.multiple('kepler.tasks', _upload_to_geoserver=DEFAULT,
-                        pyramid=DEFAULT) as mocks:
+def testUploadGeotiffPyramidsTiff(job, bag_tif, geoserver):
+    with patch.multiple('kepler.tasks', pyramid=DEFAULT) as mocks:
         upload_geotiff(job, bag_tif)
         assert mocks['pyramid'].called
 
@@ -148,22 +143,15 @@ def testIndexFromFgdcCreatesRecord(job, bag):
     assert args[0][0].get('layer_id_s') == 'mit:SDE_DATA_BD_A8GNS_2003'
 
 
-def test_upload_to_geoserver_uploads_data(geoserver, job, shapefile):
-    _upload_to_geoserver(job, shapefile, 'application/zip')
-    req = geoserver.request_history[0]
-    assert req.text.name == shapefile
+def test_upload_to_geoserver_uploads_data(geoserver, shapefile):
+    _upload_to_geoserver(shapefile, 'shapefile', 'public', 'test')
+    assert geoserver.call_count == 4
 
 
-def test_upload_to_geoserver_uses_correct_url(geoserver, job, shapefile):
-    job.item.access = 'Restricted'
-    _upload_to_geoserver(job, shapefile, 'application/zip')
+def test_upload_to_geoserver_uses_correct_url(geoserver, shapefile):
+    _upload_to_geoserver(shapefile, 'shapefile', 'restricted', 'test')
     req = geoserver.request_history[0]
     assert req.url.startswith('mock://secure.example.com/geoserver')
-
-
-def test_upload_to_geoserver_sets_layer_id(geoserver, job, shapefile):
-    _upload_to_geoserver(job, shapefile, 'application/zip')
-    assert job.item.layer_id == 'mit:shapefile1'
 
 
 def testIndexRecordsAddsRecordsToSolr(pysolr):

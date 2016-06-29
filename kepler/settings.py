@@ -34,6 +34,9 @@ class HerokuConfig(DefaultConfig):
         self.REDISTOGO_URL = os.environ['REDISTOGO_URL']
         self.REDIS_URL = os.environ['REDISTOGO_URL']
         self.RQ_POLL_INTERVAL = 2500
+        self.S3_BUCKET = os.environ['S3_BUCKET']
+        self.S3_ACCESS_KEY_ID = os.environ['S3_ACCESS_KEY_ID']
+        self.S3_SECRET_ACCESS_KEY = os.environ['S3_SECRET_ACCESS_KEY']
 
 
 class TestConfig(DefaultConfig):
@@ -54,3 +57,6 @@ class TestConfig(DefaultConfig):
     GEOSERVER_AUTH_USER = 'username'
     GEOSERVER_AUTH_PASS = 'password'
     REDISTOGO_URL = 'redis://localhost:6379'
+    S3_BUCKET = 'test_bucket'
+    S3_ACCESS_KEY_ID = 'test_access_key_id'
+    S3_SECRET_ACCESS_KEY = 'test_secret_access_key'

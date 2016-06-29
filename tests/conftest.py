@@ -6,12 +6,13 @@ import os
 import re
 import shutil
 
+from moto import mock_s3
 import pytest
 from webtest import TestApp
 import requests_mock
 
 from kepler.app import create_app
-from kepler.extensions import (db as _db, dspace as _dspace,
+from kepler.extensions import (db as _db, dspace as _dspace, s3 as _s3,
                                geoserver as _geoserver, solr)
 from kepler.settings import TestConfig
 
@@ -64,29 +65,30 @@ def db(app):
     _db.drop_all()
 
 
-@pytest.fixture
-def geoserver_resp():
-    def resp(request, context):
-        host = re.search('(mock://[a-z\.]*)/', request.url).group(1)
-        data = host + '/geoserver/rest/workspaces/mit/datastores/data'
-        cvg = host + '/geoserver/rest/workspaces/mit/coveragestores/foo'
-        return {
-            'dataStore': {'featureTypes': data + '/foobar'},
-            'featureTypes': {'featureType': [{'name': 'shapefile1'}]},
-            'coverageStore': {'coverages': cvg + '/foobar'},
-            'coverages': {'coverage': [{'name': 'geotiff1'}]}
-        }
-    return resp
+@pytest.yield_fixture
+def s3(app):
+    with mock_s3():
+        _s3.client.create_bucket(Bucket=app.config['S3_BUCKET'])
+        yield _s3
 
 
 @pytest.fixture
-def geoserver(app, geoserver_resp):
+def adapter():
+    r = re.compile('/geoserver/rest/workspaces/.*')
     a = requests_mock.Adapter()
-    a.register_uri('PUT', requests_mock.ANY)
-    a.register_uri('GET', requests_mock.ANY, json=geoserver_resp)
-    _geoserver.public.session.mount('mock://', a)
-    _geoserver.secure.session.mount('mock://', a)
+    a.register_uri('POST', '/geoserver/rest/imports/',
+        headers={'Location': 'mock://example.com/geoserver/rest/imports/0'})
+    a.register_uri('POST', '/geoserver/rest/imports/0/tasks')
+    a.register_uri('POST', '/geoserver/rest/imports/0')
+    a.register_uri('GET', r, status_code=404)
     return a
+
+
+@pytest.fixture
+def geoserver(app, adapter):
+    _geoserver.public.session.mount('mock://', adapter)
+    _geoserver.secure.session.mount('mock://', adapter)
+    return adapter
 
 
 @pytest.fixture

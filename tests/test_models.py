@@ -33,11 +33,11 @@ class TestJob(object):
         db.session.commit()
         assert job.status == u'PENDING'
 
-    def testJobHasDefaultStatusPending(self, db):
+    def testJobHasDefaultStatusCreated(self, db):
         job = Job()
         db.session.add(job)
         db.session.commit()
-        assert job.status == u'PENDING'
+        assert job.status == u'CREATED'
 
     def testJobCanBeSerializedAsDictionary(self, db):
         job = Job(item=Item(uri=u'♄'))

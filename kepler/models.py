@@ -16,8 +16,9 @@ def get_or_create(Model, **kwargs):
 
 class Job(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    status = db.Column(db.Enum(u'PENDING', u'COMPLETED', u'FAILED',
-                               name='status'), default=u'PENDING')
+    status = db.Column(db.Enum(u'CREATED', u'PENDING', u'COMPLETED', u'FAILED',
+                               name='status'), default=u'CREATED')
+    import_url = db.Column(db.String())
     time = db.Column(db.DateTime(timezone=True), default=datetime.now)
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'))
 

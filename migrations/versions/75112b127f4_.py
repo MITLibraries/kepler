@@ -28,7 +28,7 @@ def upgrade():
     )
     op.create_table('job',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('status', sa.Enum(u'PENDING', u'COMPLETED', u'FAILED', name='status'), nullable=True),
+    sa.Column('status', sa.Enum(u'CREATED', u'PENDING', u'COMPLETED', u'FAILED', name='status'), nullable=True),
     sa.Column('time', sa.DateTime(timezone=True), nullable=True),
     sa.Column('item_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['item_id'], ['item.id'], ),
