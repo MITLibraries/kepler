@@ -46,3 +46,9 @@ class Item(db.Model):
 
     def __repr__(self):
         return '<Item #%d: %r>' % (self.id, self.uri)
+
+    def as_dict(self):
+        return {
+            'uri': self.uri,
+            'status': self.jobs.order_by(Job.time.desc()).first().status
+        }

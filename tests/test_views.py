@@ -3,12 +3,19 @@ from __future__ import absolute_import
 from datetime import datetime
 
 import pytest
-from mock import patch
 
 from kepler.models import Job, Item
 
 
 pytestmark = pytest.mark.usefixtures('db', 'pysolr', 'sword', 'geoserver')
+
+
+@pytest.fixture
+def item_with_job(db):
+    job = Job(item=Item(uri='d2fe4762-96ec-57cd-89c9-312ec097284b'),
+              status='CREATED')
+    db.session.add(job)
+    db.session.commit()
 
 
 class TestLayer(object):
@@ -40,6 +47,23 @@ class TestLayer(object):
         r = testapp.put('/layers/674a0ab1-325f-561a-a837-09e9a9a79b91',
                         expect_errors=True)
         assert r.status_code == 401
+
+    def test_get_returns_200(self, item_with_job, auth_testapp):
+        r = auth_testapp.get('/layers/d2fe4762-96ec-57cd-89c9-312ec097284b')
+        assert r.status_code == 200
+
+    def test_get_returns_json_with_conneg(self, item_with_job, auth_testapp):
+        r = auth_testapp.get('/layers/d2fe4762-96ec-57cd-89c9-312ec097284b',
+                             headers={'accept': 'application/json'})
+        assert r.json == {'uri': 'd2fe4762-96ec-57cd-89c9-312ec097284b',
+                          'status': 'CREATED'}
+
+    def test_get_returns_json_with_extension(self, item_with_job,
+                                             auth_testapp):
+        r = auth_testapp.get(
+                '/layers/d2fe4762-96ec-57cd-89c9-312ec097284b.json')
+        assert r.json == {'uri': 'd2fe4762-96ec-57cd-89c9-312ec097284b',
+                          'status': 'CREATED'}
 
 
 class xTestMarc(object):

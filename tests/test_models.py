@@ -88,3 +88,10 @@ class TestItem(object):
     def testItemHasTiffUrl(self, db):
         item = Item(tiff_url='http://example.com/bitstream/handle/1234.5/67890/248077.tif?sequence=4')
         assert item.tiff_url == 'http://example.com/bitstream/handle/1234.5/67890/248077.tif?sequence=4'
+
+    def testItemAsDictReturnsMostRecentJobStatus(self, db):
+        item = Item(uri='stuff')
+        Job(item=item, status='CREATED')
+        Job(item=item, status='COMPLETED')
+        db.session.add(item)
+        assert item.as_dict() == {'uri': 'stuff', 'status': 'COMPLETED'}
