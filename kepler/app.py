@@ -7,7 +7,7 @@ from flask import Flask
 import yaml
 import rq_dashboard
 
-from kepler.extensions import db, solr, geoserver, dspace, req
+from kepler.extensions import db, solr, geoserver, dspace, req, s3
 from kepler.job import job_blueprint
 from kepler.item import item_blueprint
 from kepler.layer import layer_blueprint
@@ -35,6 +35,7 @@ def register_extensions(app):
     geoserver.init_app(app)
     dspace.init_app(app)
     req.init_app(app)
+    s3.init_app(app)
     app.logger.info('Extensions registered')
 
 

@@ -9,11 +9,34 @@ class GeoService(object):
         self.url = url
         self.workspace = workspace
         self.datastore = datastore
+        self.shapefile_import = {
+            'import': {
+                'targetStore': {
+                    'dataStore': {
+                        'name': self.datastore
+                    }
+                },
+                'targetWorkspace': {
+                    'workspace': {
+                        'name': self.workspace
+                    }
+                }
+            }
+        }
+        self.geotiff_import = {
+            'import': {
+                'targetWorkspace': {
+                    'workspace': {
+                        'name': self.workspace
+                    }
+                }
+            }
+        }
 
     @property
     def service_url(self):
-        url = self.url.rstrip('/') + '/'
-        return '%srest/workspaces/%s/' % (url, self.workspace)
+        url = self.url.rstrip('/')
+        return '{}/rest/imports/'.format(url)
 
     @property
     def wms_url(self):
@@ -23,47 +46,43 @@ class GeoService(object):
     def wfs_url(self):
         return '%s/wfs' % self.url.rstrip('/')
 
-    def put(self, id, data, mimetype):
-        url = self._put_url(id, mimetype)
-        headers = {'Content-type': mimetype}
+    def put(self, data, ftype, name):
+        if ftype == 'shapefile':
+            import_url = self._create_import(self.shapefile_import)
+        elif ftype == 'geotiff':
+            import_url = self._create_import(self.geotiff_import)
+        else:
+            raise Exception('unknown format')
+        task_url = self._create_upload_task(
+            '{}/tasks'.format(import_url.rstrip('/')), data)
+        self._set_task_method(task_url, name, ftype)
+        self._run_import(import_url)
+        return import_url
+
+    def _create_import(self, data):
+        r = self.session.post(self.service_url, json=data)
+        r.raise_for_status()
+        return r.headers.get('location')
+
+    def _run_import(self, url):
+        r = self.session.post('{}?async=true'.format(url))
+        r.raise_for_status()
+
+    def _create_upload_task(self, url, data):
         with io.open(data, 'rb') as fp:
-            r = self.session.put(url, data=fp, headers=headers)
+            r = self.session.post(url, files={'filedata': fp})
         r.raise_for_status()
-        return self.layer_id(url.rsplit('/', 1)[0], mimetype)
+        return r.headers.get('location')
 
-    def layer_id(self, url, mimetype):
-        if mimetype == 'application/zip':
-            name = self.feature_type_name(self.feature_types(url))
-        elif mimetype == 'image/tiff':
-            name = self.coverage_name(self.coverages(url))
-        return '%s:%s' % (self.workspace, name)
-
-    def feature_types(self, url):
-        json = self._get_json(url)
-        return json['dataStore']['featureTypes']
-
-    def feature_type_name(self, url):
-        json = self._get_json(url)
-        return json['featureTypes']['featureType'][0]['name']
-
-    def coverages(self, url):
-        json = self._get_json(url)
-        return json['coverageStore']['coverages']
-
-    def coverage_name(self, url):
-        json = self._get_json(url)
-        return json['coverages']['coverage'][0]['name']
-
-    def _get_json(self, url):
-        r = self.session.get(url, headers={'Accept': 'application/json'})
-        print(r.content)
-        r.raise_for_status()
-        return r.json()
-
-    def _put_url(self, id, mimetype):
-        if mimetype == 'application/zip':
-            return '%sdatastores/%s/file.shp' % (self.service_url,
-                                                 self.datastore)
-        elif mimetype == 'image/tiff':
-            return '%scoveragestores/%s/file.geotiff' % (self.service_url,
-                                                         id)
+    def _set_task_method(self, url, name, ftype):
+        shape = '{}/rest/workspaces/{}/datastores/{}/featuretypes/{}'
+        tiff = '{}/rest/workspaces/{}/coveragestores/{}/coverages/{}'
+        if ftype == 'shapefile':
+            r = self.session.get(shape.format(self.url.rstrip('/'),
+                                              self.workspace, self.datastore,
+                                              name))
+        elif ftype == 'geotiff':
+            r = self.session.get(tiff.format(self.url.rstrip('/'),
+                                             self.workspace, name, name))
+        if r.status_code == 200:
+            self.session.put(url, json={'task': {'updateMode': 'REPLACE'}})

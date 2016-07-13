@@ -8,11 +8,14 @@ env:
     - C_INCLUDE_PATH=$HOME/gdal/include
     - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/gdal/lib
     - PATH=$PATH:$HOME/gdal/bin
-  matrix:
-    - TOX_ENV=py27
-    - TOX_ENV=py33
-    - TOX_ENV=py34
-    - TOX_ENV=coveralls
+matrix:
+  include:
+    - env: TOX_ENV=py27
+    - python: 3.5
+      env: TOX_ENV=py35
+    - env: TOX_ENV=coveralls
+  allow_failures:
+    - env: TOX_ENV=py35
 cache:
   directories:
     - $HOME/gdal

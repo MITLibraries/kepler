@@ -1,61 +1,56 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+import os
 import shutil
+import tempfile
 import traceback
 
-from blinker import signal
 from flask import current_app
 
-from kepler.extensions import db
+from kepler.bag import unpack, get_datatype
+from kepler.extensions import db, s3
 from kepler.models import Job, Item, get_or_create
+from kepler.tasks import (index_shapefile, upload_shapefile, index_geotiff,
+                          upload_geotiff, submit_to_dspace)
 
 
-job_failed = signal('job-failed')
-job_completed = signal('job-completed')
+def fetch_bag(bucket, key):
+    tmp = tempfile.NamedTemporaryFile(delete=False)
+    s3.client.download_file(bucket, key, tmp.name)
+    return tmp.name
 
 
-@job_failed.connect
-def failure(sender, **kwargs):
-    job = kwargs['job']
-    shutil.rmtree(sender.data, ignore_errors=True)
-    job.status = u'FAILED'
-    db.session.commit()
-
-
-@job_completed.connect
-def completed(sender, **kwargs):
-    job = kwargs['job']
-    shutil.rmtree(sender.data, ignore_errors=True)
-    job.status = u'COMPLETED'
-    db.session.commit()
-
-
-def create_job(uri, data, task_list, access):
-    item = get_or_create(Item, uri=uri, access=access)
-    job = Job(item=item, status=u'PENDING')
+def create_job(uri):
+    item = get_or_create(Item, uri=uri)
+    job = Job(item=item, status=u'CREATED')
     db.session.add(job)
     db.session.commit()
+    return job
+
+
+def run_job(id):
+    job = Job.query.get(id)
+    bucket = current_app.config['S3_BUCKET']
+    key = job.item.uri
+    data = fetch_bag(bucket, key)
+    tmpdir = tempfile.mkdtemp()
     try:
-        return JobRunner(job.id, data, task_list)
-    except Exception:
+        bag = unpack(data, tmpdir)
+        datatype = get_datatype(bag)
+        if datatype == 'shapefile':
+            tasks = [upload_shapefile, index_shapefile, ]
+        elif datatype == 'geotiff':
+            tasks = [upload_geotiff, submit_to_dspace, index_geotiff, ]
+        else:
+            raise UnsupportedFormat(datatype)
+        for task in tasks:
+            task(job, bag)
+        job.status = u'PENDING'
+    except:
         job.status = u'FAILED'
-        db.session.commit()
         raise
-
-
-class JobRunner(object):
-    def __init__(self, job_id, data, task_list):
-        self.tasks = task_list
-        self.job_id = job_id
-        self.data = data
-
-    def __call__(self):
-        job = Job.query.get(self.job_id)
-        try:
-            for task in self.tasks:
-                task(job, self.data)
-            job_completed.send(self, job=job)
-        except Exception:
-            current_app.logger.warn(traceback.format_exc())
-            job_failed.send(self, job=job)
-            raise
+        current_app.logger.warn(traceback.format_exc())
+    finally:
+        db.session.commit()
+        shutil.rmtree(tmpdir, ignore_errors=True)
+        os.remove(data)

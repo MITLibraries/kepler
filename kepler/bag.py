@@ -26,6 +26,11 @@ def get_shapefile_name(bag):
             return os.path.splitext(os.path.basename(f))[0]
 
 
+def get_geotiff_name(bag):
+    gt = get_geotiff(bag)
+    return os.path.splitext(os.path.basename(gt))[0]
+
+
 def get_geotiff(bag):
     return _extract_data(bag, '.tif')
 

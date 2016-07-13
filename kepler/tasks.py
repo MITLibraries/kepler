@@ -21,8 +21,8 @@ from ogre.xml import FGDCParser
 from lxml import etree
 import pysolr
 
-from kepler.bag import (get_fgdc, get_shapefile, get_geotiff,
-                        get_shapefile_name)
+from kepler.bag import (get_fgdc, get_shapefile, get_geotiff, get_access,
+                        get_shapefile_name, get_geotiff_name)
 from kepler.records import create_record, MitRecord
 from kepler import sword
 from kepler.utils import make_uuid
@@ -43,7 +43,8 @@ def index_shapefile(job, data):
         :param bag: absolute path to bag containing Shapefile
     """
 
-    gs = _get_geoserver(job.item.access)
+    access = get_access(data)
+    gs = _get_geoserver(access)
     refs = {
         'http://www.opengis.net/def/serviceType/ogc/wms': gs.wms_url,
         'http://www.opengis.net/def/serviceType/ogc/wfs': gs.wfs_url,
@@ -64,7 +65,8 @@ def index_geotiff(job, data):
     :param bag: absolute path to bag containing GeoTIFF
     """
 
-    gs = _get_geoserver(job.item.access)
+    access = get_access(data)
+    gs = _get_geoserver(access)
     refs = {
         'http://www.opengis.net/def/serviceType/ogc/wms': gs.wms_url,
         'http://schema.org/downloadUrl': job.item.tiff_url
@@ -130,7 +132,11 @@ def upload_shapefile(job, data):
     """
 
     shp = get_shapefile(data)
-    _upload_to_geoserver(job, data=shp, mimetype='application/zip')
+    access = get_access(data)
+    name = get_shapefile_name(data)
+    import_url = _upload_to_geoserver(shp, 'shapefile', access, name)
+    job.import_url = import_url
+    db.session.commit()
 
 
 def upload_geotiff(job, data):
@@ -141,10 +147,14 @@ def upload_geotiff(job, data):
     """
 
     tiff = get_geotiff(data)
+    access = get_access(data)
+    name = get_geotiff_name(data)
     with tempfile.NamedTemporaryFile(suffix='.tif') as fp:
         compress(tiff, fp.name)
         pyramid(fp.name)
-        _upload_to_geoserver(job, data=fp.name, mimetype='image/tiff')
+        import_url = _upload_to_geoserver(fp.name, 'geotiff', access, name)
+    job.import_url = import_url
+    db.session.commit()
 
 
 def index_marc_records(job, data):
@@ -167,7 +177,7 @@ def _index_from_fgdc(job, bag, **kwargs):
     _index_records([record.as_dict()])
 
 
-def _upload_to_geoserver(job, data, mimetype):
+def _upload_to_geoserver(data, filetype, access, name):
     """Uploads Shapefiles and GeoTIFFs to GeoServer.
 
     This is a generic task for uploading data to GeoServer. You should
@@ -179,10 +189,9 @@ def _upload_to_geoserver(job, data, mimetype):
     :param mimetype: one of ``application/zip`` or ``image/tiff``
     """
 
-    gs = _get_geoserver(job.item.access)
-    layer_id = gs.put(str(uuid.UUID(job.item.uri)), data, mimetype)
-    job.item.layer_id = layer_id
-    db.session.commit()
+    gs = _get_geoserver(access)
+    import_url = gs.put(data, filetype, name)
+    return import_url
 
 
 def _index_records(records):
