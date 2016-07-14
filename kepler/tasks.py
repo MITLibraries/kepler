@@ -20,11 +20,15 @@ from flask import current_app
 from ogre.xml import FGDCParser
 from lxml import etree
 import pysolr
+import requests
+from sqlalchemy import and_
+from sqlalchemy.sql import func
 
+from kepler import sword
 from kepler.bag import (get_fgdc, get_shapefile, get_geotiff, get_access,
                         get_shapefile_name, get_geotiff_name)
+from kepler.models import Job
 from kepler.records import create_record, MitRecord
-from kepler import sword
 from kepler.utils import make_uuid
 from kepler.extensions import db, solr as solr_session, geoserver, dspace
 from kepler.parsers import MarcParser
@@ -155,6 +159,25 @@ def upload_geotiff(job, data):
         import_url = _upload_to_geoserver(fp.name, 'geotiff', access, name)
     job.import_url = import_url
     db.session.commit()
+
+
+def resolve_pending_jobs():
+    geo_session = requests.Session()
+    geo_session.auth = (current_app.config.get('GEOSERVER_AUTH_USER'),
+                        current_app.config.get('GEOSERVER_AUTH_PASS'))
+    sub_q = db.session.query(Job.item_id, func.max(Job.time).label('time')).\
+        group_by(Job.item_id).subquery()
+    q = db.session.query(Job).\
+        join(sub_q, and_(Job.item_id == sub_q.c.item_id,
+                         Job.time == sub_q.c.time)).\
+        order_by(Job.time.desc())
+    for job in q.filter(Job.status == 'PENDING'):
+        r = geo_session.get(job.import_url)
+        r.raise_for_status()
+        state = r.json()['import']['state']
+        if state == 'COMPLETE':
+            job.status = 'COMPLETED'
+            db.session.commit()
 
 
 def index_marc_records(job, data):
