@@ -23,6 +23,16 @@ def job(db):
     return j
 
 
+@pytest.yield_fixture
+def geo_mock():
+    with requests_mock.Mocker() as m:
+        m.get('/geoserver/rest/imports/0',
+              json={'import': {'state': 'COMPLETE'}})
+        m.get('/geoserver/rest/imports/1',
+              json={'import': {'state': 'WORKING'}})
+        yield m
+
+
 def test_index_shapefile_indexes_from_fgdc(job, bag):
     refs = {
         'http://www.opengis.net/def/serviceType/ogc/wms':
@@ -132,6 +142,34 @@ def testUploadGeotiffPyramidsTiff(job, bag_tif, geoserver):
     with patch.multiple('kepler.tasks', pyramid=DEFAULT) as mocks:
         upload_geotiff(job, bag_tif)
         assert mocks['pyramid'].called
+
+
+def test_resolve_pending_completes_finished_imports(job, db, geo_mock):
+    job.import_url = 'mock://example.com/geoserver/rest/imports/0'
+    job.status = 'PENDING'
+    db.session.commit()
+    resolve_pending_jobs()
+    assert job.status == 'COMPLETED'
+
+
+def test_resolve_pending_skips_unfinished_imports(job, db, geo_mock):
+    job.import_url = 'mock://example.com/geoserver/rest/imports/1'
+    job.status = 'PENDING'
+    db.session.commit()
+    resolve_pending_jobs()
+    assert job.status == 'PENDING'
+
+
+def test_resolve_pending_resolves_only_last_job_for_item(job, db, geo_mock):
+    job.status = 'PENDING'
+    job2 = Job(item=job.item, status='PENDING')
+    db.session.add(job2)
+    job.import_url = 'mock://example.com/geoserver/rest/imports/0'
+    job2.import_url = 'mock://example.com/geoserver/rest/imports/0'
+    db.session.commit()
+    resolve_pending_jobs()
+    assert job.status == 'PENDING'
+    assert job2.status == 'COMPLETED'
 
 
 def testIndexFromFgdcCreatesRecord(job, bag):
