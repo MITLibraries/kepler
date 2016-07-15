@@ -30,6 +30,7 @@ def geo_mock():
               json={'import': {'state': 'COMPLETE'}})
         m.get('/geoserver/rest/imports/1',
               json={'import': {'state': 'WORKING'}})
+        m.get('/geoserver/rest/imports/2', status_code=404)
         yield m
 
 
@@ -170,6 +171,14 @@ def test_resolve_pending_resolves_only_last_job_for_item(job, db, geo_mock):
     resolve_pending_jobs()
     assert job.status == 'PENDING'
     assert job2.status == 'COMPLETED'
+
+
+def test_resolve_pending_fails_jobs_with_exceptions(job, db, geo_mock):
+    job.import_url = 'mock://example.com/geoserver/rest/imports/2'
+    job.status = 'PENDING'
+    db.session.commit()
+    resolve_pending_jobs()
+    assert job.status == 'FAILED'
 
 
 def testIndexFromFgdcCreatesRecord(job, bag):
