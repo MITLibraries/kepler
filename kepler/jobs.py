@@ -20,6 +20,10 @@ def fetch_bag(bucket, key):
     return tmp.name
 
 
+def delete_bag(bucket, key):
+    s3.client.delete_object(Bucket=bucket, Key=key)
+
+
 def create_job(uri):
     item = get_or_create(Item, uri=uri)
     job = Job(item=item, status=u'CREATED')
@@ -54,3 +58,4 @@ def run_job(id):
         db.session.commit()
         shutil.rmtree(tmpdir, ignore_errors=True)
         os.remove(data)
+        delete_bag(bucket, key)
