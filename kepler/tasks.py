@@ -172,12 +172,15 @@ def resolve_pending_jobs():
                          Job.time == sub_q.c.time)).\
         order_by(Job.time.desc())
     for job in q.filter(Job.status == 'PENDING'):
-        r = geo_session.get(job.import_url)
-        r.raise_for_status()
-        state = r.json()['import']['state']
-        if state == 'COMPLETE':
-            job.status = 'COMPLETED'
-            db.session.commit()
+        try:
+            r = geo_session.get(job.import_url)
+            r.raise_for_status()
+            state = r.json()['import']['state']
+            if state == 'COMPLETE':
+                job.status = 'COMPLETED'
+        except:
+            job.status = 'FAILED'
+        db.session.commit()
 
 
 def index_marc_records(job, data):
