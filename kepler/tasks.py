@@ -192,6 +192,8 @@ def resolve_pending_jobs():
             job.status = 'FAILED'
             job.error_msg = traceback.format_exc()
         db.session.commit()
+        if job.status in ('COMPLETED', 'FAILED'):
+            geo_session.delete(job.import_url)
 
 
 def index_marc_records(job, data):
