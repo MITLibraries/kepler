@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <h1>{{ job.item.layer_name if job.item.layer_name else 'Unknown' }}</h2>
+  <h1>{{ job.item.layer_id if job.item.layer_id else 'Unknown' }}</h2>
   <p>
     <div>UUID: {{ job.item.uri }}</div>
     <div>Time created: {{ job.time.strftime('%Y-%m-%dT%H:%M:%S%z') }}</div>
