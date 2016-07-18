@@ -14,6 +14,7 @@
 
 from __future__ import absolute_import
 import tempfile
+import traceback
 import uuid
 
 from flask import current_app
@@ -178,8 +179,18 @@ def resolve_pending_jobs():
             state = r.json()['import']['state']
             if state == 'COMPLETE':
                 job.status = 'COMPLETED'
+            elif state == 'PENDING':
+                tasks = r.json()['import'].get('tasks', [])
+                task = tasks[0]
+                if task['state'] == 'ERROR':
+                    job.status = 'FAILED'
+                    job.error_msg = 'Task error'
+                elif task['state'] == 'NO_CRS':
+                    job.status = 'FAILED'
+                    job.error_msg = 'Missing CRS'
         except:
             job.status = 'FAILED'
+            job.error_msg = traceback.format_exc()
         db.session.commit()
 
 
