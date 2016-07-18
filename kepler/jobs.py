@@ -46,14 +46,13 @@ def run_job(id):
         elif datatype == 'geotiff':
             tasks = [upload_geotiff, submit_to_dspace, index_geotiff, ]
         else:
-            raise UnsupportedFormat(datatype)
+            raise Exception('Unsupported format')
         for task in tasks:
             task(job, bag)
         job.status = u'PENDING'
     except:
         job.status = u'FAILED'
-        raise
-        current_app.logger.warn(traceback.format_exc())
+        job.error_msg = traceback.format_exc()
     finally:
         db.session.commit()
         shutil.rmtree(tmpdir, ignore_errors=True)

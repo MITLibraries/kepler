@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 import filecmp
-import tempfile
 import uuid
 
-from mock import patch, Mock
+from mock import patch
 import pytest
 
 from kepler.models import Job, Item
@@ -48,16 +47,46 @@ def test_fetch_bag_returns_file_name(s3, bag_upload):
 
 def test_run_job_sets_status_to_pending(s3, job, bag_upload, pysolr,
                                         geoserver):
-    s3.client.upload_file(bag_upload, 'test_bucket', 'd2fe4762-96ec-57cd-89c9-312ec097284b')
+    s3.client.upload_file(bag_upload, 'test_bucket',
+                          'd2fe4762-96ec-57cd-89c9-312ec097284b')
     run_job(job.id)
     assert job.status == 'PENDING'
 
 
 def test_run_job_removes_bag_from_s3(s3, job, bag_upload, pysolr, geoserver):
-    s3.client.upload_file(bag_upload, 'test_bucket', 'd2fe4762-96ec-57cd-89c9-312ec097284b')
+    s3.client.upload_file(bag_upload, 'test_bucket',
+                          'd2fe4762-96ec-57cd-89c9-312ec097284b')
     run_job(job.id)
     keys = s3.client.list_objects_v2(Bucket='test_bucket')
     assert 'Contents' not in keys
+
+
+def test_run_job_sets_failed_status(s3, job, bag_upload, pysolr, geoserver):
+    s3.client.upload_file(bag_upload, 'test_bucket',
+                          'd2fe4762-96ec-57cd-89c9-312ec097284b')
+    with patch('kepler.jobs.upload_shapefile') as m:
+        m.side_effect = Exception()
+        run_job(job.id)
+        assert job.status == 'FAILED'
+
+
+def test_run_job_records_traceback(s3, job, bag_upload, pysolr, geoserver):
+    s3.client.upload_file(bag_upload, 'test_bucket',
+                          'd2fe4762-96ec-57cd-89c9-312ec097284b')
+    with patch('kepler.jobs.upload_shapefile') as m:
+        m.side_effect = Exception('Bad data')
+        run_job(job.id)
+        assert 'Exception: Bad data' in job.error_msg
+
+
+def test_run_job_raises_unsupported_format_error(s3, job, bag_upload, pysolr,
+                                                 geoserver):
+    s3.client.upload_file(bag_upload, 'test_bucket',
+                          'd2fe4762-96ec-57cd-89c9-312ec097284b')
+    with patch('kepler.jobs.get_datatype') as m:
+        m.return_value = 'foobar'
+        run_job(job.id)
+    assert 'Exception: Unsupported format' in job.error_msg
 
 
 def test_delete_bag_deletes_bag(s3, bag_upload):
