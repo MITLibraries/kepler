@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 import os.path
+import re
 
 import pytest
 import requests_mock
@@ -25,6 +26,7 @@ def job(db):
 
 @pytest.yield_fixture
 def geo_mock():
+    r = re.compile('/geoserver/rest/imports/.*')
     with requests_mock.Mocker() as m:
         m.get('/geoserver/rest/imports/0',
               json={'import': {'state': 'COMPLETE'}})
@@ -34,6 +36,7 @@ def geo_mock():
         m.get('/geoserver/rest/imports/3',
               json={'import': {'state': 'PENDING',
                     'tasks': [{'state': 'NO_CRS'}]}})
+        m.delete(r)
         yield m
 
 
@@ -199,6 +202,22 @@ def test_resolve_pending_fails_jobs_for_failed_import_tasks(job, db,
     db.session.commit()
     resolve_pending_jobs()
     assert job.status == 'FAILED'
+
+
+def test_resolve_pending_deletes_finished_jobs(job, db, geo_mock):
+    job.import_url = 'mock://example.com/geoserver/rest/imports/0'
+    job.status = 'PENDING'
+    db.session.commit()
+    resolve_pending_jobs()
+    assert geo_mock.request_history.pop().method == 'DELETE'
+
+
+def test_resolve_pending_does_not_delete_pending_jobs(job, db, geo_mock):
+    job.import_url = 'mock://example.com/geoserver/rest/imports/1'
+    job.status = 'PENDING'
+    db.session.commit()
+    resolve_pending_jobs()
+    assert geo_mock.request_history.pop().method == 'GET'
 
 
 def testIndexFromFgdcCreatesRecord(job, bag):
