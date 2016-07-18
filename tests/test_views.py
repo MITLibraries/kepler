@@ -120,6 +120,21 @@ class TestJob(object):
         assert 'COMPLETED' in r.text
         assert 'PENDING' not in r.text
 
+    def test_job_shows_layer_id(self, testapp, db):
+        job = Job(item=Item(uri='674a0ab1-325f-561a-a837-09e9a9a79b91',
+                            layer_id='mit:Foobar'))
+        db.session.add(job)
+        db.session.commit()
+        r = testapp.get('/{}'.format(job.id))
+        assert 'mit:Foobar' in r.text
+
+    def test_job_uses_unknown_for_item_with_no_layer_id(self, testapp, db):
+        job = Job(item=Item(uri='674a0ab1-325f-561a-a837-09e9a9a79b91'))
+        db.session.add(job)
+        db.session.commit()
+        r = testapp.get('/{}'.format(job.id))
+        assert 'Unknown' in r.text
+
 
 class TestItem(object):
     def testItemListReturnsItems(self, testapp, db):
