@@ -1,6 +1,18 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <h1>{{ job.item.uri }}</h2>
-  {{ job.time.strftime('%Y-%m-%dT%H:%M:%S%z') }} {{ job.status }}
+  <h1>{{ job.item.layer_name if job.item.layer_name else 'Unknown' }}</h2>
+  <p>
+    <div>UUID: {{ job.item.uri }}</div>
+    <div>Time created: {{ job.time.strftime('%Y-%m-%dT%H:%M:%S%z') }}</div>
+    <div>Status: {{ job.status }}</div>
+  </p>
+  {% if job.error_msg %}
+    <div class="panel panel-danger">
+      <div class="panel-heading">Job Exception</div>
+      <div class="panel-body">
+        <pre>{{ job.error_msg|e }}</pre>
+      </div>
+    </div>
+  {% endif %}
 {% endblock %}

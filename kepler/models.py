@@ -20,6 +20,7 @@ class Job(db.Model):
                                name='status'), default=u'CREATED')
     import_url = db.Column(db.String())
     time = db.Column(db.DateTime(timezone=True), default=datetime.now)
+    error_msg = db.Column(db.Text())
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'))
 
     def __repr__(self):

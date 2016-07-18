@@ -37,6 +37,7 @@ class HerokuConfig(DefaultConfig):
         self.S3_BUCKET = os.environ['S3_BUCKET']
         self.S3_ACCESS_KEY_ID = os.environ['S3_ACCESS_KEY_ID']
         self.S3_SECRET_ACCESS_KEY = os.environ['S3_SECRET_ACCESS_KEY']
+        self.S3_TEST_URL = os.environ.get('S3_TEST_URL')
 
 
 class TestConfig(DefaultConfig):

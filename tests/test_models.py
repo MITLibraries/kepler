@@ -52,6 +52,12 @@ class TestJob(object):
         db.session.commit()
         assert job.time == time
 
+    def testJobHasErrorMsg(self, db):
+        job = Job(error_msg='Something went wrong')
+        db.session.add(job)
+        db.session.commit()
+        assert job.error_msg == 'Something went wrong'
+
 
 class TestItem(object):
     def testItemHasRepresentation(self, db):
