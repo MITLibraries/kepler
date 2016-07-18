@@ -31,6 +31,9 @@ def geo_mock():
         m.get('/geoserver/rest/imports/1',
               json={'import': {'state': 'WORKING'}})
         m.get('/geoserver/rest/imports/2', status_code=404)
+        m.get('/geoserver/rest/imports/3',
+              json={'import': {'state': 'PENDING',
+                    'tasks': [{'state': 'NO_CRS'}]}})
         yield m
 
 
@@ -175,6 +178,23 @@ def test_resolve_pending_resolves_only_last_job_for_item(job, db, geo_mock):
 
 def test_resolve_pending_fails_jobs_with_exceptions(job, db, geo_mock):
     job.import_url = 'mock://example.com/geoserver/rest/imports/2'
+    job.status = 'PENDING'
+    db.session.commit()
+    resolve_pending_jobs()
+    assert job.status == 'FAILED'
+
+
+def test_resolve_pending_records_exception(job, db, geo_mock):
+    job.import_url = 'mock://example.com/geoserver/rest/imports/2'
+    job.status = 'PENDING'
+    db.session.commit()
+    resolve_pending_jobs()
+    assert 'HTTPError: 404' in job.error_msg
+
+
+def test_resolve_pending_fails_jobs_for_failed_import_tasks(job, db,
+                                                            geo_mock):
+    job.import_url = 'mock://example.com/geoserver/rest/imports/3'
     job.status = 'PENDING'
     db.session.commit()
     resolve_pending_jobs()
