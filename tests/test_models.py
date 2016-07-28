@@ -95,6 +95,10 @@ class TestItem(object):
         item = Item(tiff_url='http://example.com/bitstream/handle/1234.5/67890/248077.tif?sequence=4')
         assert item.tiff_url == 'http://example.com/bitstream/handle/1234.5/67890/248077.tif?sequence=4'
 
+    def test_item_has_record(self, db):
+        item = Item(record='{"foo": "♞"}')
+        assert item.record == '{"foo": "♞"}'
+
     def testItemAsDictReturnsMostRecentJobStatus(self, db):
         item = Item(uri='stuff')
         Job(item=item, status='CREATED')

@@ -13,6 +13,7 @@
 """
 
 from __future__ import absolute_import
+import json
 import tempfile
 import traceback
 import uuid
@@ -31,7 +32,7 @@ from kepler.bag import (get_fgdc, get_shapefile, get_geotiff, get_access,
 from kepler.models import Job
 from kepler.records import create_record, MitRecord
 from kepler.utils import make_uuid
-from kepler.extensions import db, solr as solr_session, geoserver, dspace
+from kepler.extensions import db, solr as solr_session, geoserver, dspace, req
 from kepler.parsers import MarcParser
 from kepler.geo import compress, pyramid
 
@@ -59,8 +60,8 @@ def index_shapefile(job, data):
     layer_id = "%s:%s" % (gs.workspace, shp_name)
     job.item.layer_id = layer_id
     db.session.commit()
-    _index_from_fgdc(job, bag=data, dct_references_s=refs, uuid=str(uid),
-                     layer_id_s=layer_id)
+    _store_record(job, bag=data, dct_references_s=refs, uuid=str(uid),
+                  layer_id_s=layer_id)
 
 
 def index_geotiff(job, data):
@@ -80,8 +81,8 @@ def index_geotiff(job, data):
     layer_id = "%s:%s" % (gs.workspace, uid)
     job.item.layer_id = layer_id
     db.session.commit()
-    _index_from_fgdc(job, bag=data, dct_references_s=refs, uuid=str(uid),
-                     layer_id_s=layer_id)
+    _store_record(job, bag=data, dct_references_s=refs, uuid=str(uid),
+                  layer_id_s=layer_id)
 
 
 def submit_to_dspace(job, data):
@@ -178,7 +179,7 @@ def resolve_pending_jobs():
             r.raise_for_status()
             state = r.json()['import']['state']
             if state == 'COMPLETE':
-                job.status = 'COMPLETED'
+                req.q.enqueue(publish_record, job.id)
             elif state == 'PENDING':
                 tasks = r.json()['import'].get('tasks', [])
                 task = tasks[0]
@@ -192,7 +193,7 @@ def resolve_pending_jobs():
             job.status = 'FAILED'
             job.error_msg = traceback.format_exc()
         db.session.commit()
-        if job.status in ('COMPLETED', 'FAILED'):
+        if job.status == 'FAILED' or state == 'COMPLETE':
             geo_session.delete(job.import_url)
 
 
@@ -200,7 +201,19 @@ def index_marc_records(job, data):
     _index_records(_load_marc_records(data))
 
 
-def _index_from_fgdc(job, bag, **kwargs):
+def publish_record(job_id):
+    job = Job.query.get(job_id)
+    solr = pysolr.Solr(current_app.config['SOLR_URL'])
+    solr.session = solr_session.session
+    try:
+        solr.add([json.loads(job.item.record)])
+        job.status = 'COMPLETED'
+    except:
+        job.status = 'FAILED'
+    db.session.commit()
+
+
+def _store_record(job, bag, **kwargs):
     """Index a GeoServer-bound layer from the attached FGDC metadata.
 
     This will pull the FGDC metadata out of the Bag and add any necessary
@@ -213,7 +226,8 @@ def _index_from_fgdc(job, bag, **kwargs):
 
     fgdc = get_fgdc(bag)
     record = create_record(fgdc, FGDCParser, **kwargs)
-    _index_records([record.as_dict()])
+    job.item.record = json.dumps(_prep_solr_record(record.as_dict()))
+    db.session.commit()
 
 
 def _upload_to_geoserver(data, filetype, access, name):
@@ -266,7 +280,15 @@ def _prep_solr_record(record):
     `pysolr` does not handle sets, so these need to be converted to
     lists before being added to solr.
     """
-    return {k: _normalize_sets(v) for k, v in record.items()}
+    for k, v in record.items():
+        if isinstance(v, set):
+            record[k] = list(v)
+        else:
+            try:
+                record[k] = v.isoformat()
+            except AttributeError:
+                pass
+    return record
 
 
 def _normalize_sets(value):

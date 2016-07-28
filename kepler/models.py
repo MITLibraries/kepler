@@ -44,6 +44,7 @@ class Item(db.Model):
                        default=u'Public')
     jobs = db.relationship('Job', backref='item', lazy='dynamic')
     tiff_url = db.Column(db.Unicode(255))
+    record = db.Column(db.Text())
 
     def __repr__(self):
         return '<Item #%d: %r>' % (self.id, self.uri)
