@@ -20,7 +20,7 @@ jmespath==0.9.0
 lxml==3.5.0
 Mako==1.0.3
 MarkupSafe==0.23
--e git+https://github.com/MITLibraries/ogre-toolkit.git@1cb0e8ba2b79637bb5d4b3797c1b26c731428407#egg=Ogre_Toolkit
+git+https://github.com/MITLibraries/ogre-toolkit.git@master#egg=Ogre_Toolkit
 psycopg2==2.6.1
 pymarc==3.1.1
 pysolr==3.4.0
