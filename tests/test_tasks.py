@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+import json
 import os.path
 import re
 
@@ -9,7 +10,7 @@ from mock import patch, DEFAULT
 
 from kepler.models import Job, Item
 from kepler.tasks import *
-from kepler.tasks import (_index_records, _index_from_fgdc, _load_marc_records,
+from kepler.tasks import (_index_records, _load_marc_records,
                           _upload_to_geoserver, _fgdc_to_mods)
 
 
@@ -37,47 +38,31 @@ def geo_mock():
               json={'import': {'state': 'PENDING',
                     'tasks': [{'state': 'NO_CRS'}]}})
         m.delete(r)
+        m.post(re.compile('mock://localhost:8983/solr/.*'))
         yield m
 
 
-def test_index_shapefile_indexes_from_fgdc(job, bag):
-    refs = {
-        'http://www.opengis.net/def/serviceType/ogc/wms':
-        'mock://example.com/geoserver/wms',
-        'http://www.opengis.net/def/serviceType/ogc/wfs':
-        'mock://example.com/geoserver/wfs',
-    }
-    with patch('kepler.tasks._index_from_fgdc') as mock:
-        index_shapefile(job, bag)
-        mock.assert_called_with(job, bag=bag, dct_references_s=refs,
-                                uuid='c8921f5a-eac7-509b-bac5-bd1b2cb202dc',
-                                layer_id_s='mit:SDE_DATA_BD_A8GNS_2003')
+def test_index_shapefile_stores_record(job, bag):
+    index_shapefile(job, bag)
+    assert json.loads(job.item.record).get('layer_id_s') == \
+        'mit:SDE_DATA_BD_A8GNS_2003'
 
 
 def test_index_shapefile_assigns_layer_id(job, bag):
-    with patch('kepler.tasks._index_from_fgdc') as mock:
-        index_shapefile(job, bag)
-        assert job.item.layer_id == 'mit:SDE_DATA_BD_A8GNS_2003'
+    index_shapefile(job, bag)
+    assert job.item.layer_id == 'mit:SDE_DATA_BD_A8GNS_2003'
 
 
 def test_index_geotiff_assigns_layer_id(job, bag):
-    with patch('kepler.tasks._index_from_fgdc') as mock:
-        index_geotiff(job, bag)
-        assert job.item.layer_id == 'mit:c8921f5a-eac7-509b-bac5-bd1b2cb202dc'
+    index_geotiff(job, bag)
+    assert job.item.layer_id == 'mit:c8921f5a-eac7-509b-bac5-bd1b2cb202dc'
 
 
 def test_index_geotiff_indexes_from_fgdc(job, bag):
-    refs = {
-        'http://www.opengis.net/def/serviceType/ogc/wms':
-        'mock://example.com/geoserver/wms',
-        'http://schema.org/downloadUrl': 'http://example.com/foobar',
-    }
     job.item.tiff_url = 'http://example.com/foobar'
-    with patch('kepler.tasks._index_from_fgdc') as mock:
-        index_geotiff(job, bag)
-        mock.assert_called_with(job, bag=bag, dct_references_s=refs,
-                                uuid='c8921f5a-eac7-509b-bac5-bd1b2cb202dc',
-                                layer_id_s='mit:c8921f5a-eac7-509b-bac5-bd1b2cb202dc')
+    index_geotiff(job, bag)
+    assert json.loads(job.item.record).get('layer_id_s') == \
+        'mit:c8921f5a-eac7-509b-bac5-bd1b2cb202dc'
 
 
 def test_submit_to_dspace_uploads_sword_package(sword, job, bag_tif):
@@ -154,6 +139,7 @@ def testUploadGeotiffPyramidsTiff(job, bag_tif, geoserver):
 def test_resolve_pending_completes_finished_imports(job, db, geo_mock):
     job.import_url = 'mock://example.com/geoserver/rest/imports/0'
     job.status = 'PENDING'
+    job.item.record = '{"uuid": "foo"}'
     db.session.commit()
     resolve_pending_jobs()
     assert job.status == 'COMPLETED'
@@ -173,6 +159,7 @@ def test_resolve_pending_resolves_only_last_job_for_item(job, db, geo_mock):
     db.session.add(job2)
     job.import_url = 'mock://example.com/geoserver/rest/imports/0'
     job2.import_url = 'mock://example.com/geoserver/rest/imports/0'
+    job.item.record = '{"uuid": "FOO"}'
     db.session.commit()
     resolve_pending_jobs()
     assert job.status == 'PENDING'
@@ -220,13 +207,33 @@ def test_resolve_pending_does_not_delete_pending_jobs(job, db, geo_mock):
     assert geo_mock.request_history.pop().method == 'GET'
 
 
-def testIndexFromFgdcCreatesRecord(job, bag):
-    with patch('kepler.tasks._index_records') as mock:
-        _index_from_fgdc(job, bag, layer_id_s='mit:SDE_DATA_BD_A8GNS_2003',
-                         uuid='c8921f5a-eac7-509b-bac5-bd1b2cb202dc')
-        args = mock.call_args[0]
-    assert args[0][0].get('dc_title_s') == 'Bermuda (Geographic Feature Names, 2003)'
-    assert args[0][0].get('layer_id_s') == 'mit:SDE_DATA_BD_A8GNS_2003'
+def test_publish_record_adds_record_to_solr(db, job):
+    job.item.record = '{"layer_id_s": "mit:FOOBARBAZ"}'
+    db.session.commit()
+    with requests_mock.Mocker() as m:
+        m.post(requests_mock.ANY)
+        publish_record(job.id)
+        req = m.request_history[0]
+    assert '<doc><field name="layer_id_s">mit:FOOBARBAZ</field></doc>' in \
+        req.text
+
+
+def test_publish_record_sets_status(db, job):
+    job.item.record = '{"uuid": "foobar"}'
+    db.session.commit()
+    with requests_mock.Mocker() as m:
+        m.post(requests_mock.ANY)
+        publish_record(job.id)
+    assert job.status == 'COMPLETED'
+
+
+def test_publish_record_fails_record_on_error(db, job):
+    job.item.record = '{"uuid": "foobar"}'
+    db.session.commit()
+    with requests_mock.Mocker() as m:
+        m.post(requests_mock.ANY, status_code=500)
+        publish_record(job.id)
+    assert job.status == 'FAILED'
 
 
 def test_upload_to_geoserver_uploads_data(geoserver, shapefile):
