@@ -285,7 +285,7 @@ def _prep_solr_record(record):
             record[k] = list(v)
         else:
             try:
-                record[k] = v.isoformat()
+                record[k] = v.to('utc').format('YYYY-MM-DDTHH:mm:ss') + 'Z'
             except AttributeError:
                 pass
     return record

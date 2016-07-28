@@ -4,6 +4,7 @@ import json
 import os.path
 import re
 
+import arrow
 import pytest
 import requests_mock
 from mock import patch, DEFAULT
@@ -11,7 +12,8 @@ from mock import patch, DEFAULT
 from kepler.models import Job, Item
 from kepler.tasks import *
 from kepler.tasks import (_index_records, _load_marc_records,
-                          _upload_to_geoserver, _fgdc_to_mods)
+                          _prep_solr_record, _upload_to_geoserver,
+                          _fgdc_to_mods)
 
 
 pytestmark = pytest.mark.usefixtures('app')
@@ -281,3 +283,9 @@ def testFgdcToModsReturnsMods(bag_tif):
     fgdc = os.path.join(bag_tif, 'data/fgdc.xml')
     mods = _fgdc_to_mods(fgdc)
     assert u'<mods:title>Some land</mods:title>' in mods
+
+
+def test_prep_solr_record_converts_dates():
+    now = arrow.now()
+    rec = _prep_solr_record({'foo': now})
+    assert rec['foo'] == now.to('utc').format('YYYY-MM-DDTHH:mm:ss') + 'Z'
