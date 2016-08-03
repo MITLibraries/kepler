@@ -60,7 +60,11 @@ def index_shapefile(job, data):
     layer_id = "%s:%s" % (gs.workspace, shp_name)
     job.item.layer_id = layer_id
     db.session.commit()
-    _store_record(job, bag=data, dct_references_s=refs, uuid=str(uid),
+    _store_record(job, bag=data,
+                  dc_identifier_s=uid.urn,
+                  dc_format_s='Shapefile',
+                  dc_type_s='Dataset',
+                  dct_references_s=refs,
                   layer_id_s=layer_id)
 
 
@@ -81,7 +85,11 @@ def index_geotiff(job, data):
     layer_id = "%s:%s" % (gs.workspace, uid)
     job.item.layer_id = layer_id
     db.session.commit()
-    _store_record(job, bag=data, dct_references_s=refs, uuid=str(uid),
+    _store_record(job, bag=data,
+                  dc_identifier_s=uid.urn,
+                  dc_format_s='GeoTIFF',
+                  dc_type_s='Dataset',
+                  dct_references_s=refs,
                   layer_id_s=layer_id)
 
 
@@ -210,6 +218,7 @@ def publish_record(job_id):
         job.status = 'COMPLETED'
     except:
         job.status = 'FAILED'
+        job.error_msg = traceback.format_exc()
     db.session.commit()
 
 
@@ -226,7 +235,7 @@ def _store_record(job, bag, **kwargs):
 
     fgdc = get_fgdc(bag)
     record = create_record(fgdc, FGDCParser, **kwargs)
-    job.item.record = json.dumps(_prep_solr_record(record.as_dict()))
+    job.item.record = record.to_json()
     db.session.commit()
 
 

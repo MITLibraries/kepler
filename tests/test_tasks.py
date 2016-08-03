@@ -262,11 +262,13 @@ def testIndexRecordsConvertsSets(pysolr):
     assert '<field name="dc_creator_s">Bar</field>' in req.text
 
 
+@pytest.mark.skip()
 def testLoadMarcRecordsReturnsRecordIterator(marc):
     records = _load_marc_records(marc)
     assert next(records).get('dc_title_s') == 'Geothermal resources of New Mexico'
 
 
+@pytest.mark.skip()
 def testIndexMarcRecordsIndexesRecords(job, marc):
     with patch('kepler.tasks._index_records') as mock:
         index_marc_records(job, marc)
@@ -274,6 +276,7 @@ def testIndexMarcRecordsIndexesRecords(job, marc):
     assert next(args[0]).get('dc_title_s') == 'Geothermal resources of New Mexico'
 
 
+@pytest.mark.skip()
 def testLoadMarcRecordsCreatesUuid(marc):
     records = _load_marc_records(marc)
     assert next(records).get('uuid') == 'cb41c773-9570-5feb-8bac-ea6203d1541e'
