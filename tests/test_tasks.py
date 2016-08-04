@@ -79,27 +79,27 @@ def test_submit_to_dspace_adds_handle_to_item(sword, job, bag_tif):
     assert job.item.handle == 'mit.edu:dusenbury-device:1'
 
 
-def test_get_geotiff_url_adds_url_to_item(dspace, job, oai_ore):
+def test_get_geotiff_url_adds_url_to_item(dspace, job, oai_ore, bag):
     dspace.register_uri('GET', requests_mock.ANY, text=oai_ore)
     job.item.handle = 'http://hdl.handle.net/1234.5/67890'
-    get_geotiff_url_from_dspace(job)
+    get_geotiff_url_from_dspace(job, bag)
     assert job.item.tiff_url == 'http://example.com/bitstream/handle/1234.5/67890/248077.tif?sequence=4'
 
 
-def test_get_geotiff_url_errors_on_no_tiff(dspace, job, oai_ore_no_tiffs):
+def test_get_geotiff_url_errors_on_no_tiff(dspace, job, oai_ore_no_tiffs, bag):
     dspace.register_uri('GET', requests_mock.ANY, text=oai_ore_no_tiffs)
     job.item.handle = 'http://hdl.handle.net/1234.5/67890'
     with pytest.raises(Exception) as excinfo:
-        get_geotiff_url_from_dspace(job)
+        get_geotiff_url_from_dspace(job, bag)
     assert 'Expected 1 tiff, found 0' == str(excinfo.value)
 
 
 def test_get_geotiff_url_errors_on_multiple_tiffs(dspace, job,
-                                                  oai_ore_two_tiffs):
+                                                  oai_ore_two_tiffs, bag):
     dspace.register_uri('GET', requests_mock.ANY, text=oai_ore_two_tiffs)
     job.item.handle = 'http://hdl.handle.net/1234.5/67890'
     with pytest.raises(Exception) as excinfo:
-        get_geotiff_url_from_dspace(job)
+        get_geotiff_url_from_dspace(job, bag)
     assert 'Expected 1 tiff, found 2' == str(excinfo.value)
 
 
