@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from datetime import datetime
 
 import pytest
+import requests_mock
 
 from kepler.models import Job, Item
 
@@ -31,7 +32,9 @@ class TestLayer(object):
         auth_testapp.put('/layers/d2fe4762-96ec-57cd-89c9-312ec097284b')
         assert Job.query.first().status == 'PENDING'
 
-    def testTiffJobIsRun(self, s3, auth_testapp, bag_tif_upload):
+    def testTiffJobIsRun(self, s3, auth_testapp, bag_tif_upload, dspace,
+                         oai_ore):
+        dspace.register_uri('GET', requests_mock.ANY, text=oai_ore)
         s3.client.upload_file(bag_tif_upload, 'test_bucket',
                               '674a0ab1-325f-561a-a837-09e9a9a79b91')
         auth_testapp.put('/layers/674a0ab1-325f-561a-a837-09e9a9a79b91')

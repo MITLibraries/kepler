@@ -114,7 +114,7 @@ def submit_to_dspace(job, data):
         db.session.commit()
 
 
-def get_geotiff_url_from_dspace(job):
+def get_geotiff_url_from_dspace(job, data):
     """Retrieve the GeoTIFF URL from a DSpace Handle.
 
         .. note:: assumes the OAI-ORE only contains a single TIFF.

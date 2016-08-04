@@ -11,7 +11,8 @@ from kepler.bag import unpack, get_datatype
 from kepler.extensions import db, s3
 from kepler.models import Job, Item, get_or_create
 from kepler.tasks import (index_shapefile, upload_shapefile, index_geotiff,
-                          upload_geotiff, submit_to_dspace)
+                          upload_geotiff, submit_to_dspace,
+                          get_geotiff_url_from_dspace)
 
 
 def fetch_bag(bucket, key):
@@ -44,7 +45,8 @@ def run_job(id):
         if datatype == 'shapefile':
             tasks = [upload_shapefile, index_shapefile, ]
         elif datatype == 'geotiff':
-            tasks = [upload_geotiff, submit_to_dspace, index_geotiff, ]
+            tasks = [upload_geotiff, submit_to_dspace,
+                     get_geotiff_url_from_dspace, index_geotiff, ]
         else:
             raise Exception('Unsupported format')
         for task in tasks:
