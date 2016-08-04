@@ -13,7 +13,10 @@
 """
 
 from __future__ import absolute_import
+import io
 import json
+import os
+import shutil
 import tempfile
 import traceback
 import uuid
@@ -81,8 +84,9 @@ def index_geotiff(job, data):
         'http://www.opengis.net/def/serviceType/ogc/wms': gs.wms_url,
         'http://schema.org/downloadUrl': job.item.tiff_url
     }
+    tif_name = get_geotiff_name(data)
     uid = uuid.UUID(job.item.uri)
-    layer_id = "%s:%s" % (gs.workspace, uid)
+    layer_id = "%s:%s" % (gs.workspace, tif_name)
     job.item.layer_id = layer_id
     db.session.commit()
     _store_record(job, bag=data,
@@ -163,10 +167,14 @@ def upload_geotiff(job, data):
     tiff = get_geotiff(data)
     access = get_access(data)
     name = get_geotiff_name(data)
-    with tempfile.NamedTemporaryFile(suffix='.tif') as fp:
-        compress(tiff, fp.name)
-        pyramid(fp.name)
-        import_url = _upload_to_geoserver(fp.name, 'geotiff', access, name)
+    tmpdir = tempfile.mkdtemp()
+    try:
+        with io.open(os.path.join(tmpdir, name + '.tif'), 'wb') as fp:
+            compress(tiff, fp.name)
+            pyramid(fp.name)
+            import_url = _upload_to_geoserver(fp.name, 'geotiff', access, name)
+    finally:
+        shutil.rmtree(tmpdir, ignore_errors=True)
     job.import_url = import_url
     db.session.commit()
 

@@ -55,16 +55,15 @@ def test_index_shapefile_assigns_layer_id(job, bag):
     assert job.item.layer_id == 'mit:SDE_DATA_BD_A8GNS_2003'
 
 
-def test_index_geotiff_assigns_layer_id(job, bag):
-    index_geotiff(job, bag)
-    assert job.item.layer_id == 'mit:c8921f5a-eac7-509b-bac5-bd1b2cb202dc'
+def test_index_geotiff_assigns_layer_id(job, bag_tif):
+    index_geotiff(job, bag_tif)
+    assert job.item.layer_id == 'mit:grayscale'
 
 
-def test_index_geotiff_indexes_from_fgdc(job, bag):
+def test_index_geotiff_indexes_from_fgdc(job, bag_tif):
     job.item.tiff_url = 'http://example.com/foobar'
-    index_geotiff(job, bag)
-    assert json.loads(job.item.record).get('layer_id_s') == \
-        'mit:c8921f5a-eac7-509b-bac5-bd1b2cb202dc'
+    index_geotiff(job, bag_tif)
+    assert json.loads(job.item.record).get('layer_id_s') == 'mit:grayscale'
 
 
 def test_submit_to_dspace_uploads_sword_package(sword, job, bag_tif):
