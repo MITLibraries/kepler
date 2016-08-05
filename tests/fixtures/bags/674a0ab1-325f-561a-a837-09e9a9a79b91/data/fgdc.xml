@@ -6,6 +6,9 @@
         <origin>Ginnungagap, the Yawning Emptiness of Abyssal Chaos</origin>
         <title>Some land</title>
         <pubdate>20031001</pubdate>
+        <pubinfo>
+          <publish>A publisher</publish>
+        </pubinfo>
       </citeinfo>
     </citation>
     <descript>
@@ -20,6 +23,15 @@
         <southbc>70</southbc>
       </bounding>
     </spdom>
+    <keywords>
+      <theme>
+        <themekey>Land</themekey>
+        <themekey>Geo</themekey>
+      </theme>
+      <place>
+        <placekey>Earth</placekey>
+      </place>
+    </keywords>
   </idinfo>
   <spdoinfo>
     <direct>Raster</direct>
