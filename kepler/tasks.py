@@ -210,7 +210,11 @@ def resolve_pending_jobs():
             job.error_msg = traceback.format_exc()
         db.session.commit()
         if job.status == 'FAILED' or state == 'COMPLETE':
-            geo_session.delete(job.import_url)
+            try:
+                _delete_import_task(job.import_url, geo_session)
+            except:
+                current_app.logger.warn(
+                    'Could not delete import task: {}'.format(job.import_url))
 
 
 def index_marc_records(job, data):
@@ -273,6 +277,13 @@ def _index_records(records):
     solr = pysolr.Solr(current_app.config['SOLR_URL'])
     solr.session = solr_session.session
     solr.add(map(_prep_solr_record, records))
+
+
+def _delete_import_task(url, session):
+    _import = session.get(url).json()
+    for task in _import['import']['tasks']:
+        session.delete(task['href'])
+    session.delete(url)
 
 
 def _load_marc_records(data):

@@ -31,8 +31,13 @@ def job(db):
 def geo_mock():
     r = re.compile('/geoserver/rest/imports/.*')
     with requests_mock.Mocker() as m:
-        m.get('/geoserver/rest/imports/0',
-              json={'import': {'state': 'COMPLETE'}})
+        m.get('/geoserver/rest/imports/0', json={
+            'import': {
+                'state': 'COMPLETE',
+                'tasks': [{
+                    'href': 'mock://example.com/geoserver/rest/imports/0/tasks/0'}]
+            }
+        })
         m.get('/geoserver/rest/imports/1',
               json={'import': {'state': 'WORKING'}})
         m.get('/geoserver/rest/imports/2', status_code=404)
@@ -198,6 +203,16 @@ def test_resolve_pending_deletes_finished_jobs(job, db, geo_mock):
     db.session.commit()
     resolve_pending_jobs()
     assert geo_mock.request_history.pop().method == 'DELETE'
+
+
+def test_resolve_pending_deletes_tasks_in_import(job, db, geo_mock):
+    job.import_url = 'mock://example.com/geoserver/rest/imports/0'
+    job.status = 'PENDING'
+    db.session.commit()
+    resolve_pending_jobs()
+    task_req = geo_mock.request_history[-2]
+    assert task_req.method == 'DELETE'
+    assert 'imports/0/tasks/0' in task_req.url
 
 
 def test_resolve_pending_does_not_delete_pending_jobs(job, db, geo_mock):
