@@ -73,16 +73,19 @@
 
   <xsl:template match="bounding">
     <mods:subject>
-      <mods:cartographic>
+      <mods:cartographics>
         <mods:coordinates>
           <xsl:value-of select="concat(
-              eastbc, ',', southbc, ' ',
-              eastbc, ',', northbc, ' ',
-              westbc, ',', northbc, ' ',
-              westbc, ',', southbc
+              'POLYGON ((',
+                westbc, ' ', southbc, ', ',
+                eastbc, ' ', southbc, ', ',
+                eastbc, ' ', northbc, ', ',
+                westbc, ' ', northbc, ', ',
+                westbc, ' ', southbc,
+              '))'
               )" />
         </mods:coordinates>
-      </mods:cartographic>
+      </mods:cartographics>
     </mods:subject>
   </xsl:template>
 
