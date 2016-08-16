@@ -98,7 +98,8 @@ class MarcParser(XMLParser):
             record['_datatype'] = self._record['876']['k']
             record['_location'] = self._record['876']['B']
         record['_marc_id'] = self._record['001'].value()
-        if '034' in self._record:
+        if self._record['034'] is not None and \
+                all([self._record['034'][s] for s in 'defg']):
             record['_bbox_w'] = self.convert_coord(self.pad_034(
                                                    self._record['034']['d']))
             record['_bbox_e'] = self.convert_coord(self.pad_034(
