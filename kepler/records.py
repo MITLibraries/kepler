@@ -34,6 +34,8 @@ def geometry_mapper(term):
         return 'Line'
     elif any(v_type in term.lower() for v_type in ['polygon', 'chain']):
         return 'Polygon'
+    elif 'composite' in term.lower():
+        return 'Mixed'
     return term
 
 

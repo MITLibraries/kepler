@@ -61,3 +61,4 @@ def testGeometryMapperNormalizesTerm():
     assert geometry_mapper('here is a string, yo') == 'Line'
     assert geometry_mapper('however, this is a polygon') == 'Polygon'
     assert geometry_mapper('Line') == 'Line'
+    assert geometry_mapper('Composite Object') == 'Mixed'
