@@ -4,7 +4,9 @@
   <div class="row">
     <div class="col-md-6">
       <div class="panel panel-default">
-        <div class="panel-heading">Failed Jobs</div>
+        <div class="panel-heading">
+          <a href="{{ url_for('.status', status='failed') }}">Failed Jobs</a>
+        </div>
         <ul class="list-group">
           {% for job in failed %}
             <li class="list-group-item">
@@ -20,7 +22,9 @@
     </div>
     <div class="col-md-6">
       <div class="panel panel-default">
-        <div class="panel-heading">Pending Jobs</div>
+        <div class="panel-heading">
+          <a href="{{ url_for('.status', status='pending') }}">Pending Jobs</a>
+        </div>
         <ul class="list-group">
           {% for job in pending %}
             <li class="list-group-item">
@@ -38,7 +42,11 @@
   <div class="row">
     <div class="col-md-6">
       <div class="panel panel-default">
-        <div class="panel-heading">Completed Jobs</div>
+        <div class="panel-heading">
+          <a href="{{ url_for('.status', status='completed') }}">
+            Completed Jobs
+          </a>
+        </div>
         <ul class="list-group">
           {% for job in completed %}
             <li class="list-group-item">

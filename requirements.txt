@@ -6,6 +6,7 @@ click==6.6
 docutils==0.12
 Flask==0.11.1
 Flask-Migrate==2.0.0
+flask-paginate==0.4.5
 Flask-Script==2.0.5
 Flask-SQLAlchemy==2.1
 futures==3.0.5
